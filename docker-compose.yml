@@ -1,0 +1,138 @@
+version: '3'
+
+networks:
+
+  traefik-proxy:
+    name: dianomi-traefik-proxy
+    ipam:
+      config:
+        - subnet: 10.225.0.0/24
+          gateway: 10.225.0.1
+
+  dbnet:
+    name: dianomi-dbnet
+    ipam:
+      config:
+        - subnet: 10.115.0.0/24
+          gateway: 10.115.0.1
+
+volumes:
+  pgdata: {}
+  pgadmin: {}
+
+services:
+  # PROXY
+  traefik:
+    image: traefik:v2.9
+    hostname: traefik-container
+    restart: &RESTART_POLICY ''
+    networks:
+      traefik-proxy: {}
+    ports:
+      - 80:80/tcp
+      - 443:443/tcp
+    command:
+      - "--global.checknewversion=false"
+      - "--global.sendAnonymousUsage=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=dianomi-traefik-proxy"
+      - "--providers.file.directory=/etc/traefik/dynamic_conf"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--log.level=INFO"
+      - "--accessLog"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-cert.pem:/certs/ssl-cert.pem:ro
+      - ./traefik-key.pem:/certs/ssl-key.pem:ro
+      - ./traefik-tls.yml:/etc/traefik/dynamic_conf/tls.yml:ro
+    environment:
+      TZ: Europe/Warsaw
+
+  # FRONTEND
+  client:
+    image: node:18-alpine3.16
+    user: 1000:1000
+    working_dir: /src
+    restart: *RESTART_POLICY
+    hostname: client
+    command: /bin/sh -c "/usr/local/bin/npm install && /usr/local/bin/npx ng s --host 0.0.0.0 --port 4200 --ssl false --configuration development --disable-host-check"
+    networks:
+      traefik-proxy: {}
+    labels:
+      traefik.enable: true
+      traefik.http.services.client-service.loadbalancer.server.port: "4200"
+      traefik.http.routers.client-router.service: client-service
+      traefik.http.routers.client-router.entrypoints: websecure
+      traefik.http.routers.client-router.rule: "Host(`127.0.0.1`) || Host(`localhost`)"
+      traefik.http.routers.client-router.tls: true
+    volumes:
+      - ./client:/src:rw
+
+  # BACKEND
+  server:
+    image: cosmtrek/air:latest
+    hostname: server
+    restart: *RESTART_POLICY
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.server-service.loadbalancer.server.port: "3000"
+      traefik.http.middlewares.server-path-middleware.stripprefix.prefixes: "/api,/api"
+      traefik.http.routers.server-router.service: "server-service"
+      traefik.http.routers.server-router.middlewares: "server-path-middleware"
+      traefik.http.routers.server-router.tls: "true"
+      traefik.http.routers.server-router.entrypoints: "websecure"
+      traefik.http.routers.server-router.rule: "(Host(`127.0.0.1`) || Host(`localhost`)) && PathPrefix(`/api`)"
+    networks:
+      traefik-proxy: {}
+      dbnet: {}
+    working_dir: /src
+    depends_on:
+      - db
+    volumes:
+      - ./server:/src:rw
+    environment:
+      TZ: Europe/Warsaw
+
+  # DATABASE
+  db:
+    image: postgres:15.1-alpine
+    restart: *RESTART_POLICY
+    hostname: postgres
+    networks:
+      dbnet:
+        ipv4_address: 10.115.0.10
+    ports:
+      - 127.0.0.1:5432:5432/tcp
+    volumes:
+      - pgdata:/var/lib/postgresql/data:rw
+    environment:
+      TZ: Europe/Warsaw
+      POSTGRES_PASSWORD: "postgres"
+
+  # TOOLS
+  pgadmin:
+    image: dpage/pgadmin4:6
+    restart: *RESTART_POLICY
+    hostname: pgadmin
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.pgadmin-service.loadbalancer.server.port: "80"
+      traefik.http.routers.pgadmin-router.service: "pgadmin-service"
+      traefik.http.routers.pgadmin-router.tls: "true"
+      traefik.http.routers.pgadmin-router.entrypoints: "websecure"
+      traefik.http.routers.pgadmin-router.rule: "(Host(`127.0.0.1`) || Host(`localhost`)) && PathPrefix(`/pgadmin`)"
+    networks:
+      traefik-proxy: {}
+      dbnet: {}
+    volumes:
+      - pgadmin:/var/lib/pgadmin:rw
+    environment:
+      TZ: Europe/Warsaw
+      PGADMIN_DISABLE_POSTFIX: "1"
+      PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+      PGADMIN_DEFAULT_PASSWORD: "123"
+      SCRIPT_NAME: "/pgadmin"

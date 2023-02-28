@@ -1,0 +1,13 @@
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/ssl-cert.pem
+        keyFile: /certs/ssl-key.pem
+
+entryPoints:
+  websecure:
+    tls:
+      defaultCertificate:
+        certFile: /certs/ssl-cert.pem
+        keyFile: /certs/ssl-key.pem
