@@ -16,3 +16,8 @@ type RegisterUser struct {
 	Password         string `json:"password"`
 	PasswordRepeated string `json:"passwordRepeated"`
 }
+
+type LoginUser struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
