@@ -11,12 +11,6 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-// Custom errors
-var (
-	errInvalidHash         = errors.New("encoded hash is not correct")
-	errIncompatibleVersion = errors.New("incompatible version of argon2")
-)
-
 // Structure for argon2id configuration
 type argon2Params struct {
 	memory      uint32
@@ -74,7 +68,7 @@ func decodeHash(encodedHash *string) (p *argon2Params, salt, hash []byte, err er
 	// Split string and check if is correct argon2 standard
 	values := strings.Split(*encodedHash, "$")
 	if len(values) != 6 {
-		return nil, nil, nil, errInvalidHash
+		return nil, nil, nil, errors.New("encoded hash is not correct")
 	}
 
 	// Extract version from values[2]
@@ -84,7 +78,7 @@ func decodeHash(encodedHash *string) (p *argon2Params, salt, hash []byte, err er
 		return nil, nil, nil, err
 
 	} else if version != argon2.Version {
-		return nil, nil, nil, errIncompatibleVersion
+		return nil, nil, nil, errors.New("incompatible version of argon2")
 	}
 
 	// Extract params for argon2 hashing
@@ -129,3 +123,5 @@ func ComparePasswordAndHash(password *string, encodedHash *string) (match bool, 
 
 	return false, nil
 }
+
+func main() {}

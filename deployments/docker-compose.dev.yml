@@ -19,6 +19,7 @@ networks:
 volumes:
   pgdata: {}
   pgadmin: {}
+  meilidata: {}
 
 services:
   # PROXY
@@ -31,42 +32,47 @@ services:
     ports:
       - 80:80/tcp
       - 443:443/tcp
+      - 8080:8080/tcp
     command:
-      - "--global.checknewversion=false"
-      - "--global.sendAnonymousUsage=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=dianomi-traefik-proxy"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--log.level=INFO"
-      # - "--accessLog"
+      - --global.checknewversion=false
+      - --global.sendAnonymousUsage=false
+      #- --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      #- --certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      #- --certificatesresolvers.letsencrypt.acme.email=storm.legacy@disroot.org
+      #- --certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=dianomi-traefik-proxy
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --api=true
+      - --api.insecure=true
+      - --log.level=INFO
+      # - --accessLog=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      TZ: Europe/Warsaw
 
-  # # FRONTEND
-  # client:
-  #   image: node:18-alpine3.16
-  #   user: 1000:1000
-  #   working_dir: /src
-  #   restart: *RESTART_POLICY
-  #   hostname: client
-  #   command: /bin/sh -c "/usr/local/bin/npm install && /usr/local/bin/npx ng s --host 0.0.0.0 --port 4200 --ssl false --configuration development --disable-host-check"
-  #   networks:
-  #     traefik-proxy: {}
-  #   labels:
-  #     traefik.enable: true
-  #     traefik.http.services.client-service.loadbalancer.server.port: "4200"
-  #     traefik.http.routers.client-router.service: client-service
-  #     traefik.http.routers.client-router.entrypoints: websecure
-  #     traefik.http.routers.client-router.rule: "Host(`127.0.0.1`) || Host(`localhost`)"
-  #     traefik.http.routers.client-router.tls: true
-  #   volumes:
-  #     - ./website:/src:rw
+  # FRONTEND
+  client:
+    image: node:18-alpine3.17
+    user: 1000:1000
+    working_dir: /src
+    restart: *RESTART_POLICY
+    hostname: client
+    command: /bin/sh -c "npm i && npm run dev"
+    networks:
+      traefik-proxy: {}
+    labels:
+      traefik.enable: true
+      traefik.http.services.client-service.loadbalancer.server.port: "5173"
+      traefik.http.routers.client-router.service: client-service
+      traefik.http.routers.client-router.entrypoints: websecure
+      traefik.http.routers.client-router.rule: "Host(`localhost`)"
+      traefik.http.routers.client-router.tls: true
+    volumes:
+      - ../website:/src:rw
 
   # BACKEND
   server:
@@ -81,7 +87,7 @@ services:
       traefik.http.routers.server-router.service: "server-service"
       traefik.http.routers.server-router.tls: "true"
       traefik.http.routers.server-router.entrypoints: "websecure"
-      traefik.http.routers.server-router.rule: "(Host(`127.0.0.1`) || Host(`localhost`)) && PathPrefix(`/api`)"
+      traefik.http.routers.server-router.rule: "Host(`localhost`) && PathPrefix(`/api/`)"
     networks:
       traefik-proxy: {}
       dbnet: {}
@@ -90,8 +96,20 @@ services:
       - db
     volumes:
       - ../:/src:rw
+
+  # Search engine
+  meilisearch:
+    image: getmeili/meilisearch:v1.1
+    hostname: meili
+    restart: *RESTART_POLICY
+    networks:
+      dbnet:
+        ipv4_address: 10.115.0.20
+    volumes:
+      - meilidata:/meili_data:rw
     environment:
-      TZ: Europe/Warsaw
+      MEILI_ENV: "development"
+      MEILI_HTTP_ADDR: "0.0.0.0:7700"
 
   # DATABASE
   db:
@@ -110,20 +128,25 @@ services:
       POSTGRES_PASSWORD: "postgres"
 
   # TOOLS
+  mailcatcher:
+    image: sj26/mailcatcher:v0.8.2
+    hostname: mailcatcher
+    restart: *RESTART_POLICY
+    networks:
+      dbnet:
+        ipv4_address: 10.115.0.100
+    ports:
+      - 127.0.0.1:8082:1080/tcp
+      # - 127.0.0.1:1025:1025/tcp
+
   pgadmin:
     image: dpage/pgadmin4:6
     restart: *RESTART_POLICY
     hostname: pgadmin
-    labels:
-      traefik.enable: "true"
-      traefik.http.services.pgadmin-service.loadbalancer.server.port: "80"
-      traefik.http.routers.pgadmin-router.service: "pgadmin-service"
-      traefik.http.routers.pgadmin-router.tls: "true"
-      traefik.http.routers.pgadmin-router.entrypoints: "websecure"
-      traefik.http.routers.pgadmin-router.rule: "(Host(`127.0.0.1`) || Host(`localhost`)) && PathPrefix(`/pgadmin`)"
     networks:
-      traefik-proxy: {}
       dbnet: {}
+    ports:
+      - 127.0.0.1:8081:80/tcp
     volumes:
       - pgadmin:/var/lib/pgadmin:rw
     environment:
@@ -131,5 +154,4 @@ services:
       PGADMIN_DISABLE_POSTFIX: "1"
       PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
       PGADMIN_DEFAULT_PASSWORD: "123"
-      SCRIPT_NAME: "/pgadmin"
       GUNICORN_ACCESS_LOGFILE: "/dev/null"

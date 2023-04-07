@@ -28,8 +28,9 @@ func ConnectToDatabase(databaseUrl string) (err error) {
 }
 
 // Migrate all changes to database
-func AutoMigrate() {
+func Migrate() {
 	db.AutoMigrate(&models.User{})
+	// db.AutoMigrate(&models.payments)
 }
 
 // Create user

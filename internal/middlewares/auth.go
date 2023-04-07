@@ -1,4 +1,4 @@
-package controllers
+package middlewares
 
 import (
 	"regexp"
@@ -8,9 +8,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 	log "github.com/sirupsen/logrus"
-	"github.com/storm-legacy/dianomi/internal/argon2"
 	db "github.com/storm-legacy/dianomi/internal/database"
 	"github.com/storm-legacy/dianomi/internal/models"
+	"github.com/storm-legacy/dianomi/pkg/argon2"
 )
 
 var emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)

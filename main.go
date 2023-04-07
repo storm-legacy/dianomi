@@ -1,64 +1,78 @@
 package main
 
 import (
-	"os"
-	"runtime"
+	"crypto/ed25519"
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/joho/godotenv"
-	"github.com/storm-legacy/dianomi/internal/controllers"
+	"github.com/spf13/viper"
 	"github.com/storm-legacy/dianomi/internal/database"
 
 	log "github.com/sirupsen/logrus"
 )
 
-// Utility functions
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
-}
+var (
+	privateKey ed25519.PrivateKey
+
+	publicKey       ed25519.PublicKey
+	publicKeyBase64 string
+)
 
 func init() {
 	// Specify log level
 	log.SetLevel(log.DebugLevel)
 
-	// Load .env if exists to
-	err := godotenv.Load(".env")
+	// Load configuration from file
+	viper.SetEnvPrefix("APP")
+	viper.AutomaticEnv()
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
 	if err != nil {
-		log.WithField("value", err).Warn("Could not load environment file.")
+		log.WithField("msg", err.Error()).Info("Configuration file .env doesn't exists")
+	}
+
+	// Check for ed25519 private key and generate if needed
+	// TODO Add error handler
+	pkey := viper.GetString("APP_JWT_EDDSA_PRIVATE_KEY")
+	privateKey, _ = base64.StdEncoding.DecodeString(pkey)
+	publicKeyBase64 = viper.GetString("APP_JWT_EDDSA_PUBLIC_KEY")
+	publicKey, _ = base64.StdEncoding.DecodeString(publicKeyBase64)
+
+	// Generate key pair if any empty
+	if len(privateKey) != 64 || len(publicKey) != 32 {
+		publicKey, privateKey, _ = ed25519.GenerateKey(rand.Reader)
+		publicKeyBase64 = base64.StdEncoding.EncodeToString(publicKey)
+		log.WithField("publicKey", publicKeyBase64).Info("Generated ed25519 key pair for authentication")
 	}
 
 	// Connect to database & migrate
-	database.ConnectToDatabase(os.Getenv("DATABASE_URL"))
-	database.AutoMigrate()
+	databaseURL := fmt.Sprintf(
+		`postgresql://%s:%s@%s:%d/%s`,
+		viper.Get("APP_PG_USER"),
+		viper.Get("APP_PG_PASSWORD"),
+		viper.Get("APP_PG_HOST"),
+		viper.GetInt("APP_PG_PORT"),
+		viper.Get("APP_PG_DB"),
+	)
+	database.ConnectToDatabase(databaseURL)
+	database.Migrate()
 
 }
 
 func main() {
 	app := fiber.New()
-	app.Use(logger.New())
-
-	// Healthcheck
-	app.Get("/api/v1/healthcheck", func(c *fiber.Ctx) error {
-		// if c.IP() == "127.0.0.1" {
-		if true {
-			var m runtime.MemStats
-			runtime.ReadMemStats(&m)
-			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"healthy": true,
-				"resources": fiber.Map{
-					"allocMb":      bToMb(m.Alloc),
-					"totalAllocMb": bToMb(m.TotalAlloc),
-					"sysMb":        bToMb(m.Sys),
-					"numGCMb":      bToMb(uint64(m.NumGC)),
-				},
-			})
-		}
-		return c.SendStatus(fiber.StatusForbidden)
+	app.Use(logger.New(), func(c *fiber.Ctx) error {
+		return c.Next()
 	})
 
-	app.Post("/api/v1/auth/register", controllers.RegisterUser)
-	app.Post("/api/v1/auth/login", controllers.LoginUser)
+	app.Get("/api/v1/auth/publickey", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"publicKey": publicKeyBase64,
+		})
+	})
 
 	log.Fatal(app.Listen(":3000"))
 }
