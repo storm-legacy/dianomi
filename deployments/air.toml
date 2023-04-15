@@ -1,13 +1,13 @@
 # Working directory
 root = "."
-tmp_dir = "tmp"
+tmp_dir = "_tmp"
 
 [build]
-cmd = "GOCACHE=/src/tmp/.cache go build -buildvcs=false -o ./tmp/main ."
-bin = "tmp/main"
-full_bin = "APP_ENV=dev APP_USER=air ./tmp/main"
+cmd = "GOCACHE=/src/_tmp/.cache go build -buildvcs=false -o ./_tmp/dianomi-server ./cmd/dianomi-server/main.go"
+bin = "_tmp/dianomi-server"
+full_bin = "APP_ENV=dev APP_USER=air ./_tmp/dianomi-server"
 include_ext = ["go", "tpl", "tmpl", "html", "env"]
-exclude_dir = ["assets", "tmp", "vendor", "website"]
+exclude_dir = ["assets", "_tmp", "vendor", "website"]
 exclude_unchanged = true
 follow_symlink = true
 delay = 150 # ms

@@ -13,13 +13,13 @@ type User struct {
 	UpdatedAt  time.Time `gorm:"default:now()"`
 }
 
-type RegisterUser struct {
+type FormRegisterUser struct {
 	Email            string `json:"email"`
 	Password         string `json:"password"`
-	PasswordRepeated string `json:"passwordRepeated"`
+	PasswordRepeated string `json:"password-repeat"`
 }
 
-type LoginUser struct {
+type FormLoginUser struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

@@ -2,75 +2,46 @@ version: '3'
 
 networks:
 
-  traefik-proxy:
-    name: dianomi-traefik-proxy
-    ipam:
-      config:
-        - subnet: 10.225.0.0/24
-          gateway: 10.225.0.1
+  reverse-proxy-net:
+    name: dianomi-reverse-proxy-net
 
-  dbnet:
-    name: dianomi-dbnet
-    ipam:
-      config:
-        - subnet: 10.115.0.0/24
-          gateway: 10.115.0.1
+  db-net:
+    name: dianomi-db-net
 
 volumes:
   pgdata: {}
   pgadmin: {}
-  meilidata: {}
 
 services:
-  # PROXY
-  traefik:
-    image: traefik:v2.9
-    hostname: traefik-container
+  haproxy:
+    image: haproxy:2.6-alpine
+    hostname: haproxy
     restart: &RESTART_POLICY ''
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
     networks:
-      traefik-proxy: {}
+      reverse-proxy-net: {}
     ports:
-      - 80:80/tcp
-      - 443:443/tcp
-      - 8080:8080/tcp
-    command:
-      - --global.checknewversion=false
-      - --global.sendAnonymousUsage=false
-      #- --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-      #- --certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
-      #- --certificatesresolvers.letsencrypt.acme.email=storm.legacy@disroot.org
-      #- --certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=dianomi-traefik-proxy
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --api=true
-      - --api.insecure=true
-      - --log.level=INFO
-      # - --accessLog=true
+      - target: 80
+        published: 80
+        mode: host
+      - target: 443
+        published: 443
+        mode: host
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./haproxy:/usr/local/etc/haproxy:ro
+      - ./ssl:/etc/ssl:ro
 
   # FRONTEND
   client:
-    image: node:18-alpine3.17
+    image: node:18-alpine
     user: 1000:1000
     working_dir: /src
     restart: *RESTART_POLICY
     hostname: client
     command: /bin/sh -c "npm i && npm run dev"
     networks:
-      traefik-proxy: {}
-    labels:
-      traefik.enable: true
-      traefik.http.services.client-service.loadbalancer.server.port: "5173"
-      traefik.http.routers.client-router.service: client-service
-      traefik.http.routers.client-router.entrypoints: websecure
-      traefik.http.routers.client-router.rule: "Host(`localhost`)"
-      traefik.http.routers.client-router.tls: true
+      reverse-proxy-net: {}
     volumes:
       - ../website:/src:rw
 
@@ -81,35 +52,16 @@ services:
     restart: *RESTART_POLICY
     command: -c deployments/air.toml
     user: 1000:1000
-    labels:
-      traefik.enable: "true"
-      traefik.http.services.server-service.loadbalancer.server.port: "3000"
-      traefik.http.routers.server-router.service: "server-service"
-      traefik.http.routers.server-router.tls: "true"
-      traefik.http.routers.server-router.entrypoints: "websecure"
-      traefik.http.routers.server-router.rule: "Host(`localhost`) && PathPrefix(`/api/`)"
     networks:
-      traefik-proxy: {}
-      dbnet: {}
+      reverse-proxy-net: {}
+      db-net: {}
     working_dir: /src
+    env_file:
+      - ../.env
     depends_on:
       - db
     volumes:
       - ../:/src:rw
-
-  # Search engine
-  meilisearch:
-    image: getmeili/meilisearch:v1.1
-    hostname: meili
-    restart: *RESTART_POLICY
-    networks:
-      dbnet:
-        ipv4_address: 10.115.0.20
-    volumes:
-      - meilidata:/meili_data:rw
-    environment:
-      MEILI_ENV: "development"
-      MEILI_HTTP_ADDR: "0.0.0.0:7700"
 
   # DATABASE
   db:
@@ -117,41 +69,25 @@ services:
     restart: *RESTART_POLICY
     hostname: postgres
     networks:
-      dbnet:
-        ipv4_address: 10.115.0.10
+      db-net: {}
     ports:
       - 127.0.0.1:5432:5432/tcp
     volumes:
       - pgdata:/var/lib/postgresql/data:rw
-    environment:
-      TZ: Europe/Warsaw
-      POSTGRES_PASSWORD: "postgres"
-
-  # TOOLS
-  mailcatcher:
-    image: sj26/mailcatcher:v0.8.2
-    hostname: mailcatcher
-    restart: *RESTART_POLICY
-    networks:
-      dbnet:
-        ipv4_address: 10.115.0.100
-    ports:
-      - 127.0.0.1:8082:1080/tcp
-      # - 127.0.0.1:1025:1025/tcp
+    env_file:
+      - ../.env
 
   pgadmin:
     image: dpage/pgadmin4:6
     restart: *RESTART_POLICY
     hostname: pgadmin
     networks:
-      dbnet: {}
+      db-net: {}
     ports:
       - 127.0.0.1:8081:80/tcp
     volumes:
       - pgadmin:/var/lib/pgadmin:rw
+    env_file:
+      - ../.env
     environment:
-      TZ: Europe/Warsaw
-      PGADMIN_DISABLE_POSTFIX: "1"
-      PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
-      PGADMIN_DEFAULT_PASSWORD: "123"
       GUNICORN_ACCESS_LOGFILE: "/dev/null"
