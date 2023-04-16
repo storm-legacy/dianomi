@@ -1,3 +1,5 @@
+PWD=$(shell pwd)
+
 init: generate_ssl
 
 start:
@@ -6,11 +8,14 @@ start:
 startf:
 	docker compose -f deployments/docker-compose.dev.yml up
 
+start_proxy:
+	docker compose -f deployments/docker-compose.dev.yml up -d db haproxy
+
 start_server:
 	docker compose -f deployments/docker-compose.dev.yml up -d db server
 
 start_db:
-	docker compose -f deployments/docker-compose.dev.yml up -d db
+	docker compose -f deployments/docker-compose.dev.yml up -d db pgadmin
 
 start_client: 
 	docker compose -f deployments/docker-compose.dev.yml up -d client
@@ -27,8 +32,10 @@ down:
 hard_down:
 	docker compose -f deployments/docker-compose.dev.yml down --remove-orphans -v
 
+generate_sqlc:
+	docker run --rm -v $(PWD):/src -w /src kjconroy/sqlc generate
+
 generate_ssl:
-	PWD=$(shell pwd)
 	if ! [ -f "$(PWD)/deployments/ssl/self-signed.crt" ]; then \
 		docker run --rm --name omgwtfssl \
 		-e CA_SUBJECT="snake-oil" \

@@ -74,6 +74,7 @@ services:
       - 127.0.0.1:5432:5432/tcp
     volumes:
       - pgdata:/var/lib/postgresql/data:rw
+      - ../schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     env_file:
       - ../.env
 
