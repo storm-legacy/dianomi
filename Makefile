@@ -32,9 +32,6 @@ down:
 hard_down:
 	docker compose -f deployments/docker-compose.dev.yml down --remove-orphans -v
 
-generate_sqlc:
-	docker run --rm -v $(PWD):/src -w /src kjconroy/sqlc generate
-
 generate_ssl:
 	if ! [ -f "$(PWD)/deployments/ssl/self-signed.crt" ]; then \
 		docker run --rm --name omgwtfssl \

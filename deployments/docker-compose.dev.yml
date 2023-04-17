@@ -1,7 +1,6 @@
 version: '3'
 
 networks:
-
   reverse-proxy-net:
     name: dianomi-reverse-proxy-net
 
@@ -17,6 +16,9 @@ services:
     image: haproxy:2.6-alpine
     hostname: haproxy
     restart: &RESTART_POLICY ''
+    depends_on:
+      - client
+      - server
     sysctls:
       - net.ipv4.ip_unprivileged_port_start=0
     networks:
@@ -43,14 +45,14 @@ services:
     networks:
       reverse-proxy-net: {}
     volumes:
-      - ../website:/src:rw
+      - ../:/src:rw
 
   # BACKEND
   server:
     image: cosmtrek/air:latest
     hostname: server
     restart: *RESTART_POLICY
-    command: -c deployments/air.toml
+    command: -c air.toml
     user: 1000:1000
     networks:
       reverse-proxy-net: {}
@@ -61,7 +63,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ../:/src:rw
+      - ../backend:/src:rw
 
   # DATABASE
   db:
@@ -74,7 +76,7 @@ services:
       - 127.0.0.1:5432:5432/tcp
     volumes:
       - pgdata:/var/lib/postgresql/data:rw
-      - ../schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ../backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     env_file:
       - ../.env
 
@@ -91,4 +93,4 @@ services:
     env_file:
       - ../.env
     environment:
-      GUNICORN_ACCESS_LOGFILE: "/dev/null"
+      GUNICORN_ACCESS_LOGFILE: '/dev/null'
