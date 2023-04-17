@@ -1,13 +1,17 @@
-import { Fragment } from 'react';
-import { CssBaseline } from '@mui/material';
-import { BrowserRouter } from 'react-router-dom';
-
+import React, { useState } from "react";
+import LoginPage from "./component/LoginPage";
+import RegisterPage from "./component/RegisterPage";
+import './App.css';
 function App() {
   return (
-    <Fragment>
-      <CssBaseline />
-      <BrowserRouter></BrowserRouter>
-    </Fragment>
+    <div className="contener">
+     <div className="LoginPanel">
+      <br/>
+      <h3>DianomiTV</h3>
+      <LoginPage/>
+      <RegisterPage/>
+      </div>
+    </div>
   );
 }
 

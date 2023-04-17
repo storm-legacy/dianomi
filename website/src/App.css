@@ -1,0 +1,80 @@
+body
+{
+    height:100vh;
+    width:100vw;
+    overflow: hidden; 
+}
+.contener
+{
+    height:100vh;
+    width:100vw;
+    background-color: LightGray;
+    background-image: url(img/background1.jpg);
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    overflow: hidden; 
+    
+}
+
+.Login
+{
+  margin-left: 10%;
+  float: left;
+  border-right: 1px solid;
+}
+.Register
+{
+  width:42%;
+  float: left;
+}
+.LoginPanel
+{
+  font-size: 20px;
+  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  background-color: white;
+  width: 43%;
+  height:57%;
+  margin: auto;
+  margin-top: 10%;
+  box-shadow: 10px 5px 5px gray;
+  text-align: center;
+  border-radius: 25% 10%;
+}
+
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus {
+  background-color: white;
+  outline: none;
+  border-color: gray;
+}
+
+input[type=text], input[type=password], input[type=email] {
+  margin: 10px;
+  width: 300px;
+  height: 40px;
+  background-color: white;
+  border: solid gray 2px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+
+button {
+  margin: 20px;
+  padding: 15px 40px;
+  background-color: lightgray;
+  color: black;
+  border: solid gray 2px;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover, .new:hover {
+  background-color: gray;
+  border-color: gray;
+  color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
