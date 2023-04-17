@@ -59,7 +59,7 @@ services:
       db-net: {}
     working_dir: /src
     env_file:
-      - ../.env
+      - ../backend/.env
     depends_on:
       - db
     volumes:
@@ -78,7 +78,7 @@ services:
       - pgdata:/var/lib/postgresql/data:rw
       - ../backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     env_file:
-      - ../.env
+      - ../backend/.env
 
   pgadmin:
     image: dpage/pgadmin4:6
@@ -91,6 +91,6 @@ services:
     volumes:
       - pgadmin:/var/lib/pgadmin:rw
     env_file:
-      - ../.env
+      - ../backend/.env
     environment:
       GUNICORN_ACCESS_LOGFILE: '/dev/null'
