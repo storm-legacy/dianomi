@@ -24,16 +24,12 @@ function RegisterPage() {
       .post(`${backendURL}/auth/register`, userData)
       .then((res) => {
         if (res.status === 200) {
-          redirect('/login?registerSuccess=true');
           console.log(res);
-          navigate('/login');
+          navigate('/login?registerSuccess=true');
         }
       })
       .catch((err) => {
         // Info if error
-
-        console.error(err.response.data.error);
-        console.error(err.response.heders);
         setRegError(err.response.data.error);
       });
   };
