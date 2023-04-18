@@ -1,73 +1,80 @@
+import axios from 'axios';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, redirect } from 'react-router-dom';
+
+const backendURL = 'https://localhost/api/v1';
 
 function RegisterPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [RepeatPassword, setRepeatPassword] = useState('');
-  const [email, setEmail] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regPasswordRepeat, setRegPasswordRepeat] = useState('');
 
-  function handleSubmit(event: any) {
+  const handleSubmit = (event: any) => {
     event.preventDefault();
-    if (RepeatPassword == password) console.log('Zarejestrowany użytkownik: ', username, email, password);
-    else console.log('błędne hasło');
-  }
+
+    const userData = {
+      email: regEmail,
+      password: regPassword,
+      password_repeat: regPasswordRepeat,
+    };
+
+    axios
+      .post(`${backendURL}/auth/register`, userData)
+      .then((res) => {
+        if (res.status === 200) {
+          redirect('/login?registerSuccess=true');
+          console.log(res);
+        }
+      })
+      .catch((err) => {
+        // Info if error
+        console.error(err.response.data.error);
+        console.error(err.response);
+      });
+  };
 
   return (
     <div className="text-center float-start" style={{ marginLeft: 50 }}>
       <h3>Rejestracja</h3>
       <form onSubmit={handleSubmit}>
         <label>
-          <p className="h5">Nazwa użytkownika:</p>
+          <p className="h5">E-mail:</p>
           <input
             type="text"
             className="form-control"
-            placeholder="Username"
-            aria-label="Username"
+            placeholder="E-mail"
+            aria-label="E-mail"
             aria-describedby="basic-addon1"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            value={regEmail}
+            onChange={(event) => setRegEmail(event.target.value)}
           />
         </label>
         <br />
         <label>
-          <p className="h5">Adres email:</p>
-          <input
-            type="email"
-            className="form-control"
-            aria-describedby="emailHelp"
-            placeholder="Enter Email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </label>
-        <br />
-        <label>
-          <p className="h5">Hasło:</p>
+          <p className="h5">Password:</p>
           <input
             type="password"
             className="form-control"
             placeholder="Password"
             aria-label="Password"
             aria-describedby="basic-addon1"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            value={regPassword}
+            onChange={(event) => setRegPassword(event.target.value)}
           />
         </label>
         <br />
         <label>
-          <p className="h5">Powtórz Hasło:</p>
+          <p className="h5">Repeat password:</p>
           <input
-            type="RepeatPassword"
+            type="password"
             className="form-control"
-            placeholder="RepeatPassword"
-            aria-label="RepeatPassword"
+            placeholder="Repeat password"
+            aria-label="PasswordRepeat"
             aria-describedby="basic-addon1"
-            value={RepeatPassword}
-            onChange={(event) => setRepeatPassword(event.target.value)}
+            value={regPasswordRepeat}
+            onChange={(event) => setRegPasswordRepeat(event.target.value)}
           />
         </label>
-        <br />
         <br />
         <button type="submit" className="btn btn-primary">
           Zarejestruj

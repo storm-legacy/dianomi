@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-function LoginPage() {
+
+const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  function handleSubmit(event: any) {
+  const handleSubmit = (event: any) => {
     event.preventDefault();
-    if (username === 'admin' && password === 'admin') {
-      console.log('Użytkownik zalogowany');
-    } else {
-      console.log('Błędne dane logowania');
-    }
-  }
+  };
 
   return (
     <div className="text-center float-start">
@@ -44,13 +40,13 @@ function LoginPage() {
           />
         </label>
         <br />
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-primary" onSubmit={handleSubmit}>
           Zaloguj
         </button>
       </form>
       <Link to={'/Register'}>Rejestracja</Link>
     </div>
   );
-}
+};
 
 export default LoginPage;

@@ -14,7 +14,7 @@ import (
 type FormRegisterUser struct {
 	Email            string `json:"email"`
 	Password         string `json:"password"`
-	PasswordRepeated string `json:"password-repeat"`
+	PasswordRepeated string `json:"password_repeat"`
 }
 
 func RegisterUser(userData *FormRegisterUser) (result Result) {

@@ -3,19 +3,22 @@ PWD=$(shell pwd)
 init: generate_ssl
 
 start:
-	docker compose -f deployments/docker-compose.dev.yml up -d
+	docker compose -f deployments/docker-compose.dev.yml up -d client server db traefik
 
 startf:
-	docker compose -f deployments/docker-compose.dev.yml up
+	docker compose -f deployments/docker-compose.dev.yml up client server db traefik
 
 start_proxy:
-	docker compose -f deployments/docker-compose.dev.yml up -d db haproxy
+	docker compose -f deployments/docker-compose.dev.yml up -d traefik
 
 start_server:
 	docker compose -f deployments/docker-compose.dev.yml up -d db server
 
 start_db:
-	docker compose -f deployments/docker-compose.dev.yml up -d db pgadmin
+	docker compose -f deployments/docker-compose.dev.yml up -d db
+
+start_pgadmin:
+	docker compose -f deployments/docker-compose.dev.yml up -d pgadmin
 
 start_client: 
 	docker compose -f deployments/docker-compose.dev.yml up -d client
