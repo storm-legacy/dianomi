@@ -1,14 +1,36 @@
 import React from 'react';
-import LoginPage from './component/LoginPage';
-import RegisterPage from './component/RegisterPage';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import Protected from './components/Protected';
+import LoginPage from './pages/LoginPage/LoginPage';
+import RegisterPage from './pages/RegisterPage/RegisterPage';
+import NotFoundPage from './pages/NotFound/NotFound';
+
+import './App.css';
+
 function App() {
+  const loggedStatus = false;
+
   return (
-    <div className="justify-content-center">
-      <div className="justify-content-center text-center shadow-lg p-3 mb-5 bg-body rounded d-inline-flex p-2 bd-highlight">
-        <LoginPage />
-        <RegisterPage />
+    <>
+      <div className="container">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/"
+              element={
+                <Protected isLoggedIn={loggedStatus}>
+                  <h1>Hello!</h1>
+                </Protected>
+              }
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
       </div>
-    </div>
+    </>
   );
 }
 

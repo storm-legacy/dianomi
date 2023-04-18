@@ -7,6 +7,7 @@ import (
 )
 
 func Login(c *fiber.Ctx) error {
+
 	// Parse user data
 	var userData *handlers.FormLoginUser
 	if err := c.BodyParser(&userData); err != nil {
