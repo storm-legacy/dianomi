@@ -1,12 +1,35 @@
+import axios from 'axios';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+const backendURL = 'https://localhost/api/v1';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
+
+    const userData = {
+      email: loginEmail,
+      password: loginPassword,
+    };
+
+    axios
+      .post(`${backendURL}/auth/login`, userData)
+      .then((res) => {
+        if (res.status === 200) {
+          localStorage.setItem('accessToken', res.data['token']);
+          navigate('/');
+        }
+      })
+      .catch((err) => {
+        // Info if error
+        console.error(err.response.data.error);
+        console.error(err.response);
+      });
   };
 
   return (
@@ -22,8 +45,8 @@ const LoginPage = () => {
             placeholder="UserName"
             aria-label="UserName"
             aria-describedby="basic-addon1"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            value={loginEmail}
+            onChange={(event) => setLoginEmail(event.target.value)}
           />
         </label>
         <br />
@@ -35,8 +58,8 @@ const LoginPage = () => {
             placeholder="Password"
             aria-label="Password"
             aria-describedby="basic-addon1"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            value={loginPassword}
+            onChange={(event) => setLoginPassword(event.target.value)}
           />
         </label>
         <br />
