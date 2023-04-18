@@ -12,27 +12,35 @@ volumes:
   pgadmin: {}
 
 services:
-  haproxy:
-    image: haproxy:2.6-alpine
-    hostname: haproxy
+  traefik:
+    image: traefik:v2.9
+    hostname: traefik-container
     restart: &RESTART_POLICY ''
-    depends_on:
-      - client
-      - server
-    sysctls:
-      - net.ipv4.ip_unprivileged_port_start=0
     networks:
       reverse-proxy-net: {}
     ports:
-      - target: 80
-        published: 80
-        mode: host
-      - target: 443
-        published: 443
-        mode: host
+      - 80:80/tcp
+      - 443:443/tcp
+      - 8080:8080/tcp
+    command:
+      - --global.checknewversion=false
+      - --global.sendAnonymousUsage=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=dianomi-reverse-proxy-net
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --log.level=INFO
+      - --api=true
+      - --api.insecure=true
+      - --log.level=INFO
+      # - "--accessLog"
     volumes:
-      - ./haproxy:/usr/local/etc/haproxy:ro
-      - ./ssl:/etc/ssl:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      TZ: Europe/Warsaw
 
   # FRONTEND
   client:
@@ -40,6 +48,13 @@ services:
     user: 1000:1000
     working_dir: /src
     restart: *RESTART_POLICY
+    labels:
+      traefik.enable: true
+      traefik.http.services.client-service.loadbalancer.server.port: 5173
+      traefik.http.routers.client-router.service: client-service
+      traefik.http.routers.client-router.entrypoints: websecure
+      traefik.http.routers.client-router.rule: Host(`127.0.0.1`) || Host(`localhost`)
+      traefik.http.routers.client-router.tls: true
     hostname: client
     command: /bin/sh -c "npm i && npm run dev"
     networks:
@@ -52,6 +67,13 @@ services:
     image: cosmtrek/air:latest
     hostname: server
     restart: *RESTART_POLICY
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.server-service.loadbalancer.server.port: 3000
+      traefik.http.routers.server-router.service: server-service
+      traefik.http.routers.server-router.tls: true
+      traefik.http.routers.server-router.entrypoints: websecure
+      traefik.http.routers.server-router.rule: (Host(`127.0.0.1`) || Host(`localhost`)) && PathPrefix(`/api`)
     command: -c air.toml
     user: 1000:1000
     networks:
