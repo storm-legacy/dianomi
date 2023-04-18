@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [RepeatPassword, setRepeatPassword] = useState('');
   const [email, setEmail] = useState('');
 
   function handleSubmit(event: any) {
     event.preventDefault();
-    console.log('Zarejestrowany użytkownik: ', username, email, password);
+    if (RepeatPassword == password) console.log('Zarejestrowany użytkownik: ', username, email, password);
+    else console.log('błędne hasło');
   }
 
   return (
@@ -52,11 +55,25 @@ function RegisterPage() {
           />
         </label>
         <br />
+        <label>
+          <p className="h5">Powtórz Hasło:</p>
+          <input
+            type="RepeatPassword"
+            className="form-control"
+            placeholder="RepeatPassword"
+            aria-label="RepeatPassword"
+            aria-describedby="basic-addon1"
+            value={RepeatPassword}
+            onChange={(event) => setRepeatPassword(event.target.value)}
+          />
+        </label>
+        <br />
         <br />
         <button type="submit" className="btn btn-primary">
           Zarejestruj
         </button>
       </form>
+      <Link to={'/login'}>Logowanie</Link>
     </div>
   );
 }
