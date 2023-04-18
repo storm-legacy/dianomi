@@ -8,6 +8,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [logError, setLogError] = useState(null);
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
@@ -29,6 +30,7 @@ const LoginPage = () => {
         // Info if error
         console.error(err.response.data.error);
         console.error(err.response);
+        setLogError(err.response.data.error);
       });
   };
 
@@ -68,6 +70,7 @@ const LoginPage = () => {
         </button>
       </form>
       <Link to={'/Register'}>Rejestracja</Link>
+      <p className="text-danger">{logError}</p>
     </div>
   );
 };

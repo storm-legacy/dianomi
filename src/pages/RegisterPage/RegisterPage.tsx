@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import { Link, redirect } from 'react-router-dom';
+import { Link, redirect, useNavigate } from 'react-router-dom';
 
 const backendURL = 'https://localhost/api/v1';
 
@@ -8,6 +8,8 @@ function RegisterPage() {
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regPasswordRepeat, setRegPasswordRepeat] = useState('');
+  const [regError, setRegError] = useState(null);
+  const navigate = useNavigate();
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
@@ -24,12 +26,15 @@ function RegisterPage() {
         if (res.status === 200) {
           redirect('/login?registerSuccess=true');
           console.log(res);
+          navigate('/login');
         }
       })
       .catch((err) => {
         // Info if error
+
         console.error(err.response.data.error);
-        console.error(err.response);
+        console.error(err.response.heders);
+        setRegError(err.response.data.error);
       });
   };
 
@@ -75,12 +80,14 @@ function RegisterPage() {
             onChange={(event) => setRegPasswordRepeat(event.target.value)}
           />
         </label>
+
         <br />
         <button type="submit" className="btn btn-primary">
           Zarejestruj
         </button>
       </form>
       <Link to={'/login'}>Logowanie</Link>
+      <p className="text-danger">{regError}</p>
     </div>
   );
 }
