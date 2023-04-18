@@ -1,13 +1,10 @@
 import React from 'react';
 import LoginPage from './component/LoginPage';
 import RegisterPage from './component/RegisterPage';
-import './App.css';
 function App() {
   return (
-    <div className="contener">
-      <div className="LoginPanel">
-        <br />
-        <h3>DianomiTV</h3>
+    <div className="justify-content-center">
+      <div className="justify-content-center text-center shadow-lg p-3 mb-5 bg-body rounded d-inline-flex p-2 bd-highlight">
         <LoginPage />
         <RegisterPage />
       </div>

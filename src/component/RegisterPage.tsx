@@ -11,27 +11,51 @@ function RegisterPage() {
   }
 
   return (
-    <div className="Register">
+    <div className="text-center float-start" style={{ marginLeft: 50 }}>
       <h3>Rejestracja</h3>
       <form onSubmit={handleSubmit}>
         <label>
-          Nazwa użytkownika: <br />
-          <input type="text" value={username} onChange={(event) => setUsername(event.target.value)} />
+          <p className="h5">Nazwa użytkownika:</p>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Username"
+            aria-label="Username"
+            aria-describedby="basic-addon1"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+          />
         </label>
         <br />
         <label>
-          Adres email:
-          <br />
-          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+          <p className="h5">Adres email:</p>
+          <input
+            type="email"
+            className="form-control"
+            aria-describedby="emailHelp"
+            placeholder="Enter Email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
         </label>
         <br />
         <label>
-          Hasło:
-          <br />
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+          <p className="h5">Hasło:</p>
+          <input
+            type="password"
+            className="form-control"
+            placeholder="Password"
+            aria-label="Password"
+            aria-describedby="basic-addon1"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
         </label>
         <br />
-        <button type="submit">Zarejestruj</button>
+        <br />
+        <button type="submit" className="btn btn-primary">
+          Zarejestruj
+        </button>
       </form>
     </div>
   );

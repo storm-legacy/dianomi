@@ -14,22 +14,39 @@ function LoginPage() {
   }
 
   return (
-    <div className="Login">
+    <div className="text-center float-start">
       <h3>Logowanie</h3>
       <form onSubmit={handleSubmit}>
         <label>
-          Nazwa użytkownika:
+          <p className="h5">Nazwa użytkownika:</p>
           <br />
-          <input type="text" value={username} onChange={(event) => setUsername(event.target.value)} />
+          <input
+            type="text"
+            className="form-control"
+            placeholder="UserName"
+            aria-label="UserName"
+            aria-describedby="basic-addon1"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+          />
         </label>
         <br />
         <label>
-          Hasło:
-          <br />
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+          <p className="h5">Hasło:</p>
+          <input
+            type="password"
+            className="form-control"
+            placeholder="Password"
+            aria-label="Password"
+            aria-describedby="basic-addon1"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
         </label>
         <br />
-        <button type="submit">Zaloguj</button>
+        <button type="submit" className="btn btn-primary">
+          Zaloguj
+        </button>
       </form>
     </div>
   );
