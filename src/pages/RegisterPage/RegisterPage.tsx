@@ -1,15 +1,28 @@
 import axios from 'axios';
+import { Validator, useEffect } from 'react';
 import React, { useState } from 'react';
+import { render } from 'react-dom';
+
 import { Link, redirect, useNavigate } from 'react-router-dom';
 
 const backendURL = 'https://localhost/api/v1';
-
 function RegisterPage() {
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regPasswordRepeat, setRegPasswordRepeat] = useState('');
   const [regError, setRegError] = useState(null);
+  const [isValid, setIsValid] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const validateEmail = () => {
+      const regex = /^\S+@\S+\.\S+$/;
+      const valid = regex.test(regEmail);
+      setIsValid(valid);
+    };
+
+    validateEmail();
+  }, [regEmail]);
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
@@ -25,17 +38,20 @@ function RegisterPage() {
       .then((res) => {
         if (res.status === 200) {
           console.log(res);
+          alert('Rejestracja powiodła się');
           navigate('/login?registerSuccess=true');
         }
       })
       .catch((err) => {
         // Info if error
+
         setRegError(err.response.data.error);
+        console.log(regError);
       });
   };
 
   return (
-    <div className="text-center float-start" style={{ marginLeft: 50 }}>
+    <div className="text-center float-start shadow-lg p-3 mb-5 bg-white rounded" style={{ marginLeft: 50 }}>
       <h3>Rejestracja</h3>
       <form onSubmit={handleSubmit}>
         <label>
@@ -83,7 +99,13 @@ function RegisterPage() {
         </button>
       </form>
       <Link to={'/login'}>Logowanie</Link>
-      <p className="text-danger">{regError}</p>
+      {!isValid && <p className="alert alert-danger">Wprowadź poprawny email.</p>}
+      {regPassword != regPasswordRepeat && regPasswordRepeat != '' && (
+        <p className="alert alert-danger">
+          {' '}
+          Hasłą nie są identyczne <br />{' '}
+        </p>
+      )}
     </div>
   );
 }

@@ -42,7 +42,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="text-center float-start">
+    <div className="text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
       <h3>Login</h3>
       <form onSubmit={handleSubmit}>
         <label>
@@ -72,12 +72,12 @@ const LoginPage = () => {
           />
         </label>
         <br />
-        <button type="submit" className="btn btn-primary" onSubmit={handleSubmit}>
+        <button type="submit" className="btn btn-primary mt-10" onSubmit={handleSubmit}>
           Login
         </button>
       </form>
       <Link to={'/Register'}>Rejestracja</Link>
-      <p className="text-danger">{logError}</p>
+      {logError != null && <p className="alert alert-danger">Błędne hasło lub Email</p>}
     </div>
   );
 };

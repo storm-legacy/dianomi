@@ -15,6 +15,7 @@ import { authAtom } from './states/auth';
 
 import './App.css';
 import { useAuthHelper } from './helpers/authHelper';
+import UserDashboardPage from './pages/UserDashboard/UserDashboard';
 
 function App() {
   const authHelper = useAuthHelper();
