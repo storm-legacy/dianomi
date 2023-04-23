@@ -42,7 +42,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
+    <div className="position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
       <h3>Login</h3>
       <form onSubmit={handleSubmit}>
         <label>

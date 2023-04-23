@@ -17,6 +17,9 @@ import './App.css';
 import { useAuthHelper } from './helpers/authHelper';
 import UserDashboardPage from './pages/UserDashboard/UserDashboard';
 
+import { ProfilePage } from './pages/ProfilePage/ProfilePage';
+import SidePanel from './pages/SidePanel/SidePanel';
+
 function App() {
   const authHelper = useAuthHelper();
   const auth = useRecoilValue(authAtom);
@@ -33,32 +36,31 @@ function App() {
               path="/"
               element={
                 <Protected isLoggedIn={isLogged}>
-                  <ul>
-                    <li>
-                      <Link to="/routeNormal">Normal user route</Link>
-                    </li>
-                    <li>
-                      <Link to="/routePremium">Premium user route</Link>
-                    </li>
-                    <li>
-                      <Link to="/routeAdmin">Admin user route</Link>
-                    </li>
-                    <br />
-                    <button
-                      onClick={() => {
-                        authHelper.logout({
-                          callback: () => {
-                            window.location.reload();
-                          },
-                        });
-                      }}
-                    >
-                      Logout
-                    </button>
-                  </ul>
+                  <SidePanel />
+                  <UserDashboardPage />
                 </Protected>
               }
             />
+            <Route
+              path="/UserDashbord"
+              element={
+                <Protected isLoggedIn={isLogged}>
+                  <SidePanel />
+                  <UserDashboardPage />
+                </Protected>
+              }
+            />
+
+            <Route
+              path="/ProfilePage"
+              element={
+                <Protected isLoggedIn={isLogged}>
+                  <SidePanel />
+                  <ProfilePage />
+                </Protected>
+              }
+            />
+
             <Route
               path="/routeNormal"
               element={
