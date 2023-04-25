@@ -1,3 +1,6 @@
+-- * 
+-- * USER TABLES
+-- * 
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
@@ -48,4 +51,120 @@ CREATE TABLE revoked_tokens (
       REFERENCES users(id)
       ON UPDATE CASCADE
       ON DELETE CASCADE
+);
+
+-- *
+-- * VIDEO RELATED TABLES
+-- *
+
+CREATE TABLE categories (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE tags (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE 
+);
+
+CREATE TABLE video (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(128) NOT NULL UNIQUE,
+  description VARCHAR(512) NOT NULL,
+  author_id BIGINT NOT NULL,
+  category_id BIGINT NOT NULL,
+  upvotes BIGINT NOT NULL DEFAULT 0,
+  downvotes BIGINT NOT NULL DEFAULT 0,
+  views BIGINT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+  CONSTRAINT fk_author_video
+    FOREIGN KEY (author_id)
+    REFERENCES users(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE,
+  CONSTRAINT fk_category_video
+    FOREIGN KEY (category_id)
+    REFERENCES categories(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE
+);
+
+CREATE TABLE video_categories (
+  id BIGSERIAL PRIMARY KEY,
+  video_id BIGSERIAL,
+  category_id BIGSERIAL,
+  CONSTRAINT fk_video_categories
+    FOREIGN KEY (video_id)
+    REFERENCES video(id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+);
+
+CREATE TABLE video_tags (
+  id BIGSERIAL PRIMARY KEY,
+  video_id BIGSERIAL,
+  tag_id BIGSERIAL,
+  CONSTRAINT fk_video_tags
+    FOREIGN KEY (video_id)
+    REFERENCES video(id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+);
+
+
+CREATE TYPE RESOLUTION AS ENUM ('360p', '480p', '720p');
+CREATE TABLE video_files (
+  id BIGSERIAL PRIMARY KEY,
+  video_id BIGINT NOT NULL,
+  file_size BIGINT NOT NULL,
+  duration INT NOT NULL,
+  resolution RESOLUTION NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+  CONSTRAINT fk_video_files
+    FOREIGN KEY (video_id)
+    REFERENCES video(id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+);
+
+CREATE TABLE video_thumbnails (
+  id BIGSERIAL PRIMARY KEY,
+  video_id BIGINT NOT NULL,
+  file_size INT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+  CONSTRAINT fk_video_thumbnails
+    FOREIGN KEY (video_id)
+    REFERENCES video(id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+);
+
+-- *
+-- * USER ACTIVITY
+-- *
+
+CREATE TABLE user_video_metrics (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  video_id BIGINT NOT NULL,
+  time_spent_watching INT NOT NULL,
+  stopped_at INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  CONSTRAINT fk_metrics_user 
+    FOREIGN KEY (user_id)
+    REFERENCES users(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE,
+  CONSTRAINT fk_metrics_video
+    FOREIGN KEY (video_id)
+    REFERENCES video(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE
 );
