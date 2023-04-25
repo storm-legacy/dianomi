@@ -8,19 +8,22 @@ main{
 }
 .dashbord
 {
-    width: 95%;
+    margin-left: 10vw;
+    width: 1000vw;
+    width: 100%;
+    
 }
 .cardMY
 {
-    width: 18rem;
+    min-width: 18rem;
+    max-width: 28rem;
     margin: 2rem;
-    float: left;
 
 }
 .sidebar{
     
     margin-left: -1.5vw;
-    background: #000;
+    background: #0D6EFD;
     color: #fff;
     height: 100vh;
     width: 200px;
@@ -57,5 +60,15 @@ main{
 }
 .icon, .link_text{
     font-size: 20px;
+}
+
+.dci:hover{
+    background:lightskyblue;
+    color: #000;
+    transition: all 0.5s;
+}
+.dci{
+    background: lightskyblue;
+    color: #000;
 }
 

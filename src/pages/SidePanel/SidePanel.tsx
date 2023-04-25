@@ -4,7 +4,8 @@ import { FaTh, FaUserAlt, FaBars } from 'react-icons/fa';
 import { useAuthHelper } from '../../helpers/authHelper';
 import { authAtom } from '../../states/auth';
 import { useRecoilValue } from 'recoil';
-
+import { BiLogOut } from 'react-icons/bi';
+import '../../App.css';
 const SidePanel = () => {
   const authHelper = useAuthHelper();
   const auth = useRecoilValue(authAtom);
@@ -35,20 +36,31 @@ const SidePanel = () => {
               </div>
             </NavLink>
           ))}
+          <button
+            style={{
+              backgroundColor: '#0D6EFD',
+              width: '100%',
+              height: '70%',
+              color: 'white',
+            }}
+            className="link dci"
+            onClick={() => {
+              authHelper.logout({
+                callback: () => {
+                  window.location.reload();
+                },
+              });
+            }}
+          >
+            <i className="icon">
+              <BiLogOut></BiLogOut>
+            </i>
+            <p style={{ display: isOpen ? 'block' : 'none' }} className="link_text">
+              wylogój
+            </p>
+          </button>
         </div>
       </div>
-      <button
-        className="position-absolute top-0 start-100 translate-middle"
-        onClick={() => {
-          authHelper.logout({
-            callback: () => {
-              window.location.reload();
-            },
-          });
-        }}
-      >
-        Logout
-      </button>
     </>
   );
 };

@@ -1,51 +1,53 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import Logo from '../../img/OIP.jpg';
+// narazie na stywno dodane i tak jak mówiłeś id do sieżki nazwa opis i autor problem jest z flexem by ładnie sie ustawiały ale jak na razie styknie
 const UserDashboardPage = () => {
   const divItem = [
     {
       id: '1',
       name: 'wideo1',
-      description: 'Lorens ipsum',
-      author_id: 'Lorens',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi gravida massa mauris, id ',
+      author_id: 'domino jachaś',
     },
     {
       id: '2',
       name: 'wideo2',
-      description: 'Lorens ipsum',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi gravida massa mauris, id  ',
       author_id: 'Lorens',
     },
     {
       id: '3',
       name: 'wideo3',
-      description: 'Lorens ipsum',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi gravida massa mauris, ',
       author_id: 'Lorens',
     },
     {
       id: '4',
       name: 'wideo4',
-      description: 'Lorens ipsum',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi gravida massa mauris,  ',
       author_id: 'Lorens',
     },
   ];
   return (
-    <>
-      <div className="dashbord  d-flex align-items-center">
+    <div className="container">
+      <div className="dashbord row d-flex align-items-center">
         {divItem.map((item, index) => (
-          <div key={index} className="card cardMY d-flex justify-content-center">
+          <NavLink to="/" key={index} className="card cardMY col-4 justify-content-center">
             <div className="p-2">
-              <img src="..." className="card-img-top" alt="..." />
+              <img src="..." className="card-img-top" alt="logo kursu" />
               <div className="card-body">
                 <p className="card-text">
                   <h5>{item.name}</h5>
                   <p>{item.description}</p>
-                  <p>{item.author_id}</p>
+                  <p>Autor:{item.author_id}</p>
                 </p>
               </div>
             </div>
-          </div>
+          </NavLink>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 
