@@ -43,7 +43,7 @@ const SidePanel = () => {
               height: '70%',
               color: 'white',
             }}
-            className="link dci"
+            className="link"
             onClick={() => {
               authHelper.logout({
                 callback: () => {

@@ -15,8 +15,9 @@ main{
 }
 .cardMY
 {
-    min-width: 18rem;
-    max-width: 28rem;
+    width: 18rem;
+    height: 24vh;
+    overflow:hidden;
     margin: 2rem;
 
 }

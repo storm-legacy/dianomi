@@ -31,9 +31,9 @@ const UserDashboardPage = () => {
   ];
   return (
     <div className="container">
-      <div className="dashbord row d-flex align-items-center">
+      <div className="dashbord  d-flex align-items-center">
         {divItem.map((item, index) => (
-          <NavLink to="/" key={index} className="card cardMY col-4 justify-content-center">
+          <NavLink to="/" key={index} className="card cardMY justify-content-center">
             <div className="p-2">
               <img src="..." className="card-img-top" alt="logo kursu" />
               <div className="card-body">
