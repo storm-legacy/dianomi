@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/storm-legacy/dianomi/pkg/config"
 	"golang.org/x/crypto/argon2"
 )
 
@@ -26,6 +27,14 @@ var a2params = &argon2Params{
 	parallelism: 2,
 	saltLength:  16,
 	keyLength:   32,
+}
+
+func init() {
+	a2params.memory = uint32(config.GetInt("A2ID_MEMORY", 65536))
+	a2params.iterations = uint32(config.GetInt("A2ID_ITERATIONS", 3))
+	a2params.parallelism = uint8(config.GetInt("A2ID_PARALLELISM", 2))
+	a2params.saltLength = uint32(config.GetInt("A2ID_SALT_LENGTH", 16))
+	a2params.keyLength = uint32(config.GetInt("A2ID_KEY_LENGTH", 32))
 }
 
 // Generate Argon2id standard encoded string from password
@@ -123,5 +132,3 @@ func ComparePasswordAndHash(password *string, encodedHash *string) (match bool, 
 
 	return false, nil
 }
-
-func main() {}

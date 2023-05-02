@@ -4,54 +4,72 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"time"
 
+	// "github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt/v5"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/xid"
 	"github.com/storm-legacy/dianomi/pkg/config"
 )
 
 var (
-	publicKey  ed25519.PublicKey
 	privateKey ed25519.PrivateKey
-
-	jwtExpiredIn time.Duration
-	// jwtMaxAge    time.Duration
+	jwtExp     time.Duration
+	jwtIssuer  string
 )
 
 func init() {
+	var err error
+	jwtIssuer = config.GetString("APP_JWT_ISSUER", "development")
 
-	// Check for ed25519 private key and generate if needed
-	privateKeyBase64 := config.GetString("APP_JWT_EDDSA_PRIVATE_KEY")
-	privateKey, _ = base64.StdEncoding.DecodeString(privateKeyBase64)
-	publicKeyBase64 := config.GetString("APP_JWT_EDDSA_PUBLIC_KEY")
-	publicKey, _ = base64.StdEncoding.DecodeString(publicKeyBase64)
-
-	// Generate key pair if any empty
-	if len(privateKey) != 64 || len(publicKey) != 32 {
-		publicKey, privateKey, _ = ed25519.GenerateKey(rand.Reader)
-		publicKeyBase64 = base64.StdEncoding.EncodeToString(publicKey)
-		privateKeyBase64 = base64.StdEncoding.EncodeToString(privateKey)
-		config.Set("APP_JWT_EDDSA_PUBLIC_KEY", publicKeyBase64)
-		log.WithFields(log.Fields{"privateKey": privateKeyBase64, "publicKey": publicKeyBase64}).Warn("Wrong or missing values for JWT, keys were auto-generated")
-	} else {
-		log.WithFields(log.Fields{"privateKey": privateKeyBase64, "publicKey": publicKeyBase64}).Debug("Loaded private and public keys")
+	jwtExp, err = time.ParseDuration(config.GetString("APP_JWT_EXPIRED_IN", "60m"))
+	if err != nil {
+		panic(err)
 	}
 
-	// Load durations
-	jwtExpiredIn, _ = time.ParseDuration(config.GetString("APP_JWT_EXPIRED_IN"))
-	// jwtMaxAge, _ = time.ParseDuration(config.GetString("APP_JWT_MAXAGE"))
+	privateKeyBase64 := config.GetString("APP_JWT_EDDSA_PRIVATE_KEY", "")
+	// No key in .env
+	if len(privateKeyBase64) == 0 {
+		_, privateKey, _ = ed25519.GenerateKey(rand.Reader)
+		return
+	}
+	// decode
+	privateKey, err = base64.StdEncoding.DecodeString(privateKeyBase64)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func ParseToken(token string) (claims jwt.MapClaims, err error) {
-	// Check if provided token was signed with ed25519
+func GenerateToken(userID uint64, customClaims ...map[string]string) (string, error) {
+	// Baseline claims
+	now := time.Now().UTC()
+	claims := jwt.MapClaims{
+		"jti": xid.New().String(),
+		"iss": jwtIssuer,
+		"aud": jwtIssuer,
+		"iat": now.Unix(),
+		"nbf": now.Unix(),
+		"exp": now.Add(jwtExp).Unix(),
+		"sub": userID,
+	}
+	// Additional claims
+	for _, customClaimsArr := range customClaims {
+		for key, claim := range customClaimsArr {
+			claims[key] = claim
+		}
+	}
+	// Sign, encrypt and return token
+	res := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
+	return res.SignedString(privateKey)
+}
+
+func ExtractClaims(token string) (*jwt.MapClaims, error) {
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodEd25519); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return publicKey, nil
+		return privateKey.Public(), nil
 	})
 
 	// Check if any error occured
@@ -60,31 +78,34 @@ func ParseToken(token string) (claims jwt.MapClaims, err error) {
 	}
 
 	// Extract claims
-	var ok bool
-	claims, ok = parsedToken.Claims.(jwt.MapClaims)
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok || !parsedToken.Valid {
-		return nil, errors.New("claims could not be extracted")
+		return nil, fmt.Errorf("claims could not be extracted")
 	}
 
-	return claims, nil
+	return &claims, nil
 }
 
-func GenerateToken(id int64, email string, role string) (result string, err error) {
-	// Generate token string for user
-	now := time.Now().UTC()
-	claims := jwt.MapClaims{
-		"sub":   id,
-		"exp":   now.Add(jwtExpiredIn).Unix(),
-		"iat":   now.Unix(),
-		"nbf":   now.Unix(),
-		"email": email,
-		"role":  role,
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
-	result, err = token.SignedString(privateKey)
-	if err != nil {
-		return "", err
-	}
+// func EncryptToken(token string) (string, error) {
+// 	encrypter, err := jose.NewEncrypter(jose.A128GCM, jose.Recipient{Algorithm: jose.ED25519, Key: privateKey.Public()}, nil)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	object, err := encrypter.Encrypt([]byte(token))
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return object.CompactSerialize()
+// }
 
-	return result, nil
-}
+// func DecryptToken(encryptedToken string) (string, error) {
+// 	object, err := jose.ParseEncrypted(encryptedToken)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	decrypted, err := object.Decrypt(privateKey)
+// 	if err != nil {
+// 		return "", nil
+// 	}
+// 	return string(decrypted), nil
+// }

@@ -1,9 +1,14 @@
-package routes
+package controllers
 
 import (
 	"runtime"
 
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/exp/slices"
+)
+
+var (
+	whitelist = []string{"127.0.0.1"}
 )
 
 // Utility functions
@@ -18,6 +23,11 @@ func Healthcheck(c *fiber.Ctx) error {
 
 // Some informations about service usage
 func InternalHealthcheck(c *fiber.Ctx) error {
+	// Whitelist only for localhost
+	if !slices.Contains(whitelist, c.IP()) {
+		return c.SendStatus(fiber.StatusNotFound)
+	}
+	// Calculate application data usage
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{

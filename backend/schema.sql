@@ -10,7 +10,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE TYPE ROLE AS ENUM ('free', 'premium', 'administrator');
+CREATE TYPE ROLE AS ENUM ('premium', 'administrator');
 CREATE TABLE users_packages (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -39,18 +39,6 @@ CREATE TABLE verification (
       REFERENCES users(id)
       ON UPDATE CASCADE
       ON DELETE SET NULL
-);
-
-CREATE TABLE revoked_tokens (
-  id BIGSERIAL PRIMARY KEY,
-  token VARCHAR(1024) NOT NULL UNIQUE,
-  user_id BIGINT NOT NULL,
-  valid_until TIMESTAMP WITH TIME ZONE NOT NULL,
-  CONSTRAINT fk_user_revoked_token
-    FOREIGN KEY(user_id)
-      REFERENCES users(id)
-      ON UPDATE CASCADE
-      ON DELETE CASCADE
 );
 
 -- *

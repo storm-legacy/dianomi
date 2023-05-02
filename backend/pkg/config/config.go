@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"math"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -32,24 +33,52 @@ func init() {
 	Set("PG_CONNECTION_STRING", connectionString)
 }
 
-func Get(targetEnvVar string) interface{} {
-	return viper.Get(targetEnvVar)
+func GetString(targetEnvVar string, defaultValue ...string) string {
+	if viper.IsSet(targetEnvVar) {
+		return viper.GetString(targetEnvVar)
+	} else {
+		for _, value := range defaultValue {
+			return value
+		}
+		log.WithField("field", targetEnvVar).Panic("Environment variable is not set")
+		return ""
+	}
 }
 
-func GetString(targetEnvVar string) string {
-	return viper.GetString(targetEnvVar)
+func GetBool(targetEnvVar string, defaultValue ...bool) bool {
+	if viper.IsSet(targetEnvVar) {
+		return viper.GetBool(targetEnvVar)
+	} else {
+		for _, value := range defaultValue {
+			return value
+		}
+		log.WithField("field", targetEnvVar).Panic("Environment variable is not set")
+		return false
+	}
 }
 
-func GetBool(targetEnvVar string) bool {
-	return viper.GetBool(targetEnvVar)
+func GetInt(targetEnvVar string, defaultValue ...int) int {
+	if viper.IsSet(targetEnvVar) {
+		return viper.GetInt(targetEnvVar)
+	} else {
+		for _, value := range defaultValue {
+			return value
+		}
+		log.WithField("field", targetEnvVar).Panic("Environment variable is not set")
+		return math.MinInt
+	}
 }
 
-func GetInt(targetEnvVar string) int {
-	return viper.GetInt(targetEnvVar)
-}
-
-func GetFloat(targetEnvVar string) float64 {
-	return viper.GetFloat64(targetEnvVar)
+func GetFloat(targetEnvVar string, defaultValue ...float64) float64 {
+	if viper.IsSet(targetEnvVar) {
+		return viper.GetFloat64(targetEnvVar)
+	} else {
+		for _, value := range defaultValue {
+			return value
+		}
+		log.WithField("field", targetEnvVar).Panic("Environment variable is not set")
+		return math.SmallestNonzeroFloat64
+	}
 }
 
 func Set(targetEnvVar string, value string) {
