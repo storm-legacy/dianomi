@@ -25,12 +25,16 @@ func main() {
 
 	// * Authentication group
 	auth := api.Group("auth")
-	auth.Post("/publickey", authCtrl.PublicKey)
-	auth.Post("/verify", ctrl.NotImplemented)
+	// auth.Get("/publickey", authCtrl.PublicKey)
+	auth.Post("/verify", mid.AuthMiddleware, authCtrl.Verify)
 	auth.Post("/login", authCtrl.Login)
 	auth.Post("/register", authCtrl.Register)
 	auth.Post("/refresh", mid.AuthMiddleware, authCtrl.Refresh)
 	auth.Post("/logout", mid.AuthMiddleware, authCtrl.Logout)
+
+	// * MINIO S3
+	auth.Post("/minio", authCtrl.Minio)
+	auth.Head("/minio", func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusNoContent) })
 
 	// * User group
 	user := api.Group("user", mid.AuthMiddleware)

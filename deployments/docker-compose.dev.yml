@@ -87,6 +87,30 @@ services:
     volumes:
       - ../backend:/src:rw
 
+  minio:
+    image: quay.io/minio/minio:latest
+    hostname: minio-s3
+    restart: *RESTART_POLICY
+    command: server --console-address ":9001" /data
+    networks:
+      reverse-proxy-net: {}
+    ports:
+      - 9000:9000/tcp
+      - 9001:9001/tcp
+    volumes:
+      - ./minio-s3/:/data:rw
+    environment:
+      MINIO_CONFIG_ENV_FILE: "/etc/config.env"
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: Qwerty123!
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+      MINIO_SERVER_URL: http://localhost:9000
+      MINIO_IDENTITY_PLUGIN_URL: http://server:3000/api/v1/auth/minio
+      MINIO_IDENTITY_PLUGIN_ROLE_POLICY: consoleAdmin
+      MINIO_IDENTITY_PLUGIN_TOKEN: Bearer TOKEN
+      MINIO_IDENTITY_PLUGIN_ROLE_ID: dianomi-server-auth
+      MINIO_IDENTITY_PLUGIN_COMMENT: DianomiTV JWT
+
   # DATABASE
   db:
     image: postgres:15.2-alpine
@@ -102,18 +126,17 @@ services:
       - ../backend/fresh.sql:/docker-entrypoint-initdb.d/01_fresh.sql:ro
     env_file:
       - ../backend/.env
-
-  pgadmin:
-    image: dpage/pgadmin4:6
-    restart: *RESTART_POLICY
-    hostname: pgadmin
-    networks:
-      db-net: {}
-    ports:
-      - 127.0.0.1:8081:80/tcp
-    volumes:
-      - pgadmin:/var/lib/pgadmin:rw
-    env_file:
-      - ../backend/.env
-    environment:
-      GUNICORN_ACCESS_LOGFILE: '/dev/null'
+  # pgadmin:
+  #   image: dpage/pgadmin4:6
+  #   restart: *RESTART_POLICY
+  #   hostname: pgadmin
+  #   networks:
+  #     db-net: {}
+  #   ports:
+  #     - 127.0.0.1:8081:80/tcp
+  #   volumes:
+  #     - pgadmin:/var/lib/pgadmin:rw
+  #   env_file:
+  #     - ../backend/.env
+  #   environment:
+  #     GUNICORN_ACCESS_LOGFILE: '/dev/null'

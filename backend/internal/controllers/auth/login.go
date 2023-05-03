@@ -101,6 +101,8 @@ func Login(c *fiber.Ctx) error {
 		Status: "success",
 		Data: fiber.Map{
 			"token": token,
+			"email": userData.Email,
+			"role":  role,
 		},
 	})
 }

@@ -3,7 +3,7 @@ root = "."
 tmp_dir = "_tmp"
 
 [build]
-cmd = "GOCACHE=/src/_tmp/.cache go build -buildvcs=false -o ./_tmp/dianomi-server ./cmd/dianomi-server/main.go"
+cmd = "GOCACHE=/src/_tmp/.cache go build -buildvcs=false -o ./_tmp/dianomi-server ./main.go"
 bin = "_tmp/dianomi-server"
 full_bin = "APP_ENV=dev APP_USER=air ./_tmp/dianomi-server"
 include_ext = ["go", "tpl", "tmpl", "html", "env"]

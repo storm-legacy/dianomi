@@ -1,10 +1,10 @@
 PWD=$(shell pwd)
 
 start:
-	docker compose -f deployments/docker-compose.dev.yml up -d client server db traefik
+	docker compose -f deployments/docker-compose.dev.yml up -d
 
 startf:
-	docker compose -f deployments/docker-compose.dev.yml up client server db traefik
+	docker compose -f deployments/docker-compose.dev.yml up
 
 start_proxy:
 	docker compose -f deployments/docker-compose.dev.yml up -d traefik
