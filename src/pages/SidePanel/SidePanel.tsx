@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FaTh, FaUserAlt, FaBars } from 'react-icons/fa';
+import { GrUserAdmin } from 'react-icons/gr';
 import { useAuthHelper } from '../../helpers/authHelper';
 import { authAtom } from '../../states/auth';
 import { useRecoilValue } from 'recoil';
@@ -13,8 +14,9 @@ const SidePanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const menuItem = [
-    { path: '/UserDashbord', name: 'dashbord', icon: <FaTh /> },
-    { path: '/ProfilePage', name: 'ProfilePage', icon: <FaUserAlt /> },
+    { path: '/UserDashbord', name: 'Strona główna', icon: <FaTh /> },
+    { path: '/ProfilePage', name: 'Progil', icon: <FaUserAlt /> },
+    { path: '/AdminPanel', name: 'Admin', icon: <GrUserAdmin /> },
   ];
   return (
     <>

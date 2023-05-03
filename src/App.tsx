@@ -19,6 +19,8 @@ import UserDashboardPage from './pages/UserDashboard/UserDashboard';
 
 import { ProfilePage } from './pages/ProfilePage/ProfilePage';
 import SidePanel from './pages/SidePanel/SidePanel';
+import { AdminPanel } from './pages/AdminPanel/AdminPanel';
+import { VideoAdd } from './pages/AdminPanel/AdminPages/VideoAdd';
 
 function App() {
   const authHelper = useAuthHelper();
@@ -82,6 +84,24 @@ function App() {
               element={
                 <Protected isLoggedIn={isLogged}>
                   <RouteAdmin />
+                </Protected>
+              }
+            />
+            <Route
+              path="/AdminPanel"
+              element={
+                <Protected isLoggedIn={isLogged}>
+                  <SidePanel />
+                  <AdminPanel />
+                </Protected>
+              }
+            />
+            <Route
+              path="/VideoAdd"
+              element={
+                <Protected isLoggedIn={isLogged}>
+                  <SidePanel />
+                  <VideoAdd />
                 </Protected>
               }
             />
