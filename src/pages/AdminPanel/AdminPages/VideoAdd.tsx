@@ -47,7 +47,12 @@ export const VideoAdd = () => {
           </label>
           <label>
             <p>Plik</p>
-            <input className="form-control" type="file" aria-describedby="basic-addon1" value={videoFile} />
+            <input
+              className="form-control"
+              type="file"
+              value={videoFile}
+              onChange={(event) => setVideoFile(event.target.value)}
+            />
           </label>
           <label>
             <p>Autor</p>

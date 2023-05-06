@@ -21,6 +21,7 @@ import { ProfilePage } from './pages/ProfilePage/ProfilePage';
 import SidePanel from './pages/SidePanel/SidePanel';
 import { AdminPanel } from './pages/AdminPanel/AdminPanel';
 import { VideoAdd } from './pages/AdminPanel/AdminPages/VideoAdd';
+import UserList from './pages/AdminPanel/AdminPages/UserList';
 
 function App() {
   const authHelper = useAuthHelper();
@@ -59,6 +60,15 @@ function App() {
                 <Protected isLoggedIn={isLogged}>
                   <SidePanel />
                   <ProfilePage />
+                </Protected>
+              }
+            />
+            <Route
+              path="/UserList"
+              element={
+                <Protected isLoggedIn={isLogged}>
+                  <SidePanel />
+                  <UserList />
                 </Protected>
               }
             />

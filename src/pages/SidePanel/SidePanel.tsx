@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FaTh, FaUserAlt, FaBars } from 'react-icons/fa';
-import { GrUserAdmin } from 'react-icons/gr';
+import { RiAdminFill } from 'react-icons/ri';
 import { useAuthHelper } from '../../helpers/authHelper';
 import { authAtom } from '../../states/auth';
 import { useRecoilValue } from 'recoil';
@@ -16,7 +16,7 @@ const SidePanel = () => {
   const menuItem = [
     { path: '/UserDashbord', name: 'Strona główna', icon: <FaTh /> },
     { path: '/ProfilePage', name: 'Progil', icon: <FaUserAlt /> },
-    { path: '/AdminPanel', name: 'Admin', icon: <GrUserAdmin /> },
+    { path: '/AdminPanel', name: 'Admin', icon: <RiAdminFill /> },
   ];
   return (
     <>

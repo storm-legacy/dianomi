@@ -5,7 +5,7 @@ import { RecoilRoot } from 'recoil';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
-
+document.title = 'DianomiTV';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <RecoilRoot>

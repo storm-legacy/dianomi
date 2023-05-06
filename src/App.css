@@ -1,6 +1,16 @@
 
 .container{
     display:flex;
+    
+}
+.myRowCont
+{
+    max-height: 90vh;
+}
+.myRow
+{
+    width: 80vw;
+    
 }
 main{
     width: 100%;
