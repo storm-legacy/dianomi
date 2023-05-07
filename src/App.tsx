@@ -11,10 +11,9 @@ import RouteNormal from './pages/RouteNormal/RouteNormal';
 import RoutePremium from './pages/RoutePremium/RoutePremium';
 import RouteAdmin from './pages/RouteAdmin/RouteAdmin';
 
-import { authAtom } from './states/auth';
+import { currentUserAtom } from './states/auth.state';
 
 import './App.css';
-import { useAuthHelper } from './helpers/authHelper';
 import UserDashboardPage from './pages/UserDashboard/UserDashboard';
 
 import { ProfilePage } from './pages/ProfilePage/ProfilePage';
@@ -24,9 +23,8 @@ import { VideoAdd } from './pages/AdminPanel/AdminPages/VideoAdd';
 import UserList from './pages/AdminPanel/AdminPages/UserList';
 
 function App() {
-  const authHelper = useAuthHelper();
-  const auth = useRecoilValue(authAtom);
-  const isLogged = auth ? true : false;
+  const currentUser = useRecoilValue(currentUserAtom);
+  const isLogged = currentUser.token ? true : false;
 
   return (
     <>

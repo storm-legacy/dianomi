@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import env from '../../../environment/env';
+import axios from 'axios';
 
 export const VideoAdd = () => {
   const [videoName, setVideoName] = useState('');
@@ -21,6 +23,35 @@ export const VideoAdd = () => {
     };
     console.log({ videoData });
   };
+
+  // const sendVideoHandler = async () => {
+  //   // Get token for S3
+  //   const SecretAccessKey = '';
+  //   const SessionToken = '';
+
+  //   const data = {
+  //     Action: 'AssumeRoleWithCustomToken',
+  //     Token: localStorage.getItem('accessToken'),
+  //     Version: '2011-06-05',
+  //     DurationSeconds: '3600',
+  //     RoleArn: 'arn:minio:iam:::role/idmp-dianomi-server-auth',
+  //   };
+
+  //   console.log(data);
+
+  //   // Get permissions from s3
+  //   axios
+  //     .post(`${env.S3_URL}`, data)
+  //     .then((res) => {
+  //       if (res.status === 200) {
+  //         console.log(res);
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // };
+
   return (
     <>
       <div className="position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded">

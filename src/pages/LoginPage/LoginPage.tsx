@@ -1,43 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, FormEvent } from 'react';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthHelper } from '../../helpers/authHelper';
-import { authAtom } from '../../states/auth';
 import { useRecoilState } from 'recoil';
-import axios from 'axios';
-
-const backendURL = 'https://localhost/api/v1';
+import { currentUserAtom } from '../../states/auth.state';
+import authService, { AuthResponse } from '../../services/auth.service';
+import { AxiosError } from 'axios';
 
 const LoginPage = () => {
-  const [auth, setAuth] = useRecoilState(authAtom);
+  const [currentUser, setCurrentUser] = useRecoilState(currentUserAtom);
   const navigate = useNavigate();
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [logError, setLogError] = useState(null);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
-    if (auth) navigate('/');
-  });
+    if (currentUser.token) navigate('/');
+  }, [currentUser, navigate]);
 
-  const handleSubmit = (event: any) => {
-    event.preventDefault();
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
 
-    const userData = {
-      email: loginEmail,
-      password: loginPassword,
-    };
-
-    axios
-      .post(`${backendURL}/auth/login`, userData)
-      .then((res) => {
-        if (res.status === 200) {
-          localStorage.setItem('accessToken', res.data['token']);
-          setAuth(res.data['token']);
-          navigate('/');
-        }
+    authService
+      .login(email, password)
+      .then(({ data: data }) => {
+        setCurrentUser(data.data);
+        localStorage.setItem('currentUser', JSON.stringify(data.data));
       })
-      .catch((err) => {
-        // Info if error
-        setLogError(err.response.data.error);
+      .catch((err: AxiosError) => {
+        const message = err.response?.data as AuthResponse;
+        console.error(err);
+        if (err.response?.status == 500) Notify.failure('Service is currently unavailable');
+        Notify.failure(`${message.data}`);
       });
   };
 
@@ -54,8 +47,8 @@ const LoginPage = () => {
             placeholder="email"
             aria-label="email"
             aria-describedby="email-field"
-            value={loginEmail}
-            onChange={(event) => setLoginEmail(event.target.value)}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
           />
         </label>
         <br />
@@ -67,17 +60,16 @@ const LoginPage = () => {
             placeholder="Password"
             aria-label="Password"
             aria-describedby="password-field"
-            value={loginPassword}
-            onChange={(event) => setLoginPassword(event.target.value)}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
           />
         </label>
         <br />
-        <button type="submit" className="btn btn-primary mt-10" onSubmit={handleSubmit}>
+        <button type="submit" className="btn btn-primary mt-10">
           Login
         </button>
       </form>
       <Link to={'/Register'}>Rejestracja</Link>
-      {logError != null && <p className="alert alert-danger">Błędne hasło lub Email</p>}
     </div>
   );
 };

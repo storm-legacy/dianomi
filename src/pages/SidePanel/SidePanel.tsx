@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { FaTh, FaUserAlt, FaBars } from 'react-icons/fa';
 import { RiAdminFill } from 'react-icons/ri';
-import { useAuthHelper } from '../../helpers/authHelper';
-import { authAtom } from '../../states/auth';
-import { useRecoilValue } from 'recoil';
 import { BiLogOut } from 'react-icons/bi';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { useSetRecoilState } from 'recoil';
+import { CurrentUser, currentUserAtom } from '../../states/auth.state';
+import authService from '../../services/auth.service';
 import '../../App.css';
+
 const SidePanel = () => {
-  const authHelper = useAuthHelper();
-  const auth = useRecoilValue(authAtom);
-  const isLogged = auth ? true : false;
+  const navigate = useNavigate();
+  const setCurrentUser = useSetRecoilState(currentUserAtom);
+
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const menuItem = [
@@ -18,6 +20,24 @@ const SidePanel = () => {
     { path: '/ProfilePage', name: 'Progil', icon: <FaUserAlt /> },
     { path: '/AdminPanel', name: 'Admin', icon: <RiAdminFill /> },
   ];
+
+  const handleLogout = () => {
+    authService
+      .logout()
+      .then(() => {
+        Notify.success('Logged out');
+      })
+      .catch((err) => {
+        console.error(err.message);
+        Notify.failure('Error while loging out');
+      })
+      .finally(() => {
+        navigate('/');
+        setCurrentUser({} as CurrentUser);
+        localStorage.setItem('currentUser', '');
+      });
+  };
+
   return (
     <>
       <div className="container">
@@ -46,19 +66,13 @@ const SidePanel = () => {
               color: 'white',
             }}
             className="link"
-            onClick={() => {
-              authHelper.logout({
-                callback: () => {
-                  window.location.reload();
-                },
-              });
-            }}
+            onClick={handleLogout}
           >
             <i className="icon">
               <BiLogOut></BiLogOut>
             </i>
             <p style={{ display: isOpen ? 'block' : 'none' }} className="link_text">
-              wylogój
+              Wyloguj
             </p>
           </button>
         </div>

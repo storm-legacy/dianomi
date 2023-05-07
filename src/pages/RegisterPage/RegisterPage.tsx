@@ -1,52 +1,54 @@
-import axios from 'axios';
-import { Validator, useEffect } from 'react';
-import React, { useState } from 'react';
-import { render } from 'react-dom';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { useRecoilValue } from 'recoil';
+import { currentUserAtom } from '../../states/auth.state';
+import { Link, useNavigate } from 'react-router-dom';
+import authService, { AuthResponse } from '../../services/auth.service';
+import { Notify } from 'notiflix';
+import { AxiosError } from 'axios';
 
-import { Link, redirect, useNavigate } from 'react-router-dom';
-
-const backendURL = 'https://localhost/api/v1';
 function RegisterPage() {
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regPasswordRepeat, setRegPasswordRepeat] = useState('');
-  const [regError, setRegError] = useState(null);
-  const [isValid, setIsValid] = useState(false);
+
+  const currentUser = useRecoilValue(currentUserAtom);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const validateEmail = () => {
-      const regex = /^\S+@\S+\.\S+$/;
-      const valid = regex.test(regEmail);
-      setIsValid(valid);
-    };
+    if (currentUser.token) navigate('/');
+  }, [currentUser, navigate]);
 
-    validateEmail();
-  }, [regEmail]);
-
-  const handleSubmit = (event: any) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
-    const userData = {
-      email: regEmail,
-      password: regPassword,
-      password_repeat: regPasswordRepeat,
-    };
+    const regex = /^\S+@\S+\.\S+$/;
+    const valid = regex.test(regEmail);
+    if (!valid) {
+      Notify.failure('Email is invalid');
+      return;
+    }
 
-    axios
-      .post(`${backendURL}/auth/register`, userData)
-      .then((res) => {
-        if (res.status === 200) {
-          console.log(res);
-          alert('Rejestracja powiodła się');
-          navigate('/login?registerSuccess=true');
-        }
+    if (regPassword.length < 8) {
+      Notify.failure('Password is too simple');
+      return;
+    }
+
+    if (regPassword != regPasswordRepeat) {
+      Notify.failure("Passwords doesn't match");
+      return;
+    }
+
+    authService
+      .register(regEmail, regPassword, regPasswordRepeat)
+      .then(() => {
+        Notify.success('Account successfuly registered!');
+        navigate('/');
       })
-      .catch((err) => {
-        // Info if error
-
-        setRegError(err.response.data.error);
-        console.log(regError);
+      .catch((err: AxiosError) => {
+        const message = err.response?.data as AuthResponse;
+        console.error(err);
+        if (err.response?.status == 500) Notify.failure('Service is currently unavailable');
+        Notify.failure(`${message.data}`);
       });
   };
 
@@ -99,13 +101,6 @@ function RegisterPage() {
         </button>
       </form>
       <Link to={'/login'}>Logowanie</Link>
-      {!isValid && <p className="alert alert-danger">Wprowadź poprawny email.</p>}
-      {regPassword != regPasswordRepeat && regPasswordRepeat != '' && (
-        <p className="alert alert-danger">
-          {' '}
-          Hasłą nie są identyczne <br />{' '}
-        </p>
-      )}
     </div>
   );
 }
