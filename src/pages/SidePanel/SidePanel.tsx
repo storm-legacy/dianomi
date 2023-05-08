@@ -14,8 +14,8 @@ const SidePanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const menuItem = [
-    { path: '/UserDashbord', name: 'Strona główna', icon: <FaTh /> },
-    { path: '/ProfilePage', name: 'Progil', icon: <FaUserAlt /> },
+    { path: '/UserDashbord', name: 'Home', icon: <FaTh /> },
+    { path: '/ProfilePage', name: 'Profile', icon: <FaUserAlt /> },
     { path: '/AdminPanel', name: 'Admin', icon: <RiAdminFill /> },
   ];
   return (
@@ -58,7 +58,7 @@ const SidePanel = () => {
               <BiLogOut></BiLogOut>
             </i>
             <p style={{ display: isOpen ? 'block' : 'none' }} className="link_text">
-              wylogój
+              Logout
             </p>
           </button>
         </div>

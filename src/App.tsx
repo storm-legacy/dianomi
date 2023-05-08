@@ -22,6 +22,7 @@ import SidePanel from './pages/SidePanel/SidePanel';
 import { AdminPanel } from './pages/AdminPanel/AdminPanel';
 import { VideoAdd } from './pages/AdminPanel/AdminPages/VideoAdd';
 import UserList from './pages/AdminPanel/AdminPages/UserList';
+import UserEdit from './pages/AdminPanel/AdminPages/UserEdit';
 
 function App() {
   const authHelper = useAuthHelper();
@@ -69,6 +70,15 @@ function App() {
                 <Protected isLoggedIn={isLogged}>
                   <SidePanel />
                   <UserList />
+                </Protected>
+              }
+            />
+            <Route
+              path="/UserEdit/:UserId"
+              element={
+                <Protected isLoggedIn={isLogged}>
+                  <SidePanel />
+                  <UserEdit />
                 </Protected>
               }
             />

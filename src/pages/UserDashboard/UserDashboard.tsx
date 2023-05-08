@@ -33,18 +33,18 @@ const UserDashboardPage = () => {
     <div className="container">
       <div className="dashbord  d-flex align-items-center">
         {divItem.map((item, index) => (
-          <NavLink to="/" key={index} className="card cardMY justify-content-center">
+          <Link to="/" key={index} className="card cardMY justify-content-center">
             <div className="p-2">
               <img src="..." className="card-img-top" alt="logo kursu" />
               <div className="card-body">
                 <p className="card-text">
                   <h5>{item.name}</h5>
                   <p>{item.description}</p>
-                  <p>Autor:{item.author_id}</p>
+                  <p>By:{item.author_id}</p>
                 </p>
               </div>
             </div>
-          </NavLink>
+          </Link>
         ))}
       </div>
     </div>
