@@ -18,8 +18,38 @@ SELECT * FROM users WHERE email = $1 LIMIT 1;
 -- name: CreateUser :exec
 INSERT INTO users (email, password) VALUES ($1, $2);
 
--- name: AddRevokedToken :exec
-INSERT INTO revoked_tokens (token, user_id, valid_until) VALUES ($1, $2, $3);
+-- name: AddVideo :one
+INSERT INTO video (
+  name,
+  description,
+  author_id,
+  category_id
+) VALUES ($1, $2, $3, $4)
+RETURNING *;
 
--- name: CheckToken :one
-SELECT * FROM revoked_tokens WHERE token = $1 LIMIT 1;
+-- name: AddVideoFile :exec
+INSERT INTO video_files (
+  file_path,
+  video_id,
+  file_size,
+  duration,
+  resolution
+) VALUES ($1, $2, $3, $4, $5);
+
+-- name: AddVideoThumbnail :exec
+INSERT INTO video_thumbnails (
+  video_id,
+  file_size
+) VALUES ($1, $2);
+
+-- name: AddCategory :one 
+INSERT INTO categories (name) VALUES ($1) RETURNING *;
+
+-- name: GetAllCategories :many
+SELECT * FROM categories LIMIT $1 OFFSET $2;
+
+-- name: GetTag :one
+SELECT * FROM tags WHERE id = $1 LIMIT 1;
+
+-- name: AddTag :one
+INSERT INTO tags (name) VALUES ($1) RETURNING *;

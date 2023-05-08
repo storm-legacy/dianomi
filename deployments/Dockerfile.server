@@ -1,0 +1,5 @@
+FROM cosmtrek/air:latest
+RUN set -x \
+  && apt-get update \
+  && apt-get install -y ffmpeg \
+  && apt-get clean -y && apt-get autoremove -y

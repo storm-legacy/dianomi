@@ -22,6 +22,5 @@ go.work
 
 # Custom
 .env
-tmp/
 _tmp/
 _internal/

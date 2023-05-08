@@ -57,10 +57,10 @@ CREATE TABLE tags (
 
 CREATE TABLE video (
   id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(128) NOT NULL UNIQUE,
+  name VARCHAR(128) NOT NULL,
   description VARCHAR(512) NOT NULL,
-  author_id BIGINT NOT NULL,
-  category_id BIGINT NOT NULL,
+  author_id BIGINT DEFAULT NULL,
+  category_id BIGINT DEFAULT NULL,
   upvotes BIGINT NOT NULL DEFAULT 0,
   downvotes BIGINT NOT NULL DEFAULT 0,
   views BIGINT NOT NULL DEFAULT 0,
@@ -79,17 +79,6 @@ CREATE TABLE video (
       ON UPDATE CASCADE
 );
 
-CREATE TABLE video_categories (
-  id BIGSERIAL PRIMARY KEY,
-  video_id BIGSERIAL,
-  category_id BIGSERIAL,
-  CONSTRAINT fk_video_categories
-    FOREIGN KEY (video_id)
-    REFERENCES video(id)
-      ON DELETE CASCADE
-      ON UPDATE CASCADE
-);
-
 CREATE TABLE video_tags (
   id BIGSERIAL PRIMARY KEY,
   video_id BIGSERIAL,
@@ -105,6 +94,7 @@ CREATE TABLE video_tags (
 CREATE TYPE RESOLUTION AS ENUM ('360p', '480p', '720p');
 CREATE TABLE video_files (
   id BIGSERIAL PRIMARY KEY,
+  file_path VARCHAR(255) NOT NULL UNIQUE,
   video_id BIGINT NOT NULL,
   file_size BIGINT NOT NULL,
   duration INT NOT NULL,

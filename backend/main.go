@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
+	adminVideoCtrl "github.com/storm-legacy/dianomi/internal/controllers/admin/video"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
 	mid "github.com/storm-legacy/dianomi/internal/middlewares"
 )
@@ -45,26 +46,9 @@ func main() {
 	admin := api.Group("admin", mid.AuthMiddleware, mid.AdminMiddleware)
 	admin.Post("/upload", ctrl.NotImplemented)
 
-	// TODO TO BE REMOVED
-	api.Get("/routeNormal", mid.AuthMiddleware, func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "Free user route"})
-	})
-
-	api.Get("/routePremium", mid.AuthMiddleware, func(c *fiber.Ctx) error {
-		role := c.Locals("role").(string)
-		if !(role == "administrator" || role == "premium") {
-			return c.SendStatus(fiber.StatusForbidden)
-		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "Premium user route"})
-	})
-
-	api.Get("/routeAdmin", mid.AuthMiddleware, func(c *fiber.Ctx) error {
-		role := c.Locals("role").(string)
-		if role != "administrator" {
-			return c.SendStatus(fiber.StatusForbidden)
-		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "Administrator route"})
-	})
+	// * Videos (Admin)
+	adminVideo := admin.Group("video")
+	adminVideo.Post("/", adminVideoCtrl.PostVideo)
 
 	log.Fatal(app.Listen(":3000"))
 }

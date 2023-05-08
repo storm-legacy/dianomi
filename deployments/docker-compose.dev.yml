@@ -64,7 +64,9 @@ services:
 
   # BACKEND
   server:
-    image: cosmtrek/air:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.server
     hostname: server
     restart: *RESTART_POLICY
     labels:
@@ -123,7 +125,6 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data:rw
       - ../backend/schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
-      - ../backend/fresh.sql:/docker-entrypoint-initdb.d/01_fresh.sql:ro
     env_file:
       - ../backend/.env
   # pgadmin:
