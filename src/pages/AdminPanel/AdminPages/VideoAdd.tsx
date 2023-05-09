@@ -24,11 +24,11 @@ export const VideoAdd = () => {
   return (
     <>
       <div className="position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
-        <h3>Dodaj Wideo</h3>
+        <h3>Add Video</h3>
         <p></p>
         <form onSubmit={handleSubmit} className="row">
           <label>
-            <p>Nazwa</p>
+            <p>Name</p>
             <input
               className="form-control"
               type="text"
@@ -37,7 +37,7 @@ export const VideoAdd = () => {
             />
           </label>
           <label>
-            <p>Opis</p>
+            <p>Description</p>
             <input
               className="form-control"
               type="text"
@@ -46,7 +46,7 @@ export const VideoAdd = () => {
             />
           </label>
           <label>
-            <p>Plik</p>
+            <p>File</p>
             <input
               className="form-control"
               type="file"
@@ -55,7 +55,7 @@ export const VideoAdd = () => {
             />
           </label>
           <label>
-            <p>Autor</p>
+            <p>Author</p>
             <input
               className="form-control"
               type="text"
@@ -64,7 +64,7 @@ export const VideoAdd = () => {
             />
           </label>
           <label>
-            <p>Kategoria</p>
+            <p>Categori</p>
             <input
               className="form-control"
               type="list"
@@ -79,7 +79,7 @@ export const VideoAdd = () => {
             </datalist>
           </label>
           <label>
-            <p>tag</p>
+            <p>Tag</p>
             <input
               className="form-control"
               list="TagList"
@@ -94,7 +94,7 @@ export const VideoAdd = () => {
           </label>
           <p></p>
           <button type="submit" className="btn btn-primary ">
-            Wyślij
+            Send
           </button>
         </form>
       </div>

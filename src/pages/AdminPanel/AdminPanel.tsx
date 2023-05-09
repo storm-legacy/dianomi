@@ -9,7 +9,7 @@ export const AdminPanel = () => {
             {' '}
             Add Video
           </Link>
-          <Link className="col" style={{ margin: 20 }} to={'/VideoAdd'}>
+          <Link className="col" style={{ margin: 20 }} to={'/VideoList'}>
             {' '}
             Manage Videos
           </Link>

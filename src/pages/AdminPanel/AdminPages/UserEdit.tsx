@@ -5,8 +5,7 @@ function UserEdit() {
   console.log(useParams());
   const { UserId } = useParams();
   const userIdInt = UserId ? parseInt(UserId, 10) : undefined;
-
-  return <div> czy działą </div>;
+  return <p>{userIdInt}</p>;
 }
 
 export default UserEdit;

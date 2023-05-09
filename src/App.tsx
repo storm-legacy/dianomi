@@ -23,6 +23,8 @@ import { AdminPanel } from './pages/AdminPanel/AdminPanel';
 import { VideoAdd } from './pages/AdminPanel/AdminPages/VideoAdd';
 import UserList from './pages/AdminPanel/AdminPages/UserList';
 import UserEdit from './pages/AdminPanel/AdminPages/UserEdit';
+import { VideoList } from './pages/AdminPanel/AdminPages/VideoList';
+import { VideoEdit } from './pages/AdminPanel/AdminPages/VideoEdit';
 
 function App() {
   const authHelper = useAuthHelper();
@@ -82,7 +84,24 @@ function App() {
                 </Protected>
               }
             />
-
+            <Route
+              path="/VideoList"
+              element={
+                <Protected isLoggedIn={isLogged}>
+                  <SidePanel />
+                  <VideoList />
+                </Protected>
+              }
+            />
+            <Route
+              path="/VideoEdit/:VideoId"
+              element={
+                <Protected isLoggedIn={isLogged}>
+                  <SidePanel />
+                  <VideoEdit />
+                </Protected>
+              }
+            />
             <Route
               path="/routeNormal"
               element={
