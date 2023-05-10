@@ -1,7 +1,6 @@
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import Logo from '../../img/OIP.jpg';
-// narazie na stywno dodane i tak jak mówiłeś id do sieżki nazwa opis i autor problem jest z flexem by ładnie sie ustawiały ale jak na razie styknie
+import { Link } from 'react-router-dom';
+
 const UserDashboardPage = () => {
   const divItem = [
     {
@@ -35,7 +34,7 @@ const UserDashboardPage = () => {
         {divItem.map((item, index) => (
           <Link to="/" key={index} className="card cardMY justify-content-center">
             <div className="p-2">
-              <img src="..." className="card-img-top" alt="logo kursu" />
+              <img src="./OIP.jpg" className="card-img-top" alt="logo kursu" />
               <div className="card-body">
                 <p className="card-text">
                   <h5>{item.name}</h5>

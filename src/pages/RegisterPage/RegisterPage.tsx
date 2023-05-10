@@ -1,52 +1,29 @@
-import axios from 'axios';
-import { Validator, useEffect } from 'react';
-import React, { useState } from 'react';
-import { render } from 'react-dom';
+import React, { useState, FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import authService from '../../services/auth.service';
 
-import { Link, redirect, useNavigate } from 'react-router-dom';
-
-const backendURL = 'https://localhost/api/v1';
 function RegisterPage() {
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regPasswordRepeat, setRegPasswordRepeat] = useState('');
-  const [regError, setRegError] = useState(null);
-  const [isValid, setIsValid] = useState(false);
+  const [isValid, setIsValid] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const validateEmail = () => {
-      const regex = /^\S+@\S+\.\S+$/;
-      const valid = regex.test(regEmail);
-      setIsValid(valid);
-    };
-
-    validateEmail();
-  }, [regEmail]);
-
-  const handleSubmit = (event: any) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
+    if (!/^\S+@\S+\.\S+$/.test(regEmail)) {
+      setIsValid(false);
+    }
 
-    const userData = {
-      email: regEmail,
-      password: regPassword,
-      password_repeat: regPasswordRepeat,
-    };
-
-    axios
-      .post(`${backendURL}/auth/register`, userData)
-      .then((res) => {
-        if (res.status === 200) {
-          console.log(res);
-          alert('Rejestracja powiodła się');
-          navigate('/login?registerSuccess=true');
-        }
+    const { request } = authService.register(regEmail, regPassword, regPasswordRepeat);
+    request
+      .then(() => {
+        alert('Account registered');
+        navigate('/');
       })
       .catch((err) => {
-        // Info if error
-
-        setRegError(err.response.data.error);
-        console.log(regError);
+        console.error(err.message);
+        setIsValid(false);
       });
   };
 

@@ -1,20 +1,14 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import authService from './services/auth.service';
 
 import Protected from './components/Protected';
+import ProtectedAdmin from './components/ProtectedAdmin';
+import ProtectedAuth from './components/ProtectedAuth';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import NotFoundPage from './pages/NotFound/NotFound';
 
-import RouteNormal from './pages/RouteNormal/RouteNormal';
-import RoutePremium from './pages/RoutePremium/RoutePremium';
-import RouteAdmin from './pages/RouteAdmin/RouteAdmin';
-
-import { authAtom } from './states/auth';
-
-import './App.css';
-import { useAuthHelper } from './helpers/authHelper';
 import UserDashboardPage from './pages/UserDashboard/UserDashboard';
 
 import { ProfilePage } from './pages/ProfilePage/ProfilePage';
@@ -26,22 +20,49 @@ import UserEdit from './pages/AdminPanel/AdminPages/UserEdit';
 import { VideoList } from './pages/AdminPanel/AdminPages/VideoList';
 import { VideoEdit } from './pages/AdminPanel/AdminPages/VideoEdit';
 
+import './App.css';
+import { CanceledError } from 'axios';
+
 function App() {
-  const authHelper = useAuthHelper();
-  const auth = useRecoilValue(authAtom);
-  const isLogged = auth ? true : false;
+  useEffect(() => {
+    const { request, cancel } = authService.connectionCheck();
+    request
+      .then(() => {
+        console.info('Authorized');
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        console.warn('Unauthorized');
+      });
+
+    return () => cancel();
+  }, []);
 
   return (
     <>
       <div className="container">
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/login"
+              element={
+                <ProtectedAuth>
+                  <LoginPage />
+                </ProtectedAuth>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <ProtectedAuth>
+                  <RegisterPage />
+                </ProtectedAuth>
+              }
+            />
             <Route
               path="/"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <Protected>
                   <SidePanel />
                   <UserDashboardPage />
                 </Protected>
@@ -50,7 +71,7 @@ function App() {
             <Route
               path="/UserDashbord"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <Protected>
                   <SidePanel />
                   <UserDashboardPage />
                 </Protected>
@@ -60,7 +81,7 @@ function App() {
             <Route
               path="/ProfilePage"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <Protected>
                   <SidePanel />
                   <ProfilePage />
                 </Protected>
@@ -69,79 +90,55 @@ function App() {
             <Route
               path="/UserList"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <ProtectedAdmin>
                   <SidePanel />
                   <UserList />
-                </Protected>
+                </ProtectedAdmin>
               }
             />
             <Route
               path="/UserEdit/:UserId"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <ProtectedAdmin>
                   <SidePanel />
                   <UserEdit />
-                </Protected>
+                </ProtectedAdmin>
               }
             />
             <Route
               path="/VideoList"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <ProtectedAdmin>
                   <SidePanel />
                   <VideoList />
-                </Protected>
+                </ProtectedAdmin>
               }
             />
             <Route
               path="/VideoEdit/:VideoId"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <ProtectedAdmin>
                   <SidePanel />
                   <VideoEdit />
-                </Protected>
-              }
-            />
-            <Route
-              path="/routeNormal"
-              element={
-                <Protected isLoggedIn={isLogged}>
-                  <RouteNormal />
-                </Protected>
-              }
-            />
-            <Route
-              path="/routePremium"
-              element={
-                <Protected isLoggedIn={isLogged}>
-                  <RoutePremium />
-                </Protected>
-              }
-            />
-            <Route
-              path="/routeAdmin"
-              element={
-                <Protected isLoggedIn={isLogged}>
-                  <RouteAdmin />
-                </Protected>
+                </ProtectedAdmin>
               }
             />
             <Route
               path="/AdminPanel"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <ProtectedAdmin>
                   <SidePanel />
                   <AdminPanel />
-                </Protected>
+                </ProtectedAdmin>
               }
             />
             <Route
               path="/VideoAdd"
               element={
-                <Protected isLoggedIn={isLogged}>
+                <ProtectedAdmin>
                   <SidePanel />
                   <VideoAdd />
-                </Protected>
+                </ProtectedAdmin>
               }
             />
             <Route path="*" element={<NotFoundPage />} />

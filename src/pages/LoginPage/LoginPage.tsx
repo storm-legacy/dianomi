@@ -1,44 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthHelper } from '../../helpers/authHelper';
-import { authAtom } from '../../states/auth';
-import { useRecoilState } from 'recoil';
-import axios from 'axios';
+import authService from '../../services/auth.service';
 
-const backendURL = 'https://localhost/api/v1';
+interface LoginResponse {
+  status: string;
+  data: {
+    email: string;
+    role: string;
+    token: string;
+  };
+}
 
 const LoginPage = () => {
-  const [auth, setAuth] = useRecoilState(authAtom);
-  const navigate = useNavigate();
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [logError, setLogError] = useState(null);
+  const [logError, setLogError] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (auth) navigate('/');
-  });
-
-  const handleSubmit = (event: any) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-
-    const userData = {
-      email: loginEmail,
-      password: loginPassword,
-    };
-
-    axios
-      .post(`${backendURL}/auth/login`, userData)
-      .then((res) => {
-        if (res.status === 200) {
-          localStorage.setItem('accessToken', res.data['token']);
-          setAuth(res.data['token']);
-          navigate('/');
-        }
+    const { request, cancel } = authService.login(loginEmail, loginPassword);
+    request
+      .then(({ data }: { data: LoginResponse }) => {
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('role', data.data.role);
+        localStorage.setItem('email', data.data.email);
+        navigate('/');
       })
       .catch((err) => {
-        // Info if error
-        setLogError(err.response.data.error);
+        console.error(err.message);
+        setLogError(true);
       });
+
+    return () => cancel();
   };
 
   return (
@@ -77,7 +71,7 @@ const LoginPage = () => {
         </button>
       </form>
       <Link to={'/Register'}>Rejestracja</Link>
-      {logError != null && <p className="alert alert-danger">Błędne hasło lub Email</p>}
+      {logError && <p className="alert alert-danger">Błędne hasło lub Email</p>}
     </div>
   );
 };

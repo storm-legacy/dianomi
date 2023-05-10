@@ -1,23 +1,40 @@
 import React, { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { FaTh, FaUserAlt, FaBars } from 'react-icons/fa';
 import { RiAdminFill } from 'react-icons/ri';
-import { useAuthHelper } from '../../helpers/authHelper';
-import { authAtom } from '../../states/auth';
-import { useRecoilValue } from 'recoil';
 import { BiLogOut } from 'react-icons/bi';
 import '../../App.css';
+import authService from '../../services/auth.service';
+
 const SidePanel = () => {
-  const authHelper = useAuthHelper();
-  const auth = useRecoilValue(authAtom);
-  const isLogged = auth ? true : false;
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
-  const menuItem = [
+  const role = localStorage.getItem('role');
+
+  let menuItem = [
     { path: '/UserDashbord', name: 'Home', icon: <FaTh /> },
     { path: '/ProfilePage', name: 'Profile', icon: <FaUserAlt /> },
-    { path: '/AdminPanel', name: 'Admin', icon: <RiAdminFill /> },
   ];
+
+  if (role === 'administrator') {
+    menuItem = [...menuItem, { path: '/AdminPanel', name: 'Admin', icon: <RiAdminFill /> }];
+  }
+
+  const handleLogout = () => {
+    const { request } = authService.logout();
+    request
+      .then(() => {
+        console.info('Logout');
+        localStorage.clear();
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error(err.message);
+        localStorage.clear();
+      });
+  };
+
   return (
     <>
       <div className="container">
@@ -46,13 +63,7 @@ const SidePanel = () => {
               color: 'white',
             }}
             className="link"
-            onClick={() => {
-              authHelper.logout({
-                callback: () => {
-                  window.location.reload();
-                },
-              });
-            }}
+            onClick={handleLogout}
           >
             <i className="icon">
               <BiLogOut></BiLogOut>

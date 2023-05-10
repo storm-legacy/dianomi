@@ -23,13 +23,14 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	}
 
 	// Extract claims
-	// TODO additional checks if it's internal problem
-	//			or invalid token
 	token := splitToken[1]
 	claims, err := jwt.ExtractClaims(token)
 	if err != nil {
-		log.WithField("err", err).Error("Problem with extracting token")
-		return c.SendStatus(fiber.StatusInternalServerError)
+		log.WithField("token", splitToken).Debug("Invalid authorization token")
+		return c.Status(fiber.StatusUnauthorized).JSON(mod.Response{
+			Status: "error",
+			Data:   "Invalid authorization token",
+		})
 	}
 
 	// Check if token is valid

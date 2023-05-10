@@ -19,6 +19,7 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 	api := app.Group("/api/v1")
+	api.Get("/", mid.AuthMiddleware, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
 
 	// * Healthcheck
 	api.Get("/healthcheck", ctrl.Healthcheck)
