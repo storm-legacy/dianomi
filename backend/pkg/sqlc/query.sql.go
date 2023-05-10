@@ -102,6 +102,20 @@ func (q *Queries) AddVideoFile(ctx context.Context, arg AddVideoFileParams) erro
 	return err
 }
 
+const addVideoTag = `-- name: AddVideoTag :exec
+INSERT INTO video_tags (video_id, tag_id) VALUES ($1, $2) RETURNING id, video_id, tag_id
+`
+
+type AddVideoTagParams struct {
+	VideoID int64
+	TagID   int64
+}
+
+func (q *Queries) AddVideoTag(ctx context.Context, arg AddVideoTagParams) error {
+	_, err := q.db.ExecContext(ctx, addVideoTag, arg.VideoID, arg.TagID)
+	return err
+}
+
 const addVideoThumbnail = `-- name: AddVideoThumbnail :exec
 INSERT INTO video_thumbnails (
   video_id,
@@ -207,12 +221,12 @@ func (q *Queries) GetPackagesByUserID(ctx context.Context, userID int64) ([]User
 	return items, nil
 }
 
-const getTag = `-- name: GetTag :one
-SELECT id, name FROM tags WHERE id = $1 LIMIT 1
+const getTagByName = `-- name: GetTagByName :one
+SELECT id, name FROM tags WHERE name = $1 LIMIT 1
 `
 
-func (q *Queries) GetTag(ctx context.Context, id int64) (Tag, error) {
-	row := q.db.QueryRowContext(ctx, getTag, id)
+func (q *Queries) GetTagByName(ctx context.Context, name string) (Tag, error) {
+	row := q.db.QueryRowContext(ctx, getTagByName, name)
 	var i Tag
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err

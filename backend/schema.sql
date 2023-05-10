@@ -81,8 +81,8 @@ CREATE TABLE video (
 
 CREATE TABLE video_tags (
   id BIGSERIAL PRIMARY KEY,
-  video_id BIGSERIAL,
-  tag_id BIGSERIAL,
+  video_id BIGSERIAL NOT NULL,
+  tag_id BIGSERIAL NOT NULL,
   CONSTRAINT fk_video_tags
     FOREIGN KEY (video_id)
     REFERENCES video(id)

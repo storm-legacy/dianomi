@@ -8,7 +8,25 @@ import (
 
 var (
 	Validate *validator.Validate = validator.New()
+	tagRegex *regexp.Regexp      = regexp.MustCompilePOSIX(`^[a-z]{3,12}$`)
 )
+
+func tagsValidation(fl validator.FieldLevel) bool {
+	tags := fl.Field().Interface().([]string)
+	// Limit tags number to 10
+	if len(tags) > 10 {
+		return false
+	}
+
+	// Trim tags
+	for _, tag := range tags {
+		if !tagRegex.MatchString(tag) {
+			return false
+		}
+	}
+
+	return true
+}
 
 func passwordValidation(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
@@ -43,4 +61,5 @@ func passwordValidation(fl validator.FieldLevel) bool {
 
 func init() {
 	Validate.RegisterValidation("password", passwordValidation)
+	Validate.RegisterValidation("tags", tagsValidation)
 }

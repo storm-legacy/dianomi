@@ -5,16 +5,17 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
+	mod "github.com/storm-legacy/dianomi/internal/models"
 	"github.com/storm-legacy/dianomi/pkg/config"
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
-	ffmpeg_go "github.com/u2takey/ffmpeg-go"
+	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 type VideoPostData struct {
@@ -24,7 +25,7 @@ type VideoPostData struct {
 	FileBucket  string        `json:"file_bucket" validate:"required"`
 	AuthorId    sql.NullInt64 `json:"author_id" validate:"required"`
 	CategoryId  sql.NullInt64 `json:"category_id" validate:"required"`
-	Tags        []string      `json:"tags" validate:"required"`
+	Tags        []string      `json:"tags" validate:"required,tags"`
 }
 
 func PostVideo(c *fiber.Ctx) error {
@@ -33,8 +34,7 @@ func PostVideo(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	validate := validator.New()
-	err := validate.Struct(data)
+	err := mod.Validate.Struct(data)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": fmt.Sprintf("Data validation error (%s)", err.Error()),
@@ -129,10 +129,10 @@ func addVideoAsync(data *VideoPostData) {
 	// Mux files
 	for res, ratio := range resolutions {
 		localPath := fmt.Sprintf("%s/tmp/%s_%s.mp4", storagePath, fileId, res)
-		if err := ffmpeg_go.Input(downloadedFilePath).
+		if err := ffmpeg.Input(downloadedFilePath).
 			Output(
 				localPath,
-				ffmpeg_go.KwArgs{
+				ffmpeg.KwArgs{
 					"s":   ratio,
 					"c:v": "libx265",
 				}).
@@ -205,6 +205,39 @@ func addVideoAsync(data *VideoPostData) {
 			Resolution: sqlc.Resolution(res),
 		}); err != nil {
 			log.WithField("err", err.Error()).Error("Video file couldn't be added to database")
+			return
+		}
+	}
+
+	// Trim tags and check if exists
+	// Add to database if needed and get ids to add to video
+	var tagIds []int64
+	for _, tag := range data.Tags {
+		tag = strings.TrimSpace(tag)
+		tag = strings.ToLower(tag)
+
+		dbTag, err := qtx.GetTagByName(ctx, tag)
+		if err == sql.ErrNoRows {
+			dbTag, err = qtx.AddTag(ctx, tag)
+			if err != nil {
+				log.WithField("err", err.Error()).Error("Could not add tag to database")
+				return
+			}
+		} else if err != nil {
+			log.WithField("err", err.Error()).Error("Problem getting tags from database")
+			return
+		}
+		tagIds = append(tagIds, dbTag.ID)
+	}
+	fmt.Println(tagIds)
+
+	// Attach tags to video
+	for _, tagId := range tagIds {
+		if err := qtx.AddVideoTag(ctx, sqlc.AddVideoTagParams{
+			VideoID: vid.ID,
+			TagID:   tagId,
+		}); err != nil {
+			log.WithField("err", err.Error()).Error("Problem with attaching tag to video")
 			return
 		}
 	}

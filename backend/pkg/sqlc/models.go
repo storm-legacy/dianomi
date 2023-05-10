@@ -217,8 +217,8 @@ type VideoFile struct {
 
 type VideoTag struct {
 	ID      int64
-	VideoID sql.NullInt64
-	TagID   sql.NullInt64
+	VideoID int64
+	TagID   int64
 }
 
 type VideoThumbnail struct {

@@ -24,6 +24,7 @@ func Register(c *fiber.Ctx) error {
 
 	// * VALIDATE DATA
 	userData.Email = strings.ToLower(userData.Email)
+	userData.Email = strings.TrimSpace(userData.Email)
 	// validate data
 	err = mod.Validate.Struct(userData)
 	if err != nil {

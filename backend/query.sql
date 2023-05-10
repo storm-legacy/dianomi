@@ -48,8 +48,11 @@ INSERT INTO categories (name) VALUES ($1) RETURNING *;
 -- name: GetAllCategories :many
 SELECT * FROM categories LIMIT $1 OFFSET $2;
 
--- name: GetTag :one
-SELECT * FROM tags WHERE id = $1 LIMIT 1;
+-- name: GetTagByName :one
+SELECT * FROM tags WHERE name = $1 LIMIT 1;
 
 -- name: AddTag :one
 INSERT INTO tags (name) VALUES ($1) RETURNING *;
+
+-- name: AddVideoTag :exec
+INSERT INTO video_tags (video_id, tag_id) VALUES ($1, $2) RETURNING *;
