@@ -121,7 +121,7 @@ services:
     networks:
       db-net: {}
     ports:
-      - 127.0.0.1:5432:5432/tcp
+      - 5432:5432/tcp
     volumes:
       - pgdata:/var/lib/postgresql/data:rw
       - ../backend/schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
