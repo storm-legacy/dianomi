@@ -1,25 +1,81 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { Upload } from '@aws-sdk/lib-storage';
+import { S3Client, S3 } from '@aws-sdk/client-s3';
+const s3endpoint = 'http://localhost:9000';
 
 export const VideoAdd = () => {
   const [videoName, setVideoName] = useState('');
-  const [videoFile, setVideoFile] = useState('');
-  const [videoAuthor, setVideoAuthor] = useState('');
-  const [videoCategori, setVideoCategori] = useState('');
+  const [file, setFile] = useState<File>();
+  const [videoCategory, setVideoCategory] = useState('');
   const [videoDiscription, setVideoDiscription] = useState('');
   const [videoTag, setVideoTag] = useState('');
 
-  const handleSubmit = (event: any) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
-
-    const videoData = {
-      videoName: videoName,
-      videoDiscription: videoDiscription,
-      videoAuthor: videoAuthor,
-      videoTag: videoTag,
-      videoCategori: videoCategori,
-      videoFile: videoFile,
+    const data = {
+      Action: 'AssumeRoleWithCustomToken',
+      Token: localStorage.getItem('token'),
+      Version: '2011-06-15',
+      DurationSeconds: 3600,
+      RoleArn: 'arn:minio:iam:::role/idmp-dianomi-server-auth',
     };
-    console.log({ videoData });
+
+    try {
+      const res = await axios({
+        method: 'post',
+        url: s3endpoint,
+        params: {
+          Action: 'AssumeRoleWithCustomToken',
+          Token: String(localStorage.getItem('token')),
+          Version: '2011-06-15',
+          DurationSeconds: '3600',
+          RoleArn: 'arn:minio:iam:::role/idmp-dianomi-server-auth',
+        },
+      });
+
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(res.data, 'application/xml');
+      const accessKeyId = String(xml.querySelector('AccessKeyId')?.textContent);
+      const secretAccessKey = String(xml.querySelector('SecretAccessKey')?.textContent);
+      const sessionToken = String(xml.querySelector('SessionToken')?.textContent);
+
+      if (!accessKeyId || !secretAccessKey || !sessionToken) {
+        console.error('Access credentials empty');
+        return;
+      }
+
+      const s3config = {
+        region: 'us-east-1',
+        endpoint: 'http://localhost:9000',
+        credentials: {
+          accessKeyId: accessKeyId,
+          secretAccessKey: secretAccessKey,
+          sessionToken: sessionToken,
+        },
+        forcePathStyle: true,
+      };
+
+      const parallelUploads3 = new Upload({
+        client: new S3(s3config) || new S3Client(s3config),
+        queueSize: 4,
+        leavePartsOnError: false,
+        params: {
+          ContentType: file?.type,
+          Bucket: 'uploads',
+          Key: file?.name,
+          Body: file,
+        },
+      });
+
+      parallelUploads3.on('httpUploadProgress', (progress) => {
+        console.log(progress.loaded);
+      });
+
+      await parallelUploads3.done();
+    } catch (err) {
+      console.error(err);
+    }
   };
   return (
     <>
@@ -28,7 +84,7 @@ export const VideoAdd = () => {
         <p></p>
         <form onSubmit={handleSubmit} className="row">
           <label>
-            <p>Name</p>
+            <p>Title</p>
             <input
               className="form-control"
               type="text"
@@ -49,28 +105,19 @@ export const VideoAdd = () => {
             <p>File</p>
             <input
               className="form-control"
+              id="filefield"
               type="file"
-              value={videoFile}
-              onChange={(event) => setVideoFile(event.target.value)}
+              onChange={(e) => setFile(e.target?.files?.[0])}
             />
           </label>
           <label>
-            <p>Author</p>
-            <input
-              className="form-control"
-              type="text"
-              value={videoAuthor}
-              onChange={(event) => setVideoAuthor(event.target.value)}
-            />
-          </label>
-          <label>
-            <p>Categori</p>
+            <p>Categories</p>
             <input
               className="form-control"
               type="list"
               list="CategoryList"
-              value={videoCategori}
-              onChange={(event) => setVideoCategori(event.target.value)}
+              value={videoCategory}
+              onChange={(event) => setVideoCategory(event.target.value)}
             />
             <datalist id="CategoryList">
               <option value="C++" />
@@ -87,6 +134,7 @@ export const VideoAdd = () => {
               onChange={(event) => setVideoTag(event.target.value)}
             />
             <datalist id="TagList">
+              {' '}
               <option value="1" />
               <option value="2" />
               <option value="3" />
