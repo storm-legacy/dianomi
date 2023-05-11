@@ -36,32 +36,24 @@ const addVideo = `-- name: AddVideo :one
 INSERT INTO video (
   name,
   description,
-  author_id,
   category_id
-) VALUES ($1, $2, $3, $4)
-RETURNING id, name, description, author_id, category_id, upvotes, downvotes, views, updated_at, created_at, deleted_at
+) VALUES ($1, $2, $3)
+RETURNING id, name, description, category_id, upvotes, downvotes, views, updated_at, created_at, deleted_at
 `
 
 type AddVideoParams struct {
 	Name        string
 	Description string
-	AuthorID    sql.NullInt64
 	CategoryID  sql.NullInt64
 }
 
 func (q *Queries) AddVideo(ctx context.Context, arg AddVideoParams) (Video, error) {
-	row := q.db.QueryRowContext(ctx, addVideo,
-		arg.Name,
-		arg.Description,
-		arg.AuthorID,
-		arg.CategoryID,
-	)
+	row := q.db.QueryRowContext(ctx, addVideo, arg.Name, arg.Description, arg.CategoryID)
 	var i Video
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Description,
-		&i.AuthorID,
 		&i.CategoryID,
 		&i.Upvotes,
 		&i.Downvotes,
@@ -87,7 +79,7 @@ type AddVideoFileParams struct {
 	FilePath   string
 	VideoID    int64
 	FileSize   int64
-	Duration   int32
+	Duration   int64
 	Resolution Resolution
 }
 

@@ -193,7 +193,6 @@ type Video struct {
 	ID          int64
 	Name        string
 	Description string
-	AuthorID    sql.NullInt64
 	CategoryID  sql.NullInt64
 	Upvotes     int64
 	Downvotes   int64
@@ -208,7 +207,7 @@ type VideoFile struct {
 	FilePath   string
 	VideoID    int64
 	FileSize   int64
-	Duration   int32
+	Duration   int64
 	Resolution Resolution
 	CreatedAt  sql.NullTime
 	UpdatedAt  sql.NullTime

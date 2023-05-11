@@ -22,9 +22,8 @@ INSERT INTO users (email, password) VALUES ($1, $2);
 INSERT INTO video (
   name,
   description,
-  author_id,
   category_id
-) VALUES ($1, $2, $3, $4)
+) VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: AddVideoFile :exec

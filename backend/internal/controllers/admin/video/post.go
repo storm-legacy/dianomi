@@ -3,8 +3,10 @@ package controllers
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,12 +20,19 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
+type Format struct {
+	Duration string `json:"duration"`
+}
+
+type MediaInfo struct {
+	Info Format `json:"format"`
+}
+
 type VideoPostData struct {
 	Name        string        `json:"name" validate:"required"`
 	Description string        `json:"description" validate:"required"`
 	FileName    string        `json:"file_name" validate:"required"`
 	FileBucket  string        `json:"file_bucket" validate:"required"`
-	AuthorId    sql.NullInt64 `json:"author_id" validate:"required"`
 	CategoryId  sql.NullInt64 `json:"category_id" validate:"required"`
 	Tags        []string      `json:"tags" validate:"required,tags"`
 }
@@ -160,11 +169,12 @@ func addVideoAsync(data *VideoPostData) {
 	defer db.Close()
 	// * END(DB BLOCK)
 
+	// ! TODO implement categories & thumbnails
+
 	// Add video to database
 	vid, err := qtx.AddVideo(ctx, sqlc.AddVideoParams{
 		Name:        data.Name,
 		Description: data.Description,
-		AuthorID:    data.AuthorId,
 		CategoryID:  data.CategoryId,
 	})
 	if err != nil {
@@ -196,12 +206,31 @@ func addVideoAsync(data *VideoPostData) {
 			return
 		}
 
+		// Get video information
+		jsonData, err := ffmpeg.Probe(downloadedFilePath)
+		if err != nil {
+			log.WithField("err", err.Error()).Error("Could not probe video file")
+			return
+		}
+
+		var videoInfo MediaInfo
+		err = json.Unmarshal([]byte(jsonData), &videoInfo)
+		if err != nil {
+			log.WithField("err", err.Error()).Error("Could not get stream information")
+			return
+		}
+		duration, err := strconv.ParseFloat(videoInfo.Info.Duration, 64)
+		if err != nil {
+			log.WithField("err", err.Error()).Error("Could not parse FFMPEG duration")
+			return
+		}
+
 		// Add to database
 		if err := qtx.AddVideoFile(ctx, sqlc.AddVideoFileParams{
 			FilePath:   remotePath,
 			VideoID:    vid.ID,
 			FileSize:   fileInfo.Size(),
-			Duration:   1111,
+			Duration:   int64(duration),
 			Resolution: sqlc.Resolution(res),
 		}); err != nil {
 			log.WithField("err", err.Error()).Error("Video file couldn't be added to database")
@@ -229,7 +258,6 @@ func addVideoAsync(data *VideoPostData) {
 		}
 		tagIds = append(tagIds, dbTag.ID)
 	}
-	fmt.Println(tagIds)
 
 	// Attach tags to video
 	for _, tagId := range tagIds {
