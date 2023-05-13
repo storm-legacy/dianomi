@@ -3,16 +3,22 @@ import axios from 'axios';
 import { Upload } from '@aws-sdk/lib-storage';
 import { S3Client, S3 } from '@aws-sdk/client-s3';
 const s3endpoint = 'http://localhost:9000';
+const Tendpoint = 'https://localhost/api/v1/admin/video';
 
 export const VideoAdd = () => {
   const [videoName, setVideoName] = useState('');
   const [file, setFile] = useState<File>();
   const [videoCategory, setVideoCategory] = useState('');
   const [videoDiscription, setVideoDiscription] = useState('');
-  const [videoTag, setVideoTag] = useState('');
+  const [tag, setTag] = useState('');
+  const [videoTag, setVideoTag] = useState(['']);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
+    const inputValue = tag;
+    const newValues = inputValue.split(',');
+    setVideoTag(newValues);
+    console.log(videoTag);
     const data = {
       Action: 'AssumeRoleWithCustomToken',
       Token: localStorage.getItem('token'),
@@ -73,6 +79,22 @@ export const VideoAdd = () => {
       });
 
       await parallelUploads3.done();
+
+      axios
+        .post(Tendpoint, {
+          name: videoName,
+          description: videoDiscription,
+          file_name: file?.name,
+          file_bucket: 'uploads',
+          category_id: null,
+          tags: ['test', 'anothertag', 'killmeplease'],
+        })
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     } catch (err) {
       console.error(err);
     }
@@ -130,8 +152,8 @@ export const VideoAdd = () => {
             <input
               className="form-control"
               list="TagList"
-              value={videoTag}
-              onChange={(event) => setVideoTag(event.target.value)}
+              value={tag}
+              onChange={(event) => setTag(event.target.value)}
             />
             <datalist id="TagList">
               {' '}
