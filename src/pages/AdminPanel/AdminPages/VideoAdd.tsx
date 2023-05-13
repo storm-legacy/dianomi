@@ -11,19 +11,11 @@ export const VideoAdd = () => {
   const [file, setFile] = useState<File>();
   const [videoCategory, setVideoCategory] = useState('');
   const [videoDescription, setVideoDescription] = useState('');
-  const [tag, setTag] = useState('');
-  const [videoTag, setVideoTag] = useState(['']);
+  const [tags, setTags] = useState<string>('');
   const [width, setWidth] = useState(0);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    const inputValue = tag;
-    const newValues = inputValue
-      .split(',')
-      .map((value) => value.trim())
-      .filter((value) => value.length >= 3 && value.length <= 12)
-      .map((value) => value.toLowerCase());
-    setVideoTag(newValues);
 
     const data = {
       Action: 'AssumeRoleWithCustomToken',
@@ -89,6 +81,12 @@ export const VideoAdd = () => {
 
       await parallelUploads3.done();
 
+      const tagsArray = tags
+        .split(',')
+        .map((value: string) => value.trim())
+        .filter((value: string) => value.length >= 3 && value.length <= 12)
+        .map((value: string) => value.toLowerCase());
+
       // Send data to backend
       const data: VideoAddData = {
         name: videoName,
@@ -96,7 +94,7 @@ export const VideoAdd = () => {
         file_name: String(file?.name),
         file_bucket: 'uploads',
         category_id: null,
-        tags: videoTag,
+        tags: tagsArray,
       };
 
       const { request } = adminService.sendVideo(data);
@@ -170,12 +168,7 @@ export const VideoAdd = () => {
           </label>
           <label>
             <p>Tag</p>
-            <input
-              className="form-control"
-              list="TagList"
-              value={tag}
-              onChange={(event) => setTag(event.target.value)}
-            />
+            <input className="form-control" list="TagList" value={tags} onChange={(e) => setTags(e.target.value)} />
             <datalist id="TagList">
               {' '}
               <option value="1" />

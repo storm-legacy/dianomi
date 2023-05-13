@@ -41,11 +41,24 @@ INSERT INTO video_thumbnails (
   file_size
 ) VALUES ($1, $2);
 
+
 -- name: AddCategory :one 
 INSERT INTO categories (name) VALUES ($1) RETURNING *;
 
+-- name: UpdateCategory :exec
+UPDATE categories SET name = $1 WHERE id = $2;
+
+-- name: GetCategoryByName :one
+SELECT * FROM categories WHERE name = $1 LIMIT 1;
+
+-- name: GetCategoryByID :one
+SELECT * FROM categories WHERE id = $1 LIMIT 1;
+
 -- name: GetAllCategories :many
-SELECT * FROM categories LIMIT $1 OFFSET $2;
+SELECT * FROM categories ORDER BY name ASC LIMIT $1 OFFSET $2;
+
+-- name: DeleteCategory :exec
+DELETE FROM categories WHERE id = $1;
 
 -- name: GetTagByName :one
 SELECT * FROM tags WHERE name = $1 LIMIT 1;

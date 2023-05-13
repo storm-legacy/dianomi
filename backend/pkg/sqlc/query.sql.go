@@ -139,8 +139,17 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	return err
 }
 
+const deleteCategory = `-- name: DeleteCategory :exec
+DELETE FROM categories WHERE id = $1
+`
+
+func (q *Queries) DeleteCategory(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteCategory, id)
+	return err
+}
+
 const getAllCategories = `-- name: GetAllCategories :many
-SELECT id, name FROM categories LIMIT $1 OFFSET $2
+SELECT id, name FROM categories ORDER BY name ASC LIMIT $1 OFFSET $2
 `
 
 type GetAllCategoriesParams struct {
@@ -169,6 +178,28 @@ func (q *Queries) GetAllCategories(ctx context.Context, arg GetAllCategoriesPara
 		return nil, err
 	}
 	return items, nil
+}
+
+const getCategoryByID = `-- name: GetCategoryByID :one
+SELECT id, name FROM categories WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, error) {
+	row := q.db.QueryRowContext(ctx, getCategoryByID, id)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
+const getCategoryByName = `-- name: GetCategoryByName :one
+SELECT id, name FROM categories WHERE name = $1 LIMIT 1
+`
+
+func (q *Queries) GetCategoryByName(ctx context.Context, name string) (Category, error) {
+	row := q.db.QueryRowContext(ctx, getCategoryByName, name)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }
 
 const getPackagesByUserID = `-- name: GetPackagesByUserID :many
@@ -258,4 +289,18 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const updateCategory = `-- name: UpdateCategory :exec
+UPDATE categories SET name = $1 WHERE id = $2
+`
+
+type UpdateCategoryParams struct {
+	Name string
+	ID   int64
+}
+
+func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error {
+	_, err := q.db.ExecContext(ctx, updateCategory, arg.Name, arg.ID)
+	return err
 }

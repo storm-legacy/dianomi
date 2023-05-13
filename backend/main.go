@@ -12,6 +12,7 @@ import (
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
 	adminVideoCtrl "github.com/storm-legacy/dianomi/internal/controllers/admin/video"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
+	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video/category"
 	mid "github.com/storm-legacy/dianomi/internal/middlewares"
 )
 
@@ -43,9 +44,19 @@ func main() {
 	user.Get("/account", ctrl.NotImplemented)
 	user.Get("/list", ctrl.NotImplemented)
 
+	// * Video group
+	video := api.Group("video", mid.AuthMiddleware)
+
+	// * Category group
+	category := video.Group("category")
+	category.Get("/", videoCtrl.GetCategories)
+	category.Get("/:id", videoCtrl.GetCategory)
+	category.Patch("/:id", mid.AdminMiddleware, videoCtrl.PatchCategory)
+	category.Post("/", mid.AdminMiddleware, videoCtrl.PostCategory)
+	category.Delete("/:id", mid.AdminMiddleware, videoCtrl.DeleteCategory)
+
 	// * Administration
 	admin := api.Group("admin", mid.AuthMiddleware, mid.AdminMiddleware)
-	admin.Post("/upload", ctrl.NotImplemented)
 
 	// * Videos (Admin)
 	adminVideo := admin.Group("video")
