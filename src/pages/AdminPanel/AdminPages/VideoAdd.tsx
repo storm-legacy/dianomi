@@ -16,7 +16,11 @@ export const VideoAdd = () => {
   const handleSubmit = async (event: any) => {
     event.preventDefault();
     const inputValue = tag;
-    const newValues = inputValue.split(',');
+    const newValues = inputValue
+      .split(',')
+      .map((value) => value.trim())
+      .filter((value) => value.length >= 3 && value.length <= 12)
+      .map((value) => value.toLowerCase());
     setVideoTag(newValues);
     console.log(videoTag);
     const data = {
