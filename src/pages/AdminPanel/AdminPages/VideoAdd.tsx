@@ -12,6 +12,7 @@ export const VideoAdd = () => {
   const [videoDiscription, setVideoDiscription] = useState('');
   const [tag, setTag] = useState('');
   const [videoTag, setVideoTag] = useState(['']);
+  const [width, setWidth] = useState(0);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
@@ -79,7 +80,10 @@ export const VideoAdd = () => {
       });
 
       parallelUploads3.on('httpUploadProgress', (progress) => {
-        console.log(progress.loaded);
+        if (progress.total && progress.loaded) {
+          const percentage = Math.round((progress.loaded / progress.total) * 100);
+          setWidth(percentage);
+        }
       });
 
       await parallelUploads3.done();
@@ -135,6 +139,15 @@ export const VideoAdd = () => {
               type="file"
               onChange={(e) => setFile(e.target?.files?.[0])}
             />
+            {
+              <div className="progress">
+                <div
+                  className="progress-bar progress-bar-striped progress-bar-animated"
+                  role="progressbar"
+                  style={{ width: `${width}%` }}
+                ></div>
+              </div>
+            }
           </label>
           <label>
             <p>Categories</p>
