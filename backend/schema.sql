@@ -66,11 +66,6 @@ CREATE TABLE video (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-  CONSTRAINT fk_author_video
-    FOREIGN KEY (author_id)
-    REFERENCES users(id)
-      ON DELETE SET NULL
-      ON UPDATE CASCADE,
   CONSTRAINT fk_category_video
     FOREIGN KEY (category_id)
     REFERENCES categories(id)
