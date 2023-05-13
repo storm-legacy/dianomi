@@ -36,11 +36,11 @@ const UserDashboardPage = () => {
             <div className="p-2">
               <img src="./OIP.jpg" className="card-img-top" alt="logo kursu" />
               <div className="card-body">
-                <p className="card-text">
-                  <h5>{item.name}</h5>
+                <div className="card-text">
+                  <p className="lead">{item.name}</p>
                   <p>{item.description}</p>
                   <p>By:{item.author_id}</p>
-                </p>
+                </div>
               </div>
             </div>
           </Link>

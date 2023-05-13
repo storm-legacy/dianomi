@@ -86,7 +86,7 @@ func addVideoAsync(data *VideoPostData) {
 	found := false
 	for vid := range uploads {
 		if vid.Err != nil {
-			log.WithField("err", err).Error("File error occured (minio s3)")
+			log.WithField("err", vid.Err).Error("File error occured (minio s3)")
 			return
 		}
 		if vid.Key == data.FileName {

@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Upload } from '@aws-sdk/lib-storage';
 import { S3Client, S3 } from '@aws-sdk/client-s3';
+import adminService, { VideoAddData } from '../../../services/admin.service';
+
 const s3endpoint = 'http://localhost:9000';
-const Tendpoint = 'https://localhost/api/v1/admin/video';
 
 export const VideoAdd = () => {
   const [videoName, setVideoName] = useState('');
   const [file, setFile] = useState<File>();
   const [videoCategory, setVideoCategory] = useState('');
-  const [videoDiscription, setVideoDiscription] = useState('');
+  const [videoDescription, setVideoDescription] = useState('');
   const [tag, setTag] = useState('');
   const [videoTag, setVideoTag] = useState(['']);
   const [width, setWidth] = useState(0);
@@ -23,7 +24,7 @@ export const VideoAdd = () => {
       .filter((value) => value.length >= 3 && value.length <= 12)
       .map((value) => value.toLowerCase());
     setVideoTag(newValues);
-    console.log(videoTag);
+
     const data = {
       Action: 'AssumeRoleWithCustomToken',
       Token: localStorage.getItem('token'),
@@ -88,20 +89,23 @@ export const VideoAdd = () => {
 
       await parallelUploads3.done();
 
-      axios
-        .post(Tendpoint, {
-          name: videoName,
-          description: videoDiscription,
-          file_name: file?.name,
-          file_bucket: 'uploads',
-          category_id: null,
-          tags: ['test', 'anothertag', 'killmeplease'],
-        })
+      // Send data to backend
+      const data: VideoAddData = {
+        name: videoName,
+        description: videoDescription,
+        file_name: String(file?.name),
+        file_bucket: 'uploads',
+        category_id: null,
+        tags: videoTag,
+      };
+
+      const { request } = adminService.sendVideo(data);
+      request
         .then((res) => {
           console.log(res);
         })
-        .catch((error) => {
-          console.log(error);
+        .catch((err) => {
+          console.log(err);
         });
     } catch (err) {
       console.error(err);
@@ -127,8 +131,8 @@ export const VideoAdd = () => {
             <input
               className="form-control"
               type="text"
-              value={videoDiscription}
-              onChange={(event) => setVideoDiscription(event.target.value)}
+              value={videoDescription}
+              onChange={(event) => setVideoDescription(event.target.value)}
             />
           </label>
           <label>
