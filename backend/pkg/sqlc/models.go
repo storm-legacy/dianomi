@@ -194,7 +194,7 @@ type Video struct {
 	ID          int64
 	Name        string
 	Description string
-	CategoryID  sql.NullInt64
+	CategoryID  int64
 	Upvotes     int64
 	Downvotes   int64
 	Views       int64

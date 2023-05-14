@@ -29,12 +29,12 @@ type MediaInfo struct {
 }
 
 type VideoPostData struct {
-	Name        string        `json:"name" validate:"required"`
-	Description string        `json:"description" validate:"required"`
-	FileName    string        `json:"file_name" validate:"required"`
-	FileBucket  string        `json:"file_bucket" validate:"required"`
-	CategoryId  sql.NullInt64 `json:"category_id" validate:"required"`
-	Tags        []string      `json:"tags" validate:"required,tags"`
+	Name        string   `json:"name" validate:"required"`
+	Description string   `json:"description" validate:"required"`
+	FileName    string   `json:"file_name" validate:"required"`
+	FileBucket  string   `json:"file_bucket" validate:"required"`
+	CategoryId  int64    `json:"category_id" validate:"required"`
+	Tags        []string `json:"tags" validate:"required,tags"`
 }
 
 func PostVideo(c *fiber.Ctx) error {
@@ -171,9 +171,9 @@ func addVideoAsync(data *VideoPostData) {
 	// * END(DB BLOCK)
 
 	// ! TODO implement thumbnails
-	_, err = qtx.GetCategoryByID(ctx, data.CategoryId.Int64)
+	_, err = qtx.GetCategoryByID(ctx, data.CategoryId)
 	if err == sql.ErrNoRows {
-		data.CategoryId = sql.NullInt64{}
+		data.CategoryId = -1
 	} else if err != nil {
 		log.WithField("err", err.Error()).Error("Error occured while checking categories list")
 		return

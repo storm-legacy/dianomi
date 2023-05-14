@@ -45,7 +45,7 @@ RETURNING id, name, description, category_id, upvotes, downvotes, views, updated
 type AddVideoParams struct {
 	Name        string
 	Description string
-	CategoryID  sql.NullInt64
+	CategoryID  int64
 }
 
 func (q *Queries) AddVideo(ctx context.Context, arg AddVideoParams) (Video, error) {
