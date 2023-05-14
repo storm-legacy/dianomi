@@ -19,9 +19,9 @@ export const AdminPanel = () => {
             {' '}
             Manage User
           </Link>
-          <Link className="col" style={{ margin: 20 }} to={'/VideoAdd'}>
+          <Link className="col" style={{ margin: 20 }} to={'/CategoriAdd'}>
             {' '}
-            Manage subscriptions
+            CategoriAdd
           </Link>
         </div>
       </div>

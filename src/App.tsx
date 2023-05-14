@@ -22,6 +22,7 @@ import { VideoEdit } from './pages/AdminPanel/AdminPages/VideoEdit';
 
 import './App.css';
 import { CanceledError } from 'axios';
+import CategoriAdd from './pages/AdminPanel/AdminPages/CategoriAdd';
 
 function App() {
   useEffect(() => {
@@ -77,7 +78,6 @@ function App() {
                 </Protected>
               }
             />
-
             <Route
               path="/ProfilePage"
               element={
@@ -120,6 +120,15 @@ function App() {
                 <ProtectedAdmin>
                   <SidePanel />
                   <VideoEdit />
+                </ProtectedAdmin>
+              }
+            />{' '}
+            <Route
+              path="/CategoriAdd"
+              element={
+                <ProtectedAdmin>
+                  <SidePanel />
+                  <CategoriAdd />
                 </ProtectedAdmin>
               }
             />

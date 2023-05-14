@@ -1,22 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Upload } from '@aws-sdk/lib-storage';
 import { S3Client, S3 } from '@aws-sdk/client-s3';
-import adminService, { VideoAddData } from '../../../services/admin.service';
+import VideoService, { VideoAddData } from '../../../services/video.service';
 
 const s3endpoint = 'http://localhost:9000';
 
 export const VideoAdd = () => {
   const [videoName, setVideoName] = useState('');
   const [file, setFile] = useState<File>();
-  const [videoCategory, setVideoCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [videoDescription, setVideoDescription] = useState('');
   const [tags, setTags] = useState<string>('');
   const [width, setWidth] = useState(0);
+  interface Category {
+    ID: number;
+    Name: string;
+  }
 
+  const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const { request } = VideoService.takeCategori();
+    request
+      .then((res) => {
+        console.log(res);
+        const categories = res.data.map((category: { ID: any; Name: any }) => {
+          return {
+            ID: category.ID,
+            Name: category.Name,
+          };
+        });
+        setCategoriesArr(categories);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  console.log(categoriesArr);
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-
+    console.log(selectedCategory);
     const data = {
       Action: 'AssumeRoleWithCustomToken',
       Token: localStorage.getItem('token'),
@@ -93,11 +118,11 @@ export const VideoAdd = () => {
         description: videoDescription,
         file_name: String(file?.name),
         file_bucket: 'uploads',
-        category_id: null,
+        category_id: selectedCategory,
         tags: tagsArray,
       };
 
-      const { request } = adminService.sendVideo(data);
+      const { request } = VideoService.sendVideo(data);
       request
         .then((res) => {
           console.log(res);
@@ -153,18 +178,19 @@ export const VideoAdd = () => {
           </label>
           <label>
             <p>Categories</p>
-            <input
-              className="form-control"
-              type="list"
-              list="CategoryList"
-              value={videoCategory}
-              onChange={(event) => setVideoCategory(event.target.value)}
-            />
-            <datalist id="CategoryList">
-              <option value="C++" />
-              <option value="Go" />
-              <option value="HowTo" />
-            </datalist>
+            <select
+              className="form-select"
+              defaultValue={'DEFAULT'}
+              onChange={(event) => setSelectedCategory(parseInt(event.target.value))}
+            >
+              <option value="DEFAULT">Please select option</option>
+              {categoriesArr.map((item) => (
+                <option value={item.ID} key={item.ID}>
+                  {' '}
+                  {item.Name}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             <p>Tag</p>
