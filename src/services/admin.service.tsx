@@ -12,7 +12,7 @@ interface VideoAddData {
 class AdminService {
   sendVideo(videoAdd: VideoAddData) {
     const controller = new AbortController();
-    const request = http.post('/admin/video', videoAdd, { signal: controller.signal });
+    const request = http.post('/video', videoAdd, { signal: controller.signal });
     console.log(request);
     return { request, cancel: () => controller.abort() };
   }

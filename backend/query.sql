@@ -18,6 +18,115 @@ SELECT * FROM users WHERE email = $1 LIMIT 1;
 -- name: CreateUser :exec
 INSERT INTO users (email, password) VALUES ($1, $2);
 
+-- name: UpdateUserPassword :exec
+UPDATE users SET password = $2 WHERE id = $1;
+
+-- name: RemoveAllUserPackages :exec
+DELETE FROM users_packages WHERE user_id = $1;
+
+-- name: GiveUserPackage :exec
+INSERT INTO users_packages (
+  user_id,
+  tier,
+  valid_from,
+  valid_until
+) VALUES (
+  $1, $2, $3, $4
+);
+
+-- name: GetVideosByCategory :many
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id=c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+WHERE
+  c.id = $1
+LIMIT $2
+OFFSET $3;
+
+-- name: GetRandomVideos :many
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id=c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+WHERE
+  c.id = $1
+ORDER BY RANDOM()
+LIMIT $2
+OFFSET $3;
+
+-- name: GetVideosByName :many
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id=c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+WHERE
+  v.name LIKE $1
+LIMIT $2
+OFFSET $3;
+
+-- name: GetVideoByID :one
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  array(select name from tags t,video_tags vt where vt.tag_id = t.id and vt.video_id=v.id) as tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id = c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+WHERE
+  v.id = $1
+LIMIT 1;
+
+-- name: GetAllVideos :many
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  array(select name from tags t,video_tags vt where vt.tag_id = t.id and vt.video_id=v.id) as tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id = c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+LIMIT $1
+OFFSET $2;
+
 -- name: AddVideo :one
 INSERT INTO video (
   name,
@@ -40,7 +149,6 @@ INSERT INTO video_thumbnails (
   video_id,
   file_size
 ) VALUES ($1, $2);
-
 
 -- name: AddCategory :one 
 INSERT INTO categories (name) VALUES ($1) RETURNING *;

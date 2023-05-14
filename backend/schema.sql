@@ -10,7 +10,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE TYPE ROLE AS ENUM ('premium', 'administrator');
+CREATE TYPE ROLE AS ENUM ('free', 'premium', 'administrator');
 CREATE TABLE users_packages (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -107,6 +107,7 @@ CREATE TABLE video_thumbnails (
   id BIGSERIAL PRIMARY KEY,
   video_id BIGINT NOT NULL,
   file_size INT NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,

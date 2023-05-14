@@ -12,16 +12,7 @@ import (
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
 )
 
-func GetCategory(c *fiber.Ctx) error {
-
-	idString := c.Params("id")
-	id, err := strconv.ParseInt(string(idString), 10, 64)
-	if err != nil {
-		log.WithField("err", err).Debug("ID could not be parsed")
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	// * CHECK AGANIST DATABASE
+func GetAllVideos(c *fiber.Ctx) error {
 	// * START(DB BLOCK)
 	ctx := context.Background()
 	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
@@ -33,21 +24,19 @@ func GetCategory(c *fiber.Ctx) error {
 	defer db.Close()
 	// * END(DB BLOCK)
 
-	// Check if exists
-	category, err := qtx.GetCategoryByID(ctx, id)
-	if err != sql.ErrNoRows && err != nil {
-		log.WithField("err", err.Error()).Error("Could not get categories from database")
+	res, err := qtx.GetAllVideos(ctx, sqlc.GetAllVideosParams{
+		Limit:  25,
+		Offset: 0,
+	})
+	if err != nil {
+		log.WithField("err", err).Error("Could not get videos from database")
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-	if err == sql.ErrNoRows {
-		log.WithField("category_id", id).Debug("Category with specified id doesn't exist")
-		return c.SendStatus(fiber.StatusNotFound)
-	}
 
-	return c.Status(fiber.StatusOK).JSON(category)
+	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-func GetCategories(c *fiber.Ctx) error {
+func GetRecommendedVideos(c *fiber.Ctx) error {
 	// Check if limit and offset is resonable
 	var offset int32 = 0
 	offsetArray := c.Query("offset")
@@ -60,6 +49,7 @@ func GetCategories(c *fiber.Ctx) error {
 		}
 		offset = int32(result)
 	}
+
 	// * START(DB BLOCK)
 	ctx := context.Background()
 	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
@@ -71,12 +61,12 @@ func GetCategories(c *fiber.Ctx) error {
 	defer db.Close()
 	// * END(DB BLOCK)
 
-	res, err := qtx.GetAllCategories(ctx, sqlc.GetAllCategoriesParams{
+	res, err := qtx.GetRandomVideos(ctx, sqlc.GetRandomVideosParams{
 		Limit:  25,
 		Offset: offset,
 	})
 	if err != nil {
-		log.WithField("err", err).Error("Could not get categories from database")
+		log.WithField("err", err).Error("Could not get videos from database")
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 

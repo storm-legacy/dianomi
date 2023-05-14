@@ -7,7 +7,7 @@ import (
 func AdminMiddleware(c *fiber.Ctx) error {
 	role := c.Locals("role")
 	if role != "administrator" {
-		c.SendStatus(fiber.StatusForbidden)
+		return c.SendStatus(fiber.StatusForbidden)
 	}
 	return c.Next()
 }

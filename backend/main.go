@@ -10,9 +10,10 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
-	adminVideoCtrl "github.com/storm-legacy/dianomi/internal/controllers/admin/video"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
-	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video/category"
+	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
+	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video"
+	videoCategoryCtrl "github.com/storm-legacy/dianomi/internal/controllers/video/category"
 	mid "github.com/storm-legacy/dianomi/internal/middlewares"
 )
 
@@ -21,6 +22,11 @@ func main() {
 	app.Use(logger.New())
 	api := app.Group("/api/v1")
 	api.Get("/", mid.AuthMiddleware, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
+
+	// * DEVELOPMENT ENDPOINTS
+	dev := api.Group("dev")
+	dev.Post("/setpassword", develCtrl.SetPassword)
+	dev.Post("/setpackage", develCtrl.SetPackage)
 
 	// * Healthcheck
 	api.Get("/healthcheck", ctrl.Healthcheck)
@@ -40,27 +46,26 @@ func main() {
 	auth.Head("/minio", func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusNoContent) })
 
 	// * User group
-	user := api.Group("user", mid.AuthMiddleware)
-	user.Get("/account", ctrl.NotImplemented)
-	user.Get("/list", ctrl.NotImplemented)
+	// user := api.Group("user", mid.AuthMiddleware)
+	// user.Get("/account", ctrl.NotImplemented)
+	// user.Get("/list", ctrl.NotImplemented)
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)
+	video.Post("/", mid.AdminMiddleware, videoCtrl.PostVideo)
+	video.Get("/all", mid.AdminMiddleware, videoCtrl.GetAllVideos)
+	video.Get("/recommended", videoCtrl.GetRecommendedVideos)
 
 	// * Category group
 	category := video.Group("category")
-	category.Get("/", videoCtrl.GetCategories)
-	category.Get("/:id", videoCtrl.GetCategory)
-	category.Patch("/:id", mid.AdminMiddleware, videoCtrl.PatchCategory)
-	category.Post("/", mid.AdminMiddleware, videoCtrl.PostCategory)
-	category.Delete("/:id", mid.AdminMiddleware, videoCtrl.DeleteCategory)
+	category.Get("/", videoCategoryCtrl.GetCategories)
+	category.Get("/:id", videoCategoryCtrl.GetCategory)
+	category.Patch("/:id", mid.AdminMiddleware, videoCategoryCtrl.PatchCategory)
+	category.Post("/", mid.AdminMiddleware, videoCategoryCtrl.PostCategory)
+	category.Delete("/:id", mid.AdminMiddleware, videoCategoryCtrl.DeleteCategory)
 
 	// * Administration
-	admin := api.Group("admin", mid.AuthMiddleware, mid.AdminMiddleware)
-
-	// * Videos (Admin)
-	adminVideo := admin.Group("video")
-	adminVideo.Post("/", adminVideoCtrl.PostVideo)
+	// admin := api.Group("admin", mid.AuthMiddleware)
 
 	log.Fatal(app.Listen(":3000"))
 }

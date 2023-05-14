@@ -59,6 +59,7 @@ func (ns NullResolution) Value() (driver.Value, error) {
 type Role string
 
 const (
+	RoleFree          Role = "free"
 	RolePremium       Role = "premium"
 	RoleAdministrator Role = "administrator"
 )
@@ -224,6 +225,7 @@ type VideoThumbnail struct {
 	ID        int64
 	VideoID   int64
 	FileSize  int32
+	FileName  string
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 	DeletedAt sql.NullTime

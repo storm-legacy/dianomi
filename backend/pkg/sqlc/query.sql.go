@@ -8,6 +8,7 @@ package sqlc
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const addCategory = `-- name: AddCategory :one
@@ -180,6 +181,74 @@ func (q *Queries) GetAllCategories(ctx context.Context, arg GetAllCategoriesPara
 	return items, nil
 }
 
+const getAllVideos = `-- name: GetAllVideos :many
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  array(select name from tags t,video_tags vt where vt.tag_id = t.id and vt.video_id=v.id) as tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id = c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+LIMIT $1
+OFFSET $2
+`
+
+type GetAllVideosParams struct {
+	Limit  int32
+	Offset int32
+}
+
+type GetAllVideosRow struct {
+	ID          int64
+	Name        string
+	Description string
+	Category    sql.NullString
+	Upvotes     int64
+	Downvotes   int64
+	Views       int64
+	Thumbnail   sql.NullString
+	Tags        interface{}
+}
+
+func (q *Queries) GetAllVideos(ctx context.Context, arg GetAllVideosParams) ([]GetAllVideosRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllVideos, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllVideosRow
+	for rows.Next() {
+		var i GetAllVideosRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Category,
+			&i.Upvotes,
+			&i.Downvotes,
+			&i.Views,
+			&i.Thumbnail,
+			&i.Tags,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCategoryByID = `-- name: GetCategoryByID :one
 SELECT id, name FROM categories WHERE id = $1 LIMIT 1
 `
@@ -244,6 +313,78 @@ func (q *Queries) GetPackagesByUserID(ctx context.Context, userID int64) ([]User
 	return items, nil
 }
 
+const getRandomVideos = `-- name: GetRandomVideos :many
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id=c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+WHERE
+  c.id = $1
+ORDER BY RANDOM()
+LIMIT $2
+OFFSET $3
+`
+
+type GetRandomVideosParams struct {
+	ID     int64
+	Limit  int32
+	Offset int32
+}
+
+type GetRandomVideosRow struct {
+	ID          int64
+	Name        string
+	Description string
+	Category    sql.NullString
+	Upvotes     int64
+	Downvotes   int64
+	Views       int64
+	Thumbnail   sql.NullString
+	Tags        interface{}
+}
+
+func (q *Queries) GetRandomVideos(ctx context.Context, arg GetRandomVideosParams) ([]GetRandomVideosRow, error) {
+	rows, err := q.db.QueryContext(ctx, getRandomVideos, arg.ID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRandomVideosRow
+	for rows.Next() {
+		var i GetRandomVideosRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Category,
+			&i.Upvotes,
+			&i.Downvotes,
+			&i.Views,
+			&i.Thumbnail,
+			&i.Tags,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTagByName = `-- name: GetTagByName :one
 SELECT id, name FROM tags WHERE name = $1 LIMIT 1
 `
@@ -291,6 +432,233 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
+const getVideoByID = `-- name: GetVideoByID :one
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  array(select name from tags t,video_tags vt where vt.tag_id = t.id and vt.video_id=v.id) as tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id = c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+WHERE
+  v.id = $1
+LIMIT 1
+`
+
+type GetVideoByIDRow struct {
+	ID          int64
+	Name        string
+	Description string
+	Category    sql.NullString
+	Upvotes     int64
+	Downvotes   int64
+	Views       int64
+	Thumbnail   sql.NullString
+	Tags        interface{}
+}
+
+func (q *Queries) GetVideoByID(ctx context.Context, id int64) (GetVideoByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getVideoByID, id)
+	var i GetVideoByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Category,
+		&i.Upvotes,
+		&i.Downvotes,
+		&i.Views,
+		&i.Thumbnail,
+		&i.Tags,
+	)
+	return i, err
+}
+
+const getVideosByCategory = `-- name: GetVideosByCategory :many
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id=c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+WHERE
+  c.id = $1
+LIMIT $2
+OFFSET $3
+`
+
+type GetVideosByCategoryParams struct {
+	ID     int64
+	Limit  int32
+	Offset int32
+}
+
+type GetVideosByCategoryRow struct {
+	ID          int64
+	Name        string
+	Description string
+	Category    sql.NullString
+	Upvotes     int64
+	Downvotes   int64
+	Views       int64
+	Thumbnail   sql.NullString
+	Tags        interface{}
+}
+
+func (q *Queries) GetVideosByCategory(ctx context.Context, arg GetVideosByCategoryParams) ([]GetVideosByCategoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, getVideosByCategory, arg.ID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetVideosByCategoryRow
+	for rows.Next() {
+		var i GetVideosByCategoryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Category,
+			&i.Upvotes,
+			&i.Downvotes,
+			&i.Views,
+			&i.Thumbnail,
+			&i.Tags,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getVideosByName = `-- name: GetVideosByName :many
+SELECT
+  v.id id,
+  v.name name,
+  v.description description,
+  c.name category,
+  v.upvotes upvotes,
+  v.downvotes downvotes,
+  v.views views,
+  th.file_name as thumbnail,
+  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+FROM
+  video v LEFT JOIN categories c ON v.category_id=c.id
+  LEFT JOIN video_thumbnails th ON th.video_id = v.id
+WHERE
+  v.name LIKE $1
+LIMIT $2
+OFFSET $3
+`
+
+type GetVideosByNameParams struct {
+	Name   string
+	Limit  int32
+	Offset int32
+}
+
+type GetVideosByNameRow struct {
+	ID          int64
+	Name        string
+	Description string
+	Category    sql.NullString
+	Upvotes     int64
+	Downvotes   int64
+	Views       int64
+	Thumbnail   sql.NullString
+	Tags        interface{}
+}
+
+func (q *Queries) GetVideosByName(ctx context.Context, arg GetVideosByNameParams) ([]GetVideosByNameRow, error) {
+	rows, err := q.db.QueryContext(ctx, getVideosByName, arg.Name, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetVideosByNameRow
+	for rows.Next() {
+		var i GetVideosByNameRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Category,
+			&i.Upvotes,
+			&i.Downvotes,
+			&i.Views,
+			&i.Thumbnail,
+			&i.Tags,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const giveUserPackage = `-- name: GiveUserPackage :exec
+INSERT INTO users_packages (
+  user_id,
+  tier,
+  valid_from,
+  valid_until
+) VALUES (
+  $1, $2, $3, $4
+)
+`
+
+type GiveUserPackageParams struct {
+	UserID     int64
+	Tier       Role
+	ValidFrom  time.Time
+	ValidUntil time.Time
+}
+
+func (q *Queries) GiveUserPackage(ctx context.Context, arg GiveUserPackageParams) error {
+	_, err := q.db.ExecContext(ctx, giveUserPackage,
+		arg.UserID,
+		arg.Tier,
+		arg.ValidFrom,
+		arg.ValidUntil,
+	)
+	return err
+}
+
+const removeAllUserPackages = `-- name: RemoveAllUserPackages :exec
+DELETE FROM users_packages WHERE user_id = $1
+`
+
+func (q *Queries) RemoveAllUserPackages(ctx context.Context, userID int64) error {
+	_, err := q.db.ExecContext(ctx, removeAllUserPackages, userID)
+	return err
+}
+
 const updateCategory = `-- name: UpdateCategory :exec
 UPDATE categories SET name = $1 WHERE id = $2
 `
@@ -302,5 +670,19 @@ type UpdateCategoryParams struct {
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error {
 	_, err := q.db.ExecContext(ctx, updateCategory, arg.Name, arg.ID)
+	return err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users SET password = $2 WHERE id = $1
+`
+
+type UpdateUserPasswordParams struct {
+	ID       int64
+	Password string
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.Password)
 	return err
 }
