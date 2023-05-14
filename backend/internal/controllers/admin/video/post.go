@@ -91,6 +91,7 @@ func addVideoAsync(data *VideoPostData) {
 		}
 		if vid.Key == data.FileName {
 			found = true
+			fmt.Println(vid.ContentType)
 			break
 		}
 	}
@@ -169,7 +170,14 @@ func addVideoAsync(data *VideoPostData) {
 	defer db.Close()
 	// * END(DB BLOCK)
 
-	// ! TODO implement categories & thumbnails
+	// ! TODO implement thumbnails
+	_, err = qtx.GetCategoryByID(ctx, data.CategoryId.Int64)
+	if err == sql.ErrNoRows {
+		data.CategoryId = sql.NullInt64{}
+	} else if err != nil {
+		log.WithField("err", err.Error()).Error("Error occured while checking categories list")
+		return
+	}
 
 	// Add video to database
 	vid, err := qtx.AddVideo(ctx, sqlc.AddVideoParams{
