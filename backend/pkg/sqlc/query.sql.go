@@ -190,8 +190,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  array(select name from tags t,video_tags vt where vt.tag_id = t.id and vt.video_id=v.id) as tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -213,7 +212,6 @@ type GetAllVideosRow struct {
 	Downvotes   int64
 	Views       int64
 	Thumbnail   sql.NullString
-	Tags        interface{}
 }
 
 func (q *Queries) GetAllVideos(ctx context.Context, arg GetAllVideosParams) ([]GetAllVideosRow, error) {
@@ -234,7 +232,6 @@ func (q *Queries) GetAllVideos(ctx context.Context, arg GetAllVideosParams) ([]G
 			&i.Downvotes,
 			&i.Views,
 			&i.Thumbnail,
-			&i.Tags,
 		); err != nil {
 			return nil, err
 		}
@@ -322,8 +319,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -349,7 +345,6 @@ type GetRandomVideosRow struct {
 	Downvotes   int64
 	Views       int64
 	Thumbnail   sql.NullString
-	Tags        interface{}
 }
 
 func (q *Queries) GetRandomVideos(ctx context.Context, arg GetRandomVideosParams) ([]GetRandomVideosRow, error) {
@@ -370,7 +365,6 @@ func (q *Queries) GetRandomVideos(ctx context.Context, arg GetRandomVideosParams
 			&i.Downvotes,
 			&i.Views,
 			&i.Thumbnail,
-			&i.Tags,
 		); err != nil {
 			return nil, err
 		}
@@ -441,8 +435,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  array(select name from tags t,video_tags vt where vt.tag_id = t.id and vt.video_id=v.id) as tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -460,7 +453,6 @@ type GetVideoByIDRow struct {
 	Downvotes   int64
 	Views       int64
 	Thumbnail   sql.NullString
-	Tags        interface{}
 }
 
 func (q *Queries) GetVideoByID(ctx context.Context, id int64) (GetVideoByIDRow, error) {
@@ -475,9 +467,41 @@ func (q *Queries) GetVideoByID(ctx context.Context, id int64) (GetVideoByIDRow, 
 		&i.Downvotes,
 		&i.Views,
 		&i.Thumbnail,
-		&i.Tags,
 	)
 	return i, err
+}
+
+const getVideoTags = `-- name: GetVideoTags :many
+SELECT
+  name
+FROM
+  tags t INNER JOIN video_tags vt ON t.id = vt.tag_id
+WHERE
+  vt.video_id = $1
+LIMIT 10
+`
+
+func (q *Queries) GetVideoTags(ctx context.Context, videoID int64) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getVideoTags, videoID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getVideosByCategory = `-- name: GetVideosByCategory :many
@@ -489,8 +513,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -515,7 +538,6 @@ type GetVideosByCategoryRow struct {
 	Downvotes   int64
 	Views       int64
 	Thumbnail   sql.NullString
-	Tags        interface{}
 }
 
 func (q *Queries) GetVideosByCategory(ctx context.Context, arg GetVideosByCategoryParams) ([]GetVideosByCategoryRow, error) {
@@ -536,7 +558,6 @@ func (q *Queries) GetVideosByCategory(ctx context.Context, arg GetVideosByCatego
 			&i.Downvotes,
 			&i.Views,
 			&i.Thumbnail,
-			&i.Tags,
 		); err != nil {
 			return nil, err
 		}
@@ -560,8 +581,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -586,7 +606,6 @@ type GetVideosByNameRow struct {
 	Downvotes   int64
 	Views       int64
 	Thumbnail   sql.NullString
-	Tags        interface{}
 }
 
 func (q *Queries) GetVideosByName(ctx context.Context, arg GetVideosByNameParams) ([]GetVideosByNameRow, error) {
@@ -607,7 +626,6 @@ func (q *Queries) GetVideosByName(ctx context.Context, arg GetVideosByNameParams
 			&i.Downvotes,
 			&i.Views,
 			&i.Thumbnail,
-			&i.Tags,
 		); err != nil {
 			return nil, err
 		}

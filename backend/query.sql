@@ -43,8 +43,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -62,8 +61,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -82,8 +80,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  ARRAY(SELECT NAME FROM tags t,video_tags vt WHERE vt.tag_id = t.id AND vt.video_id=v.id) AS tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -101,8 +98,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  array(select name from tags t,video_tags vt where vt.tag_id = t.id and vt.video_id=v.id) as tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
@@ -119,13 +115,21 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
-  th.file_name as thumbnail,
-  array(select name from tags t,video_tags vt where vt.tag_id = t.id and vt.video_id=v.id) as tags
+  th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
 LIMIT $1
 OFFSET $2;
+
+-- name: GetVideoTags :many
+SELECT
+  name
+FROM
+  tags t INNER JOIN video_tags vt ON t.id = vt.tag_id
+WHERE
+  vt.video_id = $1
+LIMIT 10;
 
 -- name: AddVideo :one
 INSERT INTO video (
@@ -150,7 +154,7 @@ INSERT INTO video_thumbnails (
   file_size
 ) VALUES ($1, $2);
 
--- name: AddCategory :one 
+-- name: AddCategory :one
 INSERT INTO categories (name) VALUES ($1) RETURNING *;
 
 -- name: UpdateCategory :exec

@@ -12,6 +12,19 @@ import (
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
 )
 
+type VideoResponse struct {
+	ID           uint64   `json:"id"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description"`
+	Category     string   `json:"category"`
+	CategoryID   uint64   `json:"category_id"`
+	Upvotes      uint64   `json:"upvotes"`
+	Downvotes    uint64   `json:"downvotes"`
+	Views        uint64   `json:"views"`
+	ThumbnailUrl string   `json:"thumbnail_url"`
+	Tags         []string `json:"tags"`
+}
+
 func GetAllVideos(c *fiber.Ctx) error {
 	// * START(DB BLOCK)
 	ctx := context.Background()
@@ -33,7 +46,30 @@ func GetAllVideos(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(res)
+	videos := make([]VideoResponse, 0)
+	for _, vid := range res {
+		tags, err := qtx.GetVideoTags(ctx, vid.ID)
+		if err != nil {
+			log.WithField("err", err).Error("Could not get tags from database")
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		video := VideoResponse{
+			ID:           uint64(vid.ID),
+			Name:         vid.Name,
+			Description:  vid.Description,
+			Category:     vid.Category.String,
+			CategoryID:   uint64(vid.ID),
+			Upvotes:      uint64(vid.Upvotes),
+			Downvotes:    uint64(vid.Downvotes),
+			Views:        uint64(vid.Views),
+			ThumbnailUrl: vid.Thumbnail.String,
+			Tags:         tags,
+		}
+		videos = append(videos, video)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(videos)
 }
 
 func GetRecommendedVideos(c *fiber.Ctx) error {
@@ -70,5 +106,28 @@ func GetRecommendedVideos(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(res)
+	videos := make([]VideoResponse, 0)
+	for _, vid := range res {
+		tags, err := qtx.GetVideoTags(ctx, vid.ID)
+		if err != nil {
+			log.WithField("err", err).Error("Could not get tags from database")
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		video := VideoResponse{
+			ID:           uint64(vid.ID),
+			Name:         vid.Name,
+			Description:  vid.Description,
+			Category:     vid.Category.String,
+			CategoryID:   uint64(vid.ID),
+			Upvotes:      uint64(vid.Upvotes),
+			Downvotes:    uint64(vid.Downvotes),
+			Views:        uint64(vid.Views),
+			ThumbnailUrl: vid.Thumbnail.String,
+			Tags:         tags,
+		}
+		videos = append(videos, video)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(videos)
 }
