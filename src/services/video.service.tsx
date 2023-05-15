@@ -5,6 +5,7 @@ interface VideoAddData {
   description: string;
   file_name: string;
   file_bucket: string;
+  thumbnail_name: string;
   category_id: number | null;
   tags: string[];
 }

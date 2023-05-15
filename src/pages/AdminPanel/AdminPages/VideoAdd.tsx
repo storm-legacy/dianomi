@@ -16,6 +16,7 @@ export const VideoAdd = () => {
   const [width, setWidth] = useState(0);
   const [width2, setWidth2] = useState(0);
   const [isDisabled, setIsDisabled] = useState<boolean>(false);
+
   interface Category {
     ID: number;
     Name: string;
@@ -49,10 +50,10 @@ export const VideoAdd = () => {
       });
   }, []);
 
-  console.log(categoriesArr);
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    console.log(selectedCategory);
+    setIsDisabled(true);
+
     const data = {
       Action: 'AssumeRoleWithCustomToken',
       Token: localStorage.getItem('token'),
@@ -148,6 +149,7 @@ export const VideoAdd = () => {
         name: videoName,
         description: videoDescription,
         file_name: String(file?.name),
+        thumbnail_name: String(thumbnailFile?.name),
         file_bucket: 'uploads',
         category_id: selectedCategory,
         tags: tagsArray,
