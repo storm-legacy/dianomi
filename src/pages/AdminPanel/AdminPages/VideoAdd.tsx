@@ -9,16 +9,27 @@ const s3endpoint = 'http://localhost:9000';
 export const VideoAdd = () => {
   const [videoName, setVideoName] = useState('');
   const [file, setFile] = useState<File>();
+  const [thumbnailFile, setThumbnailFile] = useState<File>();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [videoDescription, setVideoDescription] = useState('');
   const [tags, setTags] = useState<string>('');
   const [width, setWidth] = useState(0);
+  const [width2, setWidth2] = useState(0);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
   interface Category {
     ID: number;
     Name: string;
   }
-
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
+  useEffect(() => {
+    if (file == null || thumbnailFile == null) {
+      setIsDisabled(true);
+    } else {
+      setIsDisabled(false);
+    }
+    console.log('isDisabled');
+    console.log(isDisabled);
+  }, [file, thumbnailFile]);
 
   useEffect(() => {
     const { request } = VideoService.takeCategori();
@@ -106,6 +117,26 @@ export const VideoAdd = () => {
 
       await parallelUploads3.done();
 
+      const thumbnailUploads3 = new Upload({
+        client: new S3(s3config) || new S3Client(s3config),
+        queueSize: 4,
+        leavePartsOnError: false,
+        params: {
+          ContentType: thumbnailFile?.type,
+          Bucket: 'uploads',
+          Key: thumbnailFile?.name,
+          Body: thumbnailFile,
+        },
+      });
+
+      thumbnailUploads3.on('httpUploadProgress', (progress) => {
+        if (progress.total && progress.loaded) {
+          const percentage = Math.round((progress.loaded / progress.total) * 100);
+          setWidth2(percentage);
+        }
+      });
+      await thumbnailUploads3.done();
+
       const tagsArray = tags
         .split(',')
         .map((value: string) => value.trim())
@@ -177,6 +208,24 @@ export const VideoAdd = () => {
             }
           </label>
           <label>
+            <p>Thumbnail</p>
+            <input
+              className="form-control"
+              id="thumbnailfilefield"
+              type="file"
+              onChange={(e) => setThumbnailFile(e.target?.files?.[0])}
+            />
+            {
+              <div className="progress">
+                <div
+                  className="progress-bar progress-bar-striped progress-bar-animated"
+                  role="progressbar"
+                  style={{ width: `${width2}%` }}
+                ></div>
+              </div>
+            }
+          </label>
+          <label>
             <p>Categories</p>
             <select
               className="form-select"
@@ -203,7 +252,7 @@ export const VideoAdd = () => {
             </datalist>
           </label>
           <p></p>
-          <button type="submit" className="btn btn-primary ">
+          <button type="submit" className="btn btn-primary " disabled={isDisabled}>
             Send
           </button>
         </form>

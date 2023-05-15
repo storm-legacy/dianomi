@@ -8,7 +8,7 @@ interface VideoAddData {
   category_id: number | null;
   tags: string[];
 }
-interface VideoId {
+interface ThumbnailsData {
   video_id: number;
 }
 interface CategoriesName {
@@ -28,9 +28,21 @@ class VideoService {
     console.log(request);
     return { request, cancel: () => controller.abort() };
   }
+  takeVideo() {
+    const controller = new AbortController();
+    const request = http.get('/video/all', { signal: controller.signal });
+    console.log(request);
+    return { request, cancel: () => controller.abort() };
+  }
   takeCategori() {
     const controller = new AbortController();
     const request = http.get('/video/category', { signal: controller.signal });
+    console.log(request);
+    return { request, cancel: () => controller.abort() };
+  }
+  sendThumbnails(sendThumbnails: ThumbnailsData) {
+    const controller = new AbortController();
+    const request = http.post('/admin/video', sendThumbnails, { signal: controller.signal });
     console.log(request);
     return { request, cancel: () => controller.abort() };
   }

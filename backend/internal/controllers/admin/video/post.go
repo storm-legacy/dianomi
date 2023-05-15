@@ -175,7 +175,7 @@ func addVideoAsync(data *VideoPostData) {
 	// ! TODO implement thumbnails
 	_, err = qtx.GetCategoryByID(ctx, data.CategoryId)
 	if err == sql.ErrNoRows {
-		data.CategoryId = -1
+		data.CategoryId = sql.NullInt64{}
 	} else if err != nil {
 		log.WithField("err", err.Error()).Error("Error occured while checking categories list")
 		return
