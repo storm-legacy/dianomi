@@ -27,11 +27,12 @@ const SidePanel = () => {
       .then(() => {
         console.info('Logout');
         localStorage.clear();
-        navigate('/');
+        location.reload();
       })
       .catch((err) => {
         console.error(err.message);
         localStorage.clear();
+        location.reload();
       });
   };
 
