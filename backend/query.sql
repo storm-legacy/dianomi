@@ -63,13 +63,11 @@ SELECT
   v.views views,
   th.file_name as thumbnail
 FROM
-  video v LEFT JOIN categories c ON v.category_id=c.id
+  video v LEFT JOIN categories c ON v.category_id = c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
-WHERE
-  c.id = $1
 ORDER BY RANDOM()
-LIMIT $2
-OFFSET $3;
+LIMIT $1
+OFFSET $2;
 
 -- name: GetVideosByName :many
 SELECT
@@ -131,6 +129,16 @@ WHERE
   vt.video_id = $1
 LIMIT 10;
 
+-- name: GetVideoFiles :many
+SELECT
+  resolution,
+  duration,
+  file_path
+FROM
+  video_files
+WHERE
+  video_id = $1;
+
 -- name: AddVideo :one
 INSERT INTO video (
   name,
@@ -138,6 +146,13 @@ INSERT INTO video (
   category_id
 ) VALUES ($1, $2, $3)
 RETURNING *;
+
+-- name: AddThumbnail :exec
+INSERT INTO video_thumbnails (
+  video_id,
+  file_size,
+  file_name
+) VALUES ($1, $2, $3);
 
 -- name: AddVideoFile :exec
 INSERT INTO video_files (

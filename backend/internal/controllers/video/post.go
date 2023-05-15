@@ -29,12 +29,13 @@ type MediaInfo struct {
 }
 
 type VideoPostData struct {
-	Name        string   `json:"name" validate:"required"`
-	Description string   `json:"description" validate:"required"`
-	FileName    string   `json:"file_name" validate:"required"`
-	FileBucket  string   `json:"file_bucket" validate:"required"`
-	CategoryId  int64    `json:"category_id" validate:"required"`
-	Tags        []string `json:"tags" validate:"required,tags"`
+	Name          string   `json:"name" validate:"required"`
+	Description   string   `json:"description" validate:"required"`
+	FileName      string   `json:"file_name" validate:"required"`
+	ThumbnailName string   `json:"thumbnail_name" validate:"required"`
+	FileBucket    string   `json:"file_bucket" validate:"required"`
+	CategoryId    int64    `json:"category_id" validate:"required"`
+	Tags          []string `json:"tags" validate:"required,tags"`
 }
 
 func PostVideo(c *fiber.Ctx) error {
@@ -64,6 +65,7 @@ func addVideoAsync(data *VideoPostData) {
 	secretkey := config.GetString("APP_MINIO_S3_SECRETKEY", "")
 	uploadBucket := config.GetString("APP_MINIO_S3_UPLOAD_BUCKET", "uploads")
 	videoBucket := config.GetString("APP_MINIO_S3_VIDEO_BUCKET", "videos")
+	thumbnailBucket := config.GetString("APP_MINIO_S3_THUMBNAIL_BUCKET", "thumbnails")
 	useSSL := config.GetBool("APP_MINIO_S3_USESSL", true)
 	storagePath := config.GetString("APP_STORAGE_PATH", "./storage")
 
@@ -91,7 +93,6 @@ func addVideoAsync(data *VideoPostData) {
 		}
 		if vid.Key == data.FileName {
 			found = true
-			fmt.Println(vid.ContentType)
 			break
 		}
 	}
@@ -125,6 +126,64 @@ func addVideoAsync(data *VideoPostData) {
 		minio.RemoveObjectOptions{}); err != nil {
 
 		log.WithField("err", err.Error()).Error("Target file could not be removed from minio s3")
+		return
+	}
+
+	// Check if thumbnail exists
+	uploads = minioClient.ListObjects(ctx, uploadBucket, minio.ListObjectsOptions{})
+	found = false
+	for vid := range uploads {
+		if vid.Err != nil {
+			log.WithField("err", vid.Err).Error("File error occured (minio s3)")
+			return
+		}
+		if vid.Key == data.ThumbnailName {
+			found = true
+			fmt.Println(vid.ContentType)
+			break
+		}
+	}
+	if !found {
+		log.WithFields(log.Fields{
+			"file":   data.ThumbnailName,
+			"bucket": uploadBucket,
+		}).Error("Specified file couldn't be found in the bucket")
+		return
+	}
+
+	// Download thumbnail to fs
+	downloadedThumbnailPath := fmt.Sprintf("%s/tmp/%s", storagePath, data.ThumbnailName)
+	if err := minioClient.FGetObject(
+		ctx,
+		uploadBucket,
+		data.ThumbnailName,
+		downloadedThumbnailPath,
+		minio.GetObjectOptions{}); err != nil {
+
+		log.WithField("err", err.Error()).Error("Could not download thumbnail from minio s3")
+		return
+	}
+	filesToCleanup = append(filesToCleanup, downloadedThumbnailPath)
+
+	// Remove video from bucket
+	if err := minioClient.RemoveObject(
+		ctx,
+		uploadBucket,
+		data.FileName,
+		minio.RemoveObjectOptions{}); err != nil {
+
+		log.WithField("err", err.Error()).Error("Target file could not be removed from minio s3")
+		return
+	}
+
+	// Remove thumbnail from bucket
+	if err := minioClient.RemoveObject(
+		ctx,
+		uploadBucket,
+		data.ThumbnailName,
+		minio.RemoveObjectOptions{}); err != nil {
+
+		log.WithField("err", err.Error()).Error("Target thumbnail could not be removed from minio s3")
 		return
 	}
 
@@ -170,7 +229,6 @@ func addVideoAsync(data *VideoPostData) {
 	defer db.Close()
 	// * END(DB BLOCK)
 
-	// ! TODO implement thumbnails
 	_, err = qtx.GetCategoryByID(ctx, data.CategoryId)
 	if err == sql.ErrNoRows {
 		data.CategoryId = -1
@@ -187,6 +245,20 @@ func addVideoAsync(data *VideoPostData) {
 	})
 	if err != nil {
 		log.WithField("err", err.Error()).Error("Video couldn't be added to database")
+		return
+	}
+
+	// Push thumbnail image
+	guid := xid.New()
+	thumbnailObjectName := guid.String() + data.ThumbnailName
+	_, err = minioClient.FPutObject(
+		ctx,
+		thumbnailBucket,
+		thumbnailObjectName,
+		downloadedThumbnailPath,
+		minio.PutObjectOptions{})
+	if err != nil {
+		log.WithField("err", err.Error()).Error("Thumbnail file couldn't be uploaded!")
 		return
 	}
 
@@ -278,7 +350,24 @@ func addVideoAsync(data *VideoPostData) {
 		}
 	}
 
+	// Add thumbnail to database
+	// Add to database
+	thumbnailFileInfo, err := os.Stat(downloadedFilePath)
+	if err != nil {
+		log.WithField("err", err.Error()).Error("Could not stat thumbnail file")
+		return
+	}
+	if err := qtx.AddThumbnail(ctx, sqlc.AddThumbnailParams{
+		VideoID:  vid.ID,
+		FileSize: int32(thumbnailFileInfo.Size()),
+		FileName: thumbnailObjectName,
+	}); err != nil {
+		log.WithField("err", err.Error()).Error("Video file couldn't be added to database")
+		return
+	}
+
 	tx.Commit()
+	log.Info("Video was successfully added to database")
 }
 
 func cleanFiles(filesToClean *[]string) {

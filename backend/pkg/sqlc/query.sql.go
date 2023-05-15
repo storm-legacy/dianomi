@@ -33,6 +33,25 @@ func (q *Queries) AddTag(ctx context.Context, name string) (Tag, error) {
 	return i, err
 }
 
+const addThumbnail = `-- name: AddThumbnail :exec
+INSERT INTO video_thumbnails (
+  video_id,
+  file_size,
+  file_name
+) VALUES ($1, $2, $3)
+`
+
+type AddThumbnailParams struct {
+	VideoID  int64
+	FileSize int32
+	FileName string
+}
+
+func (q *Queries) AddThumbnail(ctx context.Context, arg AddThumbnailParams) error {
+	_, err := q.db.ExecContext(ctx, addThumbnail, arg.VideoID, arg.FileSize, arg.FileName)
+	return err
+}
+
 const addVideo = `-- name: AddVideo :one
 INSERT INTO video (
   name,
@@ -321,17 +340,14 @@ SELECT
   v.views views,
   th.file_name as thumbnail
 FROM
-  video v LEFT JOIN categories c ON v.category_id=c.id
+  video v LEFT JOIN categories c ON v.category_id = c.id
   LEFT JOIN video_thumbnails th ON th.video_id = v.id
-WHERE
-  c.id = $1
 ORDER BY RANDOM()
-LIMIT $2
-OFFSET $3
+LIMIT $1
+OFFSET $2
 `
 
 type GetRandomVideosParams struct {
-	ID     int64
 	Limit  int32
 	Offset int32
 }
@@ -348,7 +364,7 @@ type GetRandomVideosRow struct {
 }
 
 func (q *Queries) GetRandomVideos(ctx context.Context, arg GetRandomVideosParams) ([]GetRandomVideosRow, error) {
-	rows, err := q.db.QueryContext(ctx, getRandomVideos, arg.ID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getRandomVideos, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -469,6 +485,46 @@ func (q *Queries) GetVideoByID(ctx context.Context, id int64) (GetVideoByIDRow, 
 		&i.Thumbnail,
 	)
 	return i, err
+}
+
+const getVideoFiles = `-- name: GetVideoFiles :many
+SELECT
+  resolution,
+  duration,
+  file_path
+FROM
+  video_files
+WHERE
+  video_id = $1
+`
+
+type GetVideoFilesRow struct {
+	Resolution Resolution
+	Duration   int64
+	FilePath   string
+}
+
+func (q *Queries) GetVideoFiles(ctx context.Context, videoID int64) ([]GetVideoFilesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getVideoFiles, videoID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetVideoFilesRow
+	for rows.Next() {
+		var i GetVideoFilesRow
+		if err := rows.Scan(&i.Resolution, &i.Duration, &i.FilePath); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getVideoTags = `-- name: GetVideoTags :many

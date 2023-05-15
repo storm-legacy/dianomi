@@ -12,17 +12,24 @@ import (
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
 )
 
+type VideoFiles struct {
+	Resolution string `json:"resolution"`
+	Duration   uint64 `json:"duration"`
+	FilePath   string `json:"file_path"`
+}
+
 type VideoResponse struct {
-	ID           uint64   `json:"id"`
-	Name         string   `json:"name"`
-	Description  string   `json:"description"`
-	Category     string   `json:"category"`
-	CategoryID   uint64   `json:"category_id"`
-	Upvotes      uint64   `json:"upvotes"`
-	Downvotes    uint64   `json:"downvotes"`
-	Views        uint64   `json:"views"`
-	ThumbnailUrl string   `json:"thumbnail_url"`
-	Tags         []string `json:"tags"`
+	ID           uint64       `json:"id"`
+	Name         string       `json:"name"`
+	Description  string       `json:"description"`
+	Category     string       `json:"category"`
+	CategoryID   uint64       `json:"category_id"`
+	Upvotes      uint64       `json:"upvotes"`
+	Downvotes    uint64       `json:"downvotes"`
+	Views        uint64       `json:"views"`
+	ThumbnailUrl string       `json:"thumbnail_url"`
+	Files        []VideoFiles `json:"videos"`
+	Tags         []string     `json:"tags"`
 }
 
 func GetAllVideos(c *fiber.Ctx) error {
@@ -54,6 +61,25 @@ func GetAllVideos(c *fiber.Ctx) error {
 			return c.SendStatus(fiber.StatusBadRequest)
 		}
 
+		dbFiles, err := qtx.GetVideoFiles(ctx, vid.ID)
+		if err != nil {
+			log.WithField("err", err).Error("Could not get tags from database")
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		fileUrlPrefix := config.GetString("APP_VIDEOS_URL", "https://localhost/videos")
+		thumbnailUrlPrefix := config.GetString("APP_THUMBNAILS_URL", "https://localhost/thumbnails")
+
+		files := make([]VideoFiles, 0)
+		for _, file := range dbFiles {
+			var newFile = VideoFiles{
+				Resolution: string(file.Resolution),
+				Duration:   uint64(file.Duration),
+				FilePath:   fileUrlPrefix + "/" + file.FilePath,
+			}
+			files = append(files, newFile)
+		}
+
 		video := VideoResponse{
 			ID:           uint64(vid.ID),
 			Name:         vid.Name,
@@ -63,8 +89,9 @@ func GetAllVideos(c *fiber.Ctx) error {
 			Upvotes:      uint64(vid.Upvotes),
 			Downvotes:    uint64(vid.Downvotes),
 			Views:        uint64(vid.Views),
-			ThumbnailUrl: vid.Thumbnail.String,
+			ThumbnailUrl: thumbnailUrlPrefix + "/" + vid.Thumbnail.String,
 			Tags:         tags,
+			Files:        files,
 		}
 		videos = append(videos, video)
 	}
@@ -114,6 +141,22 @@ func GetRecommendedVideos(c *fiber.Ctx) error {
 			return c.SendStatus(fiber.StatusBadRequest)
 		}
 
+		dbFiles, err := qtx.GetVideoFiles(ctx, vid.ID)
+		if err != nil {
+			log.WithField("err", err).Error("Could not get tags from database")
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		files := make([]VideoFiles, 0)
+		for _, file := range dbFiles {
+			var newFile = VideoFiles{
+				Resolution: string(file.Resolution),
+				Duration:   uint64(file.Duration),
+				FilePath:   file.FilePath,
+			}
+			files = append(files, newFile)
+		}
+
 		video := VideoResponse{
 			ID:           uint64(vid.ID),
 			Name:         vid.Name,
@@ -125,6 +168,7 @@ func GetRecommendedVideos(c *fiber.Ctx) error {
 			Views:        uint64(vid.Views),
 			ThumbnailUrl: vid.Thumbnail.String,
 			Tags:         tags,
+			Files:        files,
 		}
 		videos = append(videos, video)
 	}
