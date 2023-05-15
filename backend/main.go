@@ -60,7 +60,7 @@ func main() {
 
 	// * Category group
 	category := video.Group("category")
-	category.Get("/", videoCategoryCtrl.GetCategories)
+	category.Get("/All", videoCategoryCtrl.GetCategories)
 	category.Get("/:id", videoCategoryCtrl.GetCategory)
 	category.Patch("/:id", mid.AdminMiddleware, videoCategoryCtrl.PatchCategory)
 	category.Post("/", mid.AdminMiddleware, videoCategoryCtrl.PostCategory)

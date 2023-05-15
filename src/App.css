@@ -23,14 +23,27 @@ main{
     width: 100%;
     
 }
-.cardMY
-{
-    width: 18rem;
-    height: 24vh;
-    overflow:hidden;
+.cardMY {
+    width: 24rem;
+    overflow: hidden;
     margin: 2rem;
-
-}
+    }
+    
+    .myImg {
+    width: 18rem;
+    height: 19vh;
+    }
+    
+    .myP {
+    height: 49vh;
+    float: left;
+    }
+    .myDes
+    {
+        height: 26vh;
+        overflow: hidden;
+ 
+    }
 .sidebar{
     
     margin-left: -1.5vw;

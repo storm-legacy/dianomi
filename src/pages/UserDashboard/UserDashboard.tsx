@@ -1,47 +1,60 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import VideoService from '../../services/video.service';
+import videoService from '../../services/video.service';
 const UserDashboardPage = () => {
-  const divItem = [
-    {
-      id: '1',
-      name: 'wideo1',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi gravida massa mauris, id ',
-      author_id: 'domino jachaś',
-    },
-    {
-      id: '2',
-      name: 'wideo2',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi gravida massa mauris, id  ',
-      author_id: 'Lorens',
-    },
-    {
-      id: '3',
-      name: 'wideo3',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi gravida massa mauris, ',
-      author_id: 'Lorens',
-    },
-    {
-      id: '4',
-      name: 'wideo4',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi gravida massa mauris,  ',
-      author_id: 'Lorens',
-    },
-  ];
+  interface VideoItemData {
+    id: number;
+    name: string;
+    description: string;
+    category: string;
+    tags: string[];
+    thumbnail_url: string;
+  }
+  const [divItem, setDivItem] = useState<VideoItemData[]>([]);
+  useEffect(() => {
+    const { request } = videoService.takeVideo();
+    request
+      .then((res) => {
+        console.log(res);
+        const Videodata = res.data.map(
+          (Videodata: {
+            id: number;
+            name: string;
+            description: string;
+            category: string;
+            tags: string[];
+            thumbnail_url: string;
+          }) => {
+            return {
+              id: Videodata.id,
+              name: Videodata.name,
+              description: Videodata.description,
+              category: Videodata.category,
+              tags: Videodata.tags,
+              thumbnail_url: Videodata.thumbnail_url,
+            };
+          },
+        );
+        setDivItem(Videodata);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   return (
     <div className="container">
       <div className="dashbord  d-flex align-items-center">
         {divItem.map((item, index) => (
           <Link to="/" key={index} className="card cardMY justify-content-center">
-            <div className="p-2">
-              <img src="./OIP.jpg" className="card-img-top" alt="logo kursu" />
+            <div className="p-2 myP">
+              <img src={item.thumbnail_url} className="card-img-top myImg" alt="logo kursu" />
               <div className="card-body">
-                <div className="card-text">
+                <div className="card-text ">
                   <p className="lead">{item.name}</p>
-                  <p>{item.description}</p>
-                  <p>By:{item.author_id}</p>
+                  <p className="myDes">{item.description}</p>
                 </div>
               </div>
             </div>
