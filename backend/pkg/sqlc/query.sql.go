@@ -168,6 +168,15 @@ func (q *Queries) DeleteCategory(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteVideo = `-- name: DeleteVideo :exec
+DELETE FROM video WHERE id = $1
+`
+
+func (q *Queries) DeleteVideo(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteVideo, id)
+	return err
+}
+
 const getAllCategories = `-- name: GetAllCategories :many
 SELECT id, name FROM categories ORDER BY name ASC LIMIT $1 OFFSET $2
 `

@@ -55,6 +55,8 @@ func main() {
 	video.Post("/", mid.AdminMiddleware, videoCtrl.PostVideo)
 	video.Get("/all", mid.AdminMiddleware, videoCtrl.GetAllVideos)
 	video.Get("/recommended", videoCtrl.GetRecommendedVideos)
+	video.Get("/:id", videoCtrl.GetVideo)
+	video.Delete("/:id", videoCtrl.DeleteVideo)
 
 	// * Category group
 	category := video.Group("category")

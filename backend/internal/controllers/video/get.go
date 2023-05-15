@@ -32,6 +32,78 @@ type VideoResponse struct {
 	Tags         []string     `json:"tags"`
 }
 
+func GetVideo(c *fiber.Ctx) error {
+
+	idString := c.Params("id")
+	id, err := strconv.ParseInt(string(idString), 10, 64)
+	if err != nil {
+		log.WithField("err", err).Debug("ID could not be parsed")
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// * CHECK AGANIST DATABASE
+	// * START(DB BLOCK)
+	ctx := context.Background()
+	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
+	if err != nil {
+		log.WithField("err", err).Error("Could not create database connection")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	qtx := sqlc.New(db)
+	defer db.Close()
+	// * END(DB BLOCK)
+
+	// Check if exists
+	vid, err := qtx.GetVideoByID(ctx, id)
+	if err != sql.ErrNoRows && err != nil {
+		log.WithField("err", err.Error()).Error("Could not get video from database")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	if err == sql.ErrNoRows {
+		log.WithField("category_id", id).Debug("Video with specified id doesn't exist")
+		return c.SendStatus(fiber.StatusNotFound)
+	}
+
+	tags, err := qtx.GetVideoTags(ctx, vid.ID)
+	if err != nil {
+		log.WithField("err", err).Error("Could not get tags from database")
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	dbFiles, err := qtx.GetVideoFiles(ctx, vid.ID)
+	if err != nil {
+		log.WithField("err", err).Error("Could not get tags from database")
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	files := make([]VideoFiles, 0)
+	fileUrlPrefix := config.GetString("APP_VIDEOS_URL", "https://localhost/videos")
+	thumbnailUrlPrefix := config.GetString("APP_THUMBNAILS_URL", "https://localhost/thumbnails")
+
+	for _, file := range dbFiles {
+		var newFile = VideoFiles{
+			Resolution: string(file.Resolution),
+			Duration:   uint64(file.Duration),
+			FilePath:   fileUrlPrefix + "/" + file.FilePath,
+		}
+		files = append(files, newFile)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(VideoResponse{
+		ID:           uint64(vid.ID),
+		Name:         vid.Name,
+		Description:  vid.Description,
+		Category:     vid.Category.String,
+		CategoryID:   uint64(vid.ID),
+		Upvotes:      uint64(vid.Upvotes),
+		Downvotes:    uint64(vid.Downvotes),
+		Views:        uint64(vid.Views),
+		ThumbnailUrl: thumbnailUrlPrefix + "/" + vid.Thumbnail.String,
+		Tags:         tags,
+		Files:        files,
+	})
+}
+
 func GetAllVideos(c *fiber.Ctx) error {
 	// * START(DB BLOCK)
 	ctx := context.Background()

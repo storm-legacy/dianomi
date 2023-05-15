@@ -147,6 +147,9 @@ INSERT INTO video (
 ) VALUES ($1, $2, $3)
 RETURNING *;
 
+-- name: DeleteVideo :exec
+DELETE FROM video WHERE id = $1;
+
 -- name: AddThumbnail :exec
 INSERT INTO video_thumbnails (
   video_id,
