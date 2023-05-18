@@ -15,6 +15,7 @@ export const ProfilePage = () => {
         <li>
           <Link to="/routeAdmin">Admin user route</Link>
         </li>
+
         <br />
       </ul>
     </div>

@@ -28,7 +28,7 @@ function RegisterPage() {
   };
 
   return (
-    <div className="position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
+    <div className="Mylogin position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
       <h3>Rejestracja</h3>
       <form onSubmit={handleSubmit}>
         <label>
@@ -72,15 +72,15 @@ function RegisterPage() {
 
         <br />
         <button type="submit" className="btn btn-primary">
-          Zarejestruj
+          Create
         </button>
       </form>
-      <Link to={'/login'}>Logowanie</Link>
-      {!isValid && <p className="alert alert-danger">Wprowadź poprawny email.</p>}
+      Already have an account? <Link to={'/login'}>Log in</Link>
+      {!isValid && <p className="alert alert-danger">Please enter a valid email.</p>}
       {regPassword != regPasswordRepeat && regPasswordRepeat != '' && (
-        <p className="alert alert-danger">
+        <p className="alert alert-danger" style={{ marginTop: '5px' }}>
           {' '}
-          Hasłą nie są identyczne <br />{' '}
+          The passwords are not identical <br />{' '}
         </p>
       )}
     </div>

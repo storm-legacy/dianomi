@@ -23,6 +23,8 @@ import { VideoEdit } from './pages/AdminPanel/AdminPages/VideoEdit';
 import './App.css';
 import { CanceledError } from 'axios';
 import CategoriAdd from './pages/AdminPanel/AdminPages/CategoriAdd';
+import { PasswordResPage } from './pages/LoginPage/PasswordResPage';
+import { CodePage } from './pages/LoginPage/CodePage';
 
 function App() {
   useEffect(() => {
@@ -57,6 +59,22 @@ function App() {
               element={
                 <ProtectedAuth>
                   <RegisterPage />
+                </ProtectedAuth>
+              }
+            />
+            <Route
+              path="/verificate"
+              element={
+                <ProtectedAuth>
+                  <CodePage />
+                </ProtectedAuth>
+              }
+            />
+            <Route
+              path="/password/reset"
+              element={
+                <ProtectedAuth>
+                  <PasswordResPage />
                 </ProtectedAuth>
               }
             />

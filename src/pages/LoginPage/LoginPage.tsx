@@ -36,15 +36,17 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
-      <h3>Login</h3>
+    <div className="Mylogin position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
       <form onSubmit={handleSubmit}>
+        <h3>Login</h3>
         <label>
-          <p className="h5">E-mail:</p>
-          <br />
+          <p className="h5" style={{ marginTop: '15px' }}>
+            E-mail:
+          </p>
           <input
             type="text"
-            className="form-control"
+            style={{ marginTop: '15px' }}
+            className="form-control "
             placeholder="email"
             aria-label="email"
             aria-describedby="email-field"
@@ -54,9 +56,12 @@ const LoginPage = () => {
         </label>
         <br />
         <label>
-          <p className="h5">Password:</p>
+          <p className="h5" style={{ marginTop: '15px' }}>
+            Password:
+          </p>
           <input
             type="password"
+            style={{ marginTop: '15px' }}
             className="form-control"
             placeholder="Password"
             aria-label="Password"
@@ -66,11 +71,16 @@ const LoginPage = () => {
           />
         </label>
         <br />
+
         <button type="submit" className="btn btn-primary mt-10" onSubmit={handleSubmit}>
           Login
         </button>
       </form>
-      <Link to={'/Register'}>Rejestracja</Link>
+      <br />
+      You do not have an account ? <Link to={'/Register'}>Create it</Link>
+      <br />
+      <Link to={'/password/reset'}>Forgot your password?</Link>
+      <Link to="/verificate">code test</Link>
       {logError && <p className="alert alert-danger">Błędne hasło lub Email</p>}
     </div>
   );

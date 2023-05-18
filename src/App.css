@@ -1,98 +1,109 @@
+.container {
+  display: flex;
+}
+.Myone{
+    float: right;
+    margin-right:3vw ;
+    width: 3px;
+}
+.Mylogin {
+  width: 28dvw;
+  height: 45dvh;
+}
+.Mylogin input[type='text'] {
+  width: 22dvw;
+}
+.Mylogin input[type='password'] {
+  width: 22dvw;
+}
+.Mylogin button {
+  margin-top: 4%;
 
-.container{
-    display:flex;
-    
+  width: 8dvw;
 }
-.myRowCont
-{
-    max-height: 90vh;
+
+.myRowCont {
+  max-height: 90vh;
 }
-.myRow
-{
-    width: 80vw;
-    
+.myRow {
+  width: 80vw;
 }
-main{
-    width: 100%;
-    padding: 20px;
+main {
+  width: 100%;
+  padding: 20px;
 }
-.dashbord
-{
-    margin-left: 10vw;
-    width: 1000vw;
-    width: 100%;
-    
+.dashbord {
+  margin-left: 10vw;
+  width: 1000vw;
+  width: 100%;
 }
 .cardMY {
-    width: 24rem;
-    overflow: hidden;
-    margin: 2rem;
-    }
-    
-    .myImg {
-    width: 18rem;
-    height: 19vh;
-    }
-    
-    .myP {
-    height: 49vh;
-    float: left;
-    }
-    .myDes
-    {
-        height: 26vh;
-        overflow: hidden;
- 
-    }
-.sidebar{
-    
-    margin-left: -1.5vw;
-    background: #0D6EFD;
-    color: #fff;
-    height: 100vh;
-    width: 200px;
-    transition: all 0.5s;
-}
-.top_section{
-    display: flex;
-    align-items:center;
-    padding:20px 15px;
-}
-.logo{
-    font-size: 30px;
-}
-.bars{
-    display: flex;
-    font-size: 25px;
-    margin-left: 50px;
-}
-.link{
-    display: flex;
-    color: #fff;
-    padding: 10px 15px;
-    gap: 15px;
-    transition: all 0.5s;
-}
-.link:hover{
-    background:lightskyblue;
-    color: #000;
-    transition: all 0.5s;
-}
-.active{
-    background: lightskyblue;
-    color: #000;
-}
-.icon, .link_text{
-    font-size: 20px;
+  width: 24rem;
+  overflow: hidden;
+  margin: 2rem;
 }
 
-.dci:hover{
-    background:lightskyblue;
-    color: #000;
-    transition: all 0.5s;
-}
-.dci{
-    background: lightskyblue;
-    color: #000;
+.myImg {
+  width: 18rem;
+  height: 19vh;
 }
 
+.myP {
+  height: 49vh;
+  float: left;
+}
+.myDes {
+  height: 26vh;
+  overflow: hidden;
+}
+.sidebar {
+  margin-left: -1.5vw;
+  background: #0d6efd;
+  color: #fff;
+  height: 100vh;
+  width: 200px;
+  transition: all 0.5s;
+}
+.top_section {
+  display: flex;
+  align-items: center;
+  padding: 20px 15px;
+}
+.logo {
+  font-size: 30px;
+}
+.bars {
+  display: flex;
+  font-size: 25px;
+  margin-left: 50px;
+}
+.link {
+  display: flex;
+  color: #fff;
+  padding: 10px 15px;
+  gap: 15px;
+  transition: all 0.5s;
+}
+.link:hover {
+  background: lightskyblue;
+  color: #000;
+  transition: all 0.5s;
+}
+.active {
+  background: lightskyblue;
+  color: #000;
+}
+.icon,
+.link_text {
+  font-size: 20px;
+}
+
+.dci:hover {
+  background: lightskyblue;
+  color: #000;
+  transition: all 0.5s;
+}
+.dci {
+  background: lightskyblue;
+  color: #000;
+}

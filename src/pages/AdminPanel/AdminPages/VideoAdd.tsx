@@ -28,8 +28,6 @@ export const VideoAdd = () => {
     } else {
       setIsDisabled(false);
     }
-    console.log('isDisabled');
-    console.log(isDisabled);
   }, [file, thumbnailFile]);
 
   useEffect(() => {

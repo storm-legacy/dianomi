@@ -35,6 +35,12 @@ class VideoService {
     console.log(request);
     return { request, cancel: () => controller.abort() };
   }
+  takeVideoId(videoId: number | undefined) {
+    const controller = new AbortController();
+    const request = http.get('/video/' + videoId, { signal: controller.signal });
+    console.log(request);
+    return { request, cancel: () => controller.abort() };
+  }
   takeCategori() {
     const controller = new AbortController();
     const request = http.get('/video/category/all', { signal: controller.signal });
