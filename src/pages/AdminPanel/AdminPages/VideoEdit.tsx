@@ -9,33 +9,46 @@ export const VideoEdit = () => {
     category_id: number;
     tags: string[];
   }
-  const [videoListItem, setVideoListItem] = useState<VideoItemData[]>([]);
+  interface Category {
+    ID: number;
+    Name: string;
+  }
+  const [CatrgorisId, setCatrgorisId] = useState('');
   const { VideoId } = useParams();
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;
-
   const [videoName, setVideoName] = useState('');
   const [videoFile, setVideoFile] = useState('');
-  const [videoCategori, setVideoCategori] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [videoDiscription, setVideoDiscription] = useState('');
   const [videoTag, setVideoTag] = useState('');
+
+  const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
+  useEffect(() => {
+    const { request } = videoService.takeCategori();
+    request
+      .then((res) => {
+        console.log(res);
+        const categories = res.data.map((category: { ID: any; Name: any }) => {
+          return {
+            ID: category.ID,
+            Name: category.Name,
+          };
+        });
+        setCategoriesArr(categories);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
   useEffect(() => {
     const { request } = videoService.takeVideoId(VideoIdInt);
     request
       .then((res) => {
-        console.log(res);
-        const Videodata = res.data.map(
-          (Videodata: { id: number; name: string; description: string; category_id: number; tags: string[] }) => {
-            return {
-              id: Videodata.id,
-              name: Videodata.name,
-              description: Videodata.description,
-              category: Videodata.category_id,
-              tags: Videodata.tags,
-            };
-          },
-        );
-        setVideoListItem(Videodata);
-        console.log(Videodata);
+        setVideoTag(res.data.tags);
+        setVideoName(res.data.name);
+        setVideoDiscription(res.data.description);
+        setSelectedCategory(res.data.category_id);
       })
       .catch((err) => {
         console.log(err);
@@ -49,89 +62,57 @@ export const VideoEdit = () => {
       videoName: videoName,
       videoDiscription: videoDiscription,
       videoTag: videoTag,
-      videoCategori: videoCategori,
+      videoCategori: selectedCategory,
       videoFile: videoFile,
     };
   };
   return (
-    <div>
-      {videoListItem.map((item) => {
-        if (item.id === VideoIdInt) {
-          return (
-            <div
-              key={item.id}
-              className="position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded"
-            >
-              <h3>Edit Video</h3>
-              <p></p>
-              <form onSubmit={handleSubmit} className="row">
-                <label>
-                  <p>Name</p>
-                  <input
-                    className="form-control"
-                    type="text"
-                    value={item.name}
-                    onChange={(event) => setVideoName(event.target.value)}
-                  />
-                </label>
-                <label>
-                  <p>Discription</p>
-                  <input
-                    className="form-control"
-                    type="text"
-                    value={item.description}
-                    onChange={(event) => setVideoDiscription(event.target.value)}
-                  />
-                </label>
-                <label>
-                  <p>File</p>
-                  <input
-                    className="form-control"
-                    type="file"
-                    value={videoFile}
-                    onChange={(event) => setVideoFile(event.target.value)}
-                  />
-                </label>
-                <label>
-                  <p>Category</p>
-                  <input
-                    className="form-control"
-                    type="list"
-                    list="CategoryList"
-                    value={item.category_id}
-                    onChange={(event) => setVideoCategori(event.target.value)}
-                  />
-                  <datalist id="CategoryList">
-                    <option value="C++" />
-                    <option value="Go" />
-                    <option value="HowTo" />
-                  </datalist>
-                </label>
-                <label>
-                  <p>Tag</p>
-                  <input
-                    className="form-control"
-                    list="TagList"
-                    value={item.tags}
-                    onChange={(event) => setVideoTag(event.target.value)}
-                  />
-                  <datalist id="TagList">
-                    <option value="1" />
-                    <option value="2" />
-                    <option value="3" />
-                  </datalist>
-                </label>
-                <p></p>
-                <button type="submit" className="btn btn-primary ">
-                  Edit
-                </button>
-              </form>
-            </div>
-          );
-        } else {
-          return null;
-        }
-      })}
-    </div>
+    <>
+      <div className="position-absolute top-50 start-50 translate-middle text-center float-start shadow-lg p-3 mb-5 bg-white rounded">
+        <h3>Video Edit</h3>
+        <p></p>
+        <form onSubmit={handleSubmit} className="row">
+          <label>
+            <p>Title</p>
+            <input
+              className="form-control"
+              type="text"
+              value={videoName}
+              onChange={(event) => setVideoName(event.target.value)}
+            />
+          </label>
+          <label>
+            <p>Description</p>
+            <textarea
+              className="form-control"
+              style={{ height: '15dvh' }}
+              id="exampleFormControlTextarea1"
+              value={videoDiscription}
+            ></textarea>
+          </label>
+
+          <label>
+            <p>Categories</p>
+            <select className="form-select" onChange={(event) => setSelectedCategory(parseInt(event.target.value))}>
+              <option value="DEFAULT">Please select option</option>
+              {categoriesArr.map((item) => (
+                <option value={item.ID} key={item.ID}>
+                  {' '}
+                  {item.Name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <p>Tag</p>
+            <input className="form-control" type="text" value={videoTag} />
+          </label>
+          <p></p>
+          <button type="submit" className="btn btn-primary ">
+            Send
+          </button>
+        </form>
+      </div>
+    </>
   );
 };

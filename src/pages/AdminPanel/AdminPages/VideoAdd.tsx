@@ -182,9 +182,8 @@ export const VideoAdd = () => {
           </label>
           <label>
             <p>Description</p>
-            <input
+            <textarea
               className="form-control"
-              type="text"
               value={videoDescription}
               onChange={(event) => setVideoDescription(event.target.value)}
             />
