@@ -34,7 +34,7 @@ class VideoService {
   }
   takeVideoRecommended() {
     const controller = new AbortController();
-    const request = http.get('/video/recommended', { signal: controller.signal });
+    const request = http.get('/video', { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
   takeVideoId(videoId: number | undefined) {

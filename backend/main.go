@@ -57,8 +57,8 @@ func main() {
 	video := api.Group("video", mid.AuthMiddleware)
 	video.Post("/", mid.AdminMiddleware, videoCtrl.PostVideo)
 	video.Get("/all", mid.AdminMiddleware, videoCtrl.GetAllVideos)
-	video.Get("/recommended", videoCtrl.GetRecommendedVideos)
 	video.Get("/:id", videoCtrl.GetVideo)
+	video.Get("/", videoCtrl.GetRecommendedVideos)
 	video.Delete("/:id", videoCtrl.DeleteVideo)
 
 	// * Category group

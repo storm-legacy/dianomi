@@ -16,7 +16,6 @@ const UserDashboardPage = () => {
     const { request } = videoService.takeVideoRecommended();
     request
       .then((res) => {
-        console.log(res);
         const Videodata = res.data.map(
           (Videodata: {
             id: number;
@@ -39,7 +38,7 @@ const UserDashboardPage = () => {
         setDivItem(Videodata);
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
       });
   }, []);
 

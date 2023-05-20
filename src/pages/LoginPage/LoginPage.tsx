@@ -23,7 +23,6 @@ const LoginPage = () => {
     const { request, cancel } = authService.login(loginEmail, loginPassword);
     request
       .then(({ data }: { data: LoginResponse }) => {
-        console.log(data.data.token);
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('role', data.data.role);
         localStorage.setItem('email', data.data.email);
