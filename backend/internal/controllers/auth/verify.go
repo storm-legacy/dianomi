@@ -16,6 +16,13 @@ func Verify(c *fiber.Ctx) error {
 	frontUrl := config.GetString("APP_FRONT_URL")
 	queryUuid := c.Query("validate")
 
+	// Check if uuid is correct
+	uuidValue, err := uuid.Parse(queryUuid)
+	if err != nil {
+		log.WithField("err", err).Debug("Send UUID is not correct")
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
 	// * CHECK AGANIST DATABASE
 	// * START(DB BLOCK)
 	ctx := context.Background()
@@ -28,13 +35,6 @@ func Verify(c *fiber.Ctx) error {
 	defer db.Close()
 	// * END(DB BLOCK)
 
-	// Check if uuid is correct
-	uuidValue, err := uuid.Parse(queryUuid)
-	if err != nil {
-		log.WithField("err", err).Debug("Send UUID is not correct")
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
 	// Check if is valid
 	uuidDb, err := queries.GetVerificationCode(ctx, uuidValue)
 	if err == sql.ErrNoRows {
@@ -45,10 +45,22 @@ func Verify(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	// Check if wasn't used
+	// Check if isn't expired
 	now := time.Now().Unix()
 	if uuidDb.ValidUntil.Time.Unix() < now {
+		log.WithField("err", err).Debug("Token is expired")
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
 
+	// check if isn't used
+	if uuidDb.Used {
+		log.WithField("code", uuidDb.Code).Debug("Verification code already used")
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	// Check if it's verification token
+	if uuidDb.TaskType != sqlc.VerifyEmailTypeEmailVerification {
+		log.WithField("err", err).Debug("Used token is not releated to this task")
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
@@ -64,5 +76,6 @@ func Verify(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
+	log.WithField("userID", uuidDb.UserID).Info("User was successfuly verified!")
 	return c.Status(fiber.StatusOK).Redirect(frontUrl)
 }

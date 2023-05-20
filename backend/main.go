@@ -40,7 +40,9 @@ func main() {
 	auth.Post("/register", authCtrl.Register)
 	auth.Post("/refresh", mid.AuthMiddleware, authCtrl.Refresh)
 	auth.Post("/logout", mid.AuthMiddleware, authCtrl.Logout)
-	// auth.Post("/genreset", authCtrl.GenerateReset)
+	auth.Post("/genreset", authCtrl.GenerateReset)
+	auth.Get("/reset", authCtrl.GetReset)
+	auth.Post("/reset", authCtrl.PostReset)
 
 	// * MINIO S3
 	auth.Post("/minio", authCtrl.Minio)

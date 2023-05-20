@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	mod "github.com/storm-legacy/dianomi/internal/models"
-	"github.com/storm-legacy/dianomi/pkg/argon2"
 	"github.com/storm-legacy/dianomi/pkg/config"
 	"github.com/storm-legacy/dianomi/pkg/jwt"
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
@@ -61,12 +60,11 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	// * COMPARE PASSWORD
-	result, err := argon2.ComparePasswordAndHash(&userData.Password, &user.Password)
-	if !result {
-		if err != nil {
-			log.WithField("err", err).Error("Problem decoding password")
-			return c.SendStatus(fiber.StatusInternalServerError)
-		}
+	result, err := comparePasswords(userData.Password, user.Password)
+	if err != nil {
+		log.WithField("err", err).Error("Problem decoding password")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	} else if !result {
 		return c.Status(fiber.StatusBadRequest).JSON(mod.Response{
 			Status: "error",
 			Data:   "Incorrect login information",

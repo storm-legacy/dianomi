@@ -6,13 +6,11 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
-	"net/smtp"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	mod "github.com/storm-legacy/dianomi/internal/models"
-	"github.com/storm-legacy/dianomi/pkg/argon2"
 	"github.com/storm-legacy/dianomi/pkg/config"
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
 )
@@ -40,16 +38,6 @@ func generateVerificationCode(userId int64, userEmail string) {
 	}
 	verificationUrl := fmt.Sprintf("%s/auth/verify?validate=%s", appUrl, code.Code)
 
-	// Skip template generation if smtp is disabled
-	smtpEnabled := config.GetBool("APP_SMTP_ENABLED", false)
-	if !smtpEnabled {
-		log.WithFields(log.Fields{
-			"user": userEmail,
-			"url":  verificationUrl,
-		}).Warn("SMTP is disabled, verfication link here")
-		return
-	}
-
 	// Parse template
 	var buf bytes.Buffer
 	templatePath := fmt.Sprintf("%s/%s", storagePath, "templates/verification-email.html")
@@ -63,27 +51,15 @@ func generateVerificationCode(userId int64, userEmail string) {
 		return
 	}
 
-	// Send email with verification code
-	smtpHost := config.GetString("APP_SMTP_HOST", "")
-	smtpPort := config.GetInt("APP_SMTP_PORT", -1)
-	smtpUser := config.GetString("APP_SMTP_USER", "")
-	smtpPassword := config.GetString("APP_SMTP_PASSWORD", "")
-	smtpNoreplay := config.GetString("APP_SMTP_NOREPLAY", "")
-
-	// smtpTLS := config.GetString("APP_SMTP_TLS", "")
-	smtpHostAddr := fmt.Sprintf("%s:%d", smtpHost, smtpPort)
-
-	auth := smtp.PlainAuth("", smtpUser, smtpPassword, smtpHost)
-	toEmails := []string{userEmail}
-	msg := buildMessage(mod.Mail{
-		Sender:  smtpNoreplay,
-		To:      toEmails,
-		Subject: "Verify your DianomiTV email address",
-		Body:    buf.String(),
-	})
-
-	if err := smtp.SendMail(smtpHostAddr, auth, smtpNoreplay, toEmails, msg); err != nil {
-		log.WithField("error", err.Error()).Error("Email could not be sent")
+	if err := sendEmail(Mail{
+		To:      []string{userEmail},
+		Subject: "DianomiTV - Account verification",
+		Body:    buf.Bytes(),
+	}); err != nil {
+		log.WithFields(log.Fields{
+			"err": err.Error(),
+			"url": verificationUrl,
+		}).Error("Verification email could not be sent.")
 		return
 	}
 
@@ -139,7 +115,7 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	// Encode password
-	hashedPassword, err := argon2.EncodePassword(&userData.Password)
+	hashedPassword, err := encodePassword(userData.Password)
 	if err != nil {
 		log.WithField("err", err).Error("Password could not be hashed")
 		return c.SendStatus(fiber.StatusInternalServerError)
