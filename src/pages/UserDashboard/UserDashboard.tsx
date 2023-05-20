@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import VideoService from '../../services/video.service';
 import videoService from '../../services/video.service';
+
 const UserDashboardPage = () => {
   interface VideoItemData {
     id: number;
@@ -14,7 +13,7 @@ const UserDashboardPage = () => {
   }
   const [divItem, setDivItem] = useState<VideoItemData[]>([]);
   useEffect(() => {
-    const { request } = videoService.takeVideo();
+    const { request } = videoService.takeVideoRecommended();
     request
       .then((res) => {
         console.log(res);

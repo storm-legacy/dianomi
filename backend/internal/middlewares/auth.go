@@ -26,7 +26,11 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	token := splitToken[1]
 	claims, err := jwt.ExtractClaims(token)
 	if err != nil {
-		log.WithField("token", splitToken).Debug("Invalid authorization token")
+		log.WithFields(log.Fields{
+			"token": splitToken,
+			"err":   err.Error(),
+		}).Debug("Invalid authorization token")
+
 		return c.Status(fiber.StatusUnauthorized).JSON(mod.Response{
 			Status: "error",
 			Data:   "Invalid authorization token",
@@ -43,6 +47,10 @@ func AuthMiddleware(c *fiber.Ctx) error {
 
 	// Is user verified
 	if !verified {
+		log.WithFields(log.Fields{
+			"verified": verified,
+			"sub":      tokenSub,
+		}).Debug("User is not verified")
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
