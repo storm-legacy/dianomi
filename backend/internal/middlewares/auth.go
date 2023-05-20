@@ -39,6 +39,12 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	tokenExp := time.Unix(int64((*claims)["exp"].(float64)), 0)
 	tokenNbf := time.Unix(int64((*claims)["nbf"].(float64)), 0)
 	tokenJti := (*claims)["jti"].(string)
+	verified := (*claims)["verified"].(bool)
+
+	// Is user verified
+	if !verified {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
 
 	// Is token valid
 	if now > tokenExp.Unix() ||
@@ -55,6 +61,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	c.Locals("role", role)
 	c.Locals("jti", tokenJti)
 	c.Locals("exp", tokenExp)
+	c.Locals("verified", verified)
 
 	return c.Next()
 }

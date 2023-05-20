@@ -27,7 +27,7 @@ const createAxiosInstance = () => {
         return Promise.reject(error);
       }
       if ([401, 403].includes(error.response.status)) {
-        localStorage.removeItem('token');
+        localStorage.clear();
         delete http.defaults.headers.common['Authorization'];
       }
       return Promise.reject(error);

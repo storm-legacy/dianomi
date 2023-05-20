@@ -46,11 +46,11 @@ func TestTokenGeneration(t *testing.T) {
 }
 
 func TestCustomClaims(t *testing.T) {
-	customClaims1 := make(map[string]string)
+	customClaims1 := make(map[string]interface{})
 	customClaims1["test1"] = "02193u410u41ufqj0q-823u80"
 	customClaims1["test2"] = "asdf65438@##$r!^@$(u)sa09"
 
-	customClaims2 := make(map[string]string)
+	customClaims2 := make(map[string]interface{})
 	customClaims2["test3"] = "a0u99r13u-iU{R(#@U)(*@#U)}"
 	customClaims2["test4"] = "0JKA:LA@$U:(@j093w2rj90wj)"
 

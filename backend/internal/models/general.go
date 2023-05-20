@@ -59,6 +59,14 @@ func passwordValidation(fl validator.FieldLevel) bool {
 	return true
 }
 
+// https://zetcode.com/golang/email-smtp/
+type Mail struct {
+	Sender  string
+	To      []string
+	Subject string
+	Body    string
+}
+
 func init() {
 	Validate.RegisterValidation("password", passwordValidation)
 	Validate.RegisterValidation("tags", tagsValidation)

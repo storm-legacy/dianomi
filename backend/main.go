@@ -35,11 +35,12 @@ func main() {
 	// * Authentication group
 	auth := api.Group("auth")
 	// auth.Get("/publickey", authCtrl.PublicKey)
-	auth.Post("/verify", mid.AuthMiddleware, authCtrl.Verify)
+	auth.Get("/verify", authCtrl.Verify)
 	auth.Post("/login", authCtrl.Login)
 	auth.Post("/register", authCtrl.Register)
 	auth.Post("/refresh", mid.AuthMiddleware, authCtrl.Refresh)
 	auth.Post("/logout", mid.AuthMiddleware, authCtrl.Logout)
+	// auth.Post("/genreset", authCtrl.GenerateReset)
 
 	// * MINIO S3
 	auth.Post("/minio", authCtrl.Minio)

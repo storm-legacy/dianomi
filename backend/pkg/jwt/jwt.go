@@ -41,7 +41,7 @@ func init() {
 	}
 }
 
-func GenerateToken(userID uint64, customClaims ...map[string]string) (string, error) {
+func GenerateToken(userID uint64, customClaims ...map[string]interface{}) (string, error) {
 	// Baseline claims
 	now := time.Now().UTC()
 	claims := jwt.MapClaims{

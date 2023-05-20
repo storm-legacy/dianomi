@@ -87,8 +87,9 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	// * GENERATE TOKEN WITH CUSTOM INFORMATIONS
-	claims := make(map[string]string)
+	claims := make(map[string]interface{})
 	claims["role"] = role
+	claims["verified"] = user.VerifiedAt.Valid
 
 	token, err := jwt.GenerateToken(uint64(user.ID), claims)
 	if err != nil {
@@ -100,9 +101,10 @@ func Login(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(mod.Response{
 		Status: "success",
 		Data: fiber.Map{
-			"token": token,
-			"email": userData.Email,
-			"role":  role,
+			"token":    token,
+			"email":    userData.Email,
+			"role":     role,
+			"verified": user.VerifiedAt.Valid,
 		},
 	})
 }

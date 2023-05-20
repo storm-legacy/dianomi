@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const addCategory = `-- name: AddCategory :one
@@ -145,8 +147,31 @@ func (q *Queries) AddVideoThumbnail(ctx context.Context, arg AddVideoThumbnailPa
 	return err
 }
 
-const createUser = `-- name: CreateUser :exec
-INSERT INTO users (email, password) VALUES ($1, $2)
+const createResetCode = `-- name: CreateResetCode :one
+INSERT INTO verification (
+  user_id,
+  task_type
+) VALUES ($1, 'passwordReset')
+RETURNING id, user_id, task_type, code, used, created_at, valid_until
+`
+
+func (q *Queries) CreateResetCode(ctx context.Context, userID int64) (Verification, error) {
+	row := q.db.QueryRowContext(ctx, createResetCode, userID)
+	var i Verification
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.TaskType,
+		&i.Code,
+		&i.Used,
+		&i.CreatedAt,
+		&i.ValidUntil,
+	)
+	return i, err
+}
+
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email, password, verified_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -154,9 +179,41 @@ type CreateUserParams struct {
 	Password string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.ExecContext(ctx, createUser, arg.Email, arg.Password)
-	return err
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, createUser, arg.Email, arg.Password)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.VerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createVerificationCode = `-- name: CreateVerificationCode :one
+INSERT INTO verification (
+  user_id,
+  task_type
+) VALUES ($1, 'emailVerification')
+RETURNING id, user_id, task_type, code, used, created_at, valid_until
+`
+
+func (q *Queries) CreateVerificationCode(ctx context.Context, userID int64) (Verification, error) {
+	row := q.db.QueryRowContext(ctx, createVerificationCode, userID)
+	var i Verification
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.TaskType,
+		&i.Code,
+		&i.Used,
+		&i.CreatedAt,
+		&i.ValidUntil,
+	)
+	return i, err
 }
 
 const deleteCategory = `-- name: DeleteCategory :exec
@@ -447,6 +504,25 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getVerificationCode = `-- name: GetVerificationCode :one
+SELECT id, user_id, task_type, code, used, created_at, valid_until FROM verification WHERE code = $1 LIMIT 1
+`
+
+func (q *Queries) GetVerificationCode(ctx context.Context, code uuid.UUID) (Verification, error) {
+	row := q.db.QueryRowContext(ctx, getVerificationCode, code)
+	var i Verification
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.TaskType,
+		&i.Code,
+		&i.Used,
+		&i.CreatedAt,
+		&i.ValidUntil,
 	)
 	return i, err
 }
@@ -742,6 +818,15 @@ func (q *Queries) RemoveAllUserPackages(ctx context.Context, userID int64) error
 	return err
 }
 
+const setCodeAsUsed = `-- name: SetCodeAsUsed :exec
+UPDATE verification SET used = true WHERE id = $1
+`
+
+func (q *Queries) SetCodeAsUsed(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, setCodeAsUsed, id)
+	return err
+}
+
 const updateCategory = `-- name: UpdateCategory :exec
 UPDATE categories SET name = $1 WHERE id = $2
 `
@@ -767,5 +852,14 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.Password)
+	return err
+}
+
+const verifyUser = `-- name: VerifyUser :exec
+UPDATE users SET verified_at = now() WHERE id = $1
+`
+
+func (q *Queries) VerifyUser(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, verifyUser, id)
 	return err
 }

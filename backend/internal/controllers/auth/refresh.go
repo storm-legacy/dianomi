@@ -14,10 +14,13 @@ func Refresh(c *fiber.Ctx) error {
 	exp := c.Locals("exp").(time.Time)
 	sub := c.Locals("sub").(uint64)
 	role := c.Locals("role").(string)
+	verified := c.Locals("verified").(bool)
 
 	jwt.RevokeToken(jti, exp)
-	claims := make(map[string]string)
+	claims := make(map[string]interface{})
 	claims["role"] = role
+	claims["verfied"] = verified
+
 	token, err := jwt.GenerateToken(sub, claims)
 	if err != nil {
 		log.WithField("err", err).Error("Problem while refreshing JWT token")

@@ -15,8 +15,31 @@ LIMIT 10;
 -- name: GetUserByEmail :one
 SELECT * FROM users WHERE email = $1 LIMIT 1;
 
--- name: CreateUser :exec
-INSERT INTO users (email, password) VALUES ($1, $2);
+-- name: CreateVerificationCode :one
+INSERT INTO verification (
+  user_id,
+  task_type
+) VALUES ($1, 'emailVerification')
+RETURNING *;
+
+-- name: CreateResetCode :one
+INSERT INTO verification (
+  user_id,
+  task_type
+) VALUES ($1, 'passwordReset')
+RETURNING *;
+
+-- name: GetVerificationCode :one
+SELECT * FROM verification WHERE code = $1 LIMIT 1;
+
+-- name: SetCodeAsUsed :exec
+UPDATE verification SET used = true WHERE id = $1;
+
+-- name: VerifyUser :exec
+UPDATE users SET verified_at = now() WHERE id = $1;
+
+-- name: CreateUser :one
+INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *;
 
 -- name: UpdateUserPassword :exec
 UPDATE users SET password = $2 WHERE id = $1;

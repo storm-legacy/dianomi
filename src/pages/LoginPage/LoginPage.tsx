@@ -8,6 +8,7 @@ interface LoginResponse {
     email: string;
     role: string;
     token: string;
+    verified: boolean;
   };
 }
 
@@ -25,6 +26,7 @@ const LoginPage = () => {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('role', data.data.role);
         localStorage.setItem('email', data.data.email);
+        localStorage.setItem('verified', String(data.data.verified));
         navigate('/');
       })
       .catch((err) => {
