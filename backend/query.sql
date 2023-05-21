@@ -170,6 +170,15 @@ INSERT INTO video (
 ) VALUES ($1, $2, $3)
 RETURNING *;
 
+-- name: UpdateVideo :one
+UPDATE video
+SET
+  name = $2,
+  description = $3,
+  category_id = $4
+WHERE id = $1
+RETURNING *;
+
 -- name: DeleteVideo :exec
 DELETE FROM video WHERE id = $1;
 
@@ -221,3 +230,6 @@ INSERT INTO tags (name) VALUES ($1) RETURNING *;
 
 -- name: AddVideoTag :exec
 INSERT INTO video_tags (video_id, tag_id) VALUES ($1, $2) RETURNING *;
+
+-- name: ClearVideoTags :exec
+DELETE FROM video_tags WHERE video_id = $1;

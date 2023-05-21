@@ -147,6 +147,15 @@ func (q *Queries) AddVideoThumbnail(ctx context.Context, arg AddVideoThumbnailPa
 	return err
 }
 
+const clearVideoTags = `-- name: ClearVideoTags :exec
+DELETE FROM video_tags WHERE video_id = $1
+`
+
+func (q *Queries) ClearVideoTags(ctx context.Context, videoID int64) error {
+	_, err := q.db.ExecContext(ctx, clearVideoTags, videoID)
+	return err
+}
+
 const createResetCode = `-- name: CreateResetCode :one
 INSERT INTO verification (
   user_id,
@@ -853,6 +862,46 @@ type UpdateUserPasswordParams struct {
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.Password)
 	return err
+}
+
+const updateVideo = `-- name: UpdateVideo :one
+UPDATE video
+SET
+  name = $2,
+  description = $3,
+  category_id = $4
+WHERE id = $1
+RETURNING id, name, description, category_id, upvotes, downvotes, views, updated_at, created_at, deleted_at
+`
+
+type UpdateVideoParams struct {
+	ID          int64
+	Name        string
+	Description string
+	CategoryID  int64
+}
+
+func (q *Queries) UpdateVideo(ctx context.Context, arg UpdateVideoParams) (Video, error) {
+	row := q.db.QueryRowContext(ctx, updateVideo,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.CategoryID,
+	)
+	var i Video
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.CategoryID,
+		&i.Upvotes,
+		&i.Downvotes,
+		&i.Views,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
 }
 
 const verifyUser = `-- name: VerifyUser :exec

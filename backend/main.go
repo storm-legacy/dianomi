@@ -60,6 +60,7 @@ func main() {
 	video.Get("/:id", videoCtrl.GetVideo)
 	video.Get("/", videoCtrl.GetRecommendedVideos)
 	video.Delete("/:id", videoCtrl.DeleteVideo)
+	video.Patch("/:id", videoCtrl.PathVideo)
 
 	// * Category group
 	category := video.Group("category")
