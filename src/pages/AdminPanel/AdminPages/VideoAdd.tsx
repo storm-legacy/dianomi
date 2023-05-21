@@ -242,13 +242,7 @@ export const VideoAdd = () => {
           </label>
           <label>
             <p>Tag</p>
-            <input className="form-control" list="TagList" value={tags} onChange={(e) => setTags(e.target.value)} />
-            <datalist id="TagList">
-              {' '}
-              <option value="1" />
-              <option value="2" />
-              <option value="3" />
-            </datalist>
+            <input className="form-control" type="text" value={tags} onChange={(e) => setTags(e.target.value)} />
           </label>
           <p></p>
           <button type="submit" className="btn btn-primary " disabled={isDisabled}>

@@ -9,6 +9,12 @@ interface VideoAddData {
   category_id: number | null;
   tags: string[];
 }
+interface VideoPatchData {
+  name: string;
+  description: string;
+  category_id: number | null;
+  Tags: string[];
+}
 interface ThumbnailsData {
   video_id: number;
 }
@@ -22,6 +28,17 @@ class VideoService {
     const request = http.post('/video', videoAdd, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
+  editVideo(videoId: number | undefined, videoEdit: VideoPatchData) {
+    const controller = new AbortController();
+    const request = http.patch('/video/' + videoId, videoEdit, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  deleteVideo(videoId: number | undefined) {
+    const controller = new AbortController();
+    const request = http.delete('/video/' + videoId, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+
   sendCategori(categorieAdd: CategoriesName) {
     const controller = new AbortController();
     const request = http.post('/video/category', categorieAdd, { signal: controller.signal });
@@ -56,4 +73,5 @@ class VideoService {
 
 export default new VideoService();
 export type { VideoAddData };
+export type { VideoPatchData };
 export type { CategoriesName };

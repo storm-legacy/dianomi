@@ -26,6 +26,7 @@ import CategoriAdd from './pages/AdminPanel/AdminPages/CategoriAdd';
 import { PasswordResPage } from './pages/LoginPage/PasswordResPage';
 import { VideoPlayer } from './pages/VideoPlayerPage/VideoPlayer';
 import { ResetPage } from './pages/ResetPage/ResetPage';
+import { VideoDelete } from './pages/AdminPanel/AdminPages/VideoDelete';
 
 function App() {
   useEffect(() => {
@@ -139,6 +140,15 @@ function App() {
                 <ProtectedAdmin>
                   <SidePanel />
                   <VideoList />
+                </ProtectedAdmin>
+              }
+            />
+            <Route
+              path="/VideoDelete/:VideoId"
+              element={
+                <ProtectedAdmin>
+                  <SidePanel />
+                  <VideoDelete />
                 </ProtectedAdmin>
               }
             />

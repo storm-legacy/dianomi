@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import videoService from '../../../services/video.service';
+import videoService, { VideoPatchData } from '../../../services/video.service';
 export const VideoEdit = () => {
   interface VideoItemData {
     id: number;
@@ -13,14 +13,16 @@ export const VideoEdit = () => {
     ID: number;
     Name: string;
   }
+
   const [CatrgorisId, setCatrgorisId] = useState('');
   const { VideoId } = useParams();
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;
   const [videoName, setVideoName] = useState('');
   const [videoFile, setVideoFile] = useState('');
+  const [isDisable, setIsDisabled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [videoDiscription, setVideoDiscription] = useState('');
-  const [videoTag, setVideoTag] = useState('');
+  const [videoTag, setVideoTag] = useState<string>('');
 
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
   useEffect(() => {
@@ -53,18 +55,31 @@ export const VideoEdit = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, ['']);
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
+    const tagsArray = videoTag
+      .split(',')
+      .map((value: string) => value.trim())
+      .filter((value: string) => value.length >= 3 && value.length <= 12)
+      .map((value: string) => value.toLowerCase());
 
-    const videoData = {
-      videoName: videoName,
-      videoDiscription: videoDiscription,
-      videoTag: videoTag,
-      videoCategori: selectedCategory,
-      videoFile: videoFile,
+    const videoData: VideoPatchData = {
+      name: videoName,
+      description: videoDiscription,
+      category_id: selectedCategory,
+      Tags: tagsArray,
     };
+    const { request } = videoService.editVideo(VideoIdInt, videoData);
+    request
+      .then((ress) => {
+        console.log(ress);
+        setIsDisabled(true);
+      })
+      .catch((err) => {
+        console.error(err.message);
+      });
   };
   return (
     <>
@@ -88,6 +103,7 @@ export const VideoEdit = () => {
               style={{ height: '15dvh' }}
               id="exampleFormControlTextarea1"
               value={videoDiscription}
+              onChange={(event) => setVideoDiscription(event.target.value)}
             ></textarea>
           </label>
 
@@ -105,10 +121,15 @@ export const VideoEdit = () => {
           </label>
           <label>
             <p>Tag</p>
-            <input className="form-control" type="text" value={videoTag} />
+            <input
+              className="form-control"
+              type="text"
+              value={videoTag}
+              onChange={(event) => setVideoTag(event.target.value)}
+            />
           </label>
           <p></p>
-          <button type="submit" className="btn btn-primary ">
+          <button type="submit" className="btn btn-primary " disabled={isDisable}>
             Send
           </button>
         </form>

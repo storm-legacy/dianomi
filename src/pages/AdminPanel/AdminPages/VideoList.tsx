@@ -56,7 +56,7 @@ export const VideoList = () => {
                 <div className="col-2  border border-primary">{item.category}</div>
                 <div className="col-2 border border-primary">
                   {' '}
-                  Delete <Link to={'/VideoEdit/' + item.id}>Edit</Link> Ban
+                  <Link to={'/VideoDelete/' + item.id}> Delete </Link> <Link to={'/VideoEdit/' + item.id}>Edit</Link>
                 </div>
               </div>
             ))}
