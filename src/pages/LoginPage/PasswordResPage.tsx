@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import authService from '../../services/auth.service';
 
 export const PasswordResPage = () => {
   const [isValid, setIsValid] = useState(true);
@@ -11,7 +12,15 @@ export const PasswordResPage = () => {
     if (!/^\S+@\S+\.\S+$/.test(email)) {
       setIsValid(false);
     }
-    setEmailExist(true);
+    const { request } = authService.genreset(email);
+    request
+      .then((res) => {
+        console.log(res);
+        setEmailExist(true);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
     setIsDisabled(true);
     console.log(email);
   };
@@ -49,7 +58,7 @@ export const PasswordResPage = () => {
           )}
           {emailExist && (
             <div className="alert alert-success" role="alert">
-              E-mail has been sent to your address <br /> Go back to <Link to={'/login'}>Login page</Link>
+              E-mail has been sent to your address if he exist <br /> Go back to <Link to={'/login'}>Login page</Link>
             </div>
           )}
         </div>

@@ -24,8 +24,8 @@ import './App.css';
 import { CanceledError } from 'axios';
 import CategoriAdd from './pages/AdminPanel/AdminPages/CategoriAdd';
 import { PasswordResPage } from './pages/LoginPage/PasswordResPage';
-import { CodePage } from './pages/LoginPage/CodePage';
 import { VideoPlayer } from './pages/VideoPlayerPage/VideoPlayer';
+import { ResetPage } from './pages/ResetPage/ResetPage';
 
 function App() {
   useEffect(() => {
@@ -64,10 +64,10 @@ function App() {
               }
             />
             <Route
-              path="/verificate"
+              path="/reset-password"
               element={
                 <ProtectedAuth>
-                  <CodePage />
+                  <ResetPage />
                 </ProtectedAuth>
               }
             />

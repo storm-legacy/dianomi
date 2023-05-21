@@ -8,8 +8,9 @@
 }
 .Mylogin {
   width: 28dvw;
-  height: 45dvh;
+  min-height:45dvh;
 }
+
 .Mylogin input[type='text'] {
   width: 22dvw;
 }
@@ -19,6 +20,21 @@
 .Mylogin button {
   margin-top: 4%;
 
+  width: 8dvw;
+}
+.MyRes{
+  width: 28dvw;
+  min-height: 35dvh;
+  min-height: 45dvh;
+}
+.MyRes input[type='text'] {
+  width: 22dvw;
+}
+.MyRes input[type='password'] {
+  width: 22dvw;
+}
+.MyRes button {
+  margin-top: 4%;
   width: 8dvw;
 }
 

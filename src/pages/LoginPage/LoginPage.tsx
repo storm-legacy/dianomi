@@ -82,7 +82,6 @@ const LoginPage = () => {
       You do not have an account ? <Link to={'/Register'}>Create it</Link>
       <br />
       <Link to={'/password/reset'}>Forgot your password?</Link>
-      <Link to="/verificate">code test</Link>
       {logError && <p className="alert alert-danger">Błędne hasło lub Email</p>}
     </div>
   );
