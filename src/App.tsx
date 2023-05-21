@@ -25,6 +25,7 @@ import { CanceledError } from 'axios';
 import CategoriAdd from './pages/AdminPanel/AdminPages/CategoriAdd';
 import { PasswordResPage } from './pages/LoginPage/PasswordResPage';
 import { CodePage } from './pages/LoginPage/CodePage';
+import { VideoPlayer } from './pages/VideoPlayerPage/VideoPlayer';
 
 function App() {
   useEffect(() => {
@@ -93,6 +94,15 @@ function App() {
                 <Protected>
                   <SidePanel />
                   <UserDashboardPage />
+                </Protected>
+              }
+            />
+            <Route
+              path="/VideoPlayer/:VideoId"
+              element={
+                <Protected>
+                  <SidePanel />
+                  <VideoPlayer />
                 </Protected>
               }
             />

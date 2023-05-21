@@ -46,7 +46,7 @@ const UserDashboardPage = () => {
     <div className="container">
       <div className="dashbord  d-flex align-items-center">
         {divItem.map((item, index) => (
-          <Link to="/" key={index} className="card cardMY justify-content-center">
+          <Link to={'/VideoPlayer/' + item.id} key={index} className="card cardMY justify-content-center">
             <div className="p-2 myP">
               <img src={item.thumbnail_url} className="card-img-top myImg" alt="logo kursu" />
               <div className="card-body">
