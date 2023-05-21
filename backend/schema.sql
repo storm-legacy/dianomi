@@ -28,7 +28,7 @@ CREATE TABLE users_packages (
 CREATE TYPE VERIFY_EMAIL_TYPE AS ENUM ('emailVerification', 'emailChange', 'passwordReset');
 CREATE TABLE verification (
   id BIGSERIAL PRIMARY KEY,
-  user_id BIGINT NOT NULL,
+  user_id BIGINT,
   task_type VERIFY_EMAIL_TYPE NOT NULL,
   code UUID NOT NULL DEFAULT gen_random_uuid(),
   used BOOLEAN NOT NULL DEFAULT FALSE,

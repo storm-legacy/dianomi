@@ -1,3 +1,9 @@
+-- name: GetAllUsers :many
+SELECT *
+FROM users
+LIMIT $1
+OFFSET $2;
+
 -- name: GetUserByID :one
 SELECT * FROM users WHERE id = $1 LIMIT 1;
 
@@ -41,8 +47,17 @@ UPDATE users SET verified_at = now() WHERE id = $1;
 -- name: CreateUser :one
 INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *;
 
+-- name: DeleteUser :exec
+DELETE FROM users WHERE id = $1;
+
 -- name: UpdateUserPassword :exec
 UPDATE users SET password = $2 WHERE id = $1;
+
+-- name: UpdateUserEmail :exec
+UPDATE users SET email = $2 WHERE id = $1;
+
+-- name: UpdateUserVerification :exec
+UPDATE users SET verified_at = $2 WHERE id = $1;
 
 -- name: RemoveAllUserPackages :exec
 DELETE FROM users_packages WHERE user_id = $1;

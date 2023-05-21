@@ -12,6 +12,7 @@ import (
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
+	usersCtrl "github.com/storm-legacy/dianomi/internal/controllers/users"
 	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video"
 	videoCategoryCtrl "github.com/storm-legacy/dianomi/internal/controllers/video/category"
 	mid "github.com/storm-legacy/dianomi/internal/middlewares"
@@ -49,9 +50,11 @@ func main() {
 	auth.Head("/minio", func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusNoContent) })
 
 	// * User group
-	// user := api.Group("user", mid.AuthMiddleware)
-	// user.Get("/account", ctrl.NotImplemented)
-	// user.Get("/list", ctrl.NotImplemented)
+	user := api.Group("users", mid.AuthMiddleware, mid.AdminMiddleware)
+	user.Get("/:id", usersCtrl.GetUser)
+	user.Get("/", usersCtrl.GetUsers)
+	user.Delete("/:id", usersCtrl.DeleteUser)
+	user.Put("/:id", func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusNotImplemented) })
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)

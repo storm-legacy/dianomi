@@ -234,6 +234,15 @@ func (q *Queries) DeleteCategory(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	return err
+}
+
 const deleteVideo = `-- name: DeleteVideo :exec
 DELETE FROM video WHERE id = $1
 `
@@ -262,6 +271,48 @@ func (q *Queries) GetAllCategories(ctx context.Context, arg GetAllCategoriesPara
 	for rows.Next() {
 		var i Category
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllUsers = `-- name: GetAllUsers :many
+SELECT id, email, password, verified_at, created_at, updated_at
+FROM users
+LIMIT $1
+OFFSET $2
+`
+
+type GetAllUsersParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetAllUsers(ctx context.Context, arg GetAllUsersParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getAllUsers, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Password,
+			&i.VerifiedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -850,6 +901,20 @@ func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) 
 	return err
 }
 
+const updateUserEmail = `-- name: UpdateUserEmail :exec
+UPDATE users SET email = $2 WHERE id = $1
+`
+
+type UpdateUserEmailParams struct {
+	ID    int64
+	Email string
+}
+
+func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserEmail, arg.ID, arg.Email)
+	return err
+}
+
 const updateUserPassword = `-- name: UpdateUserPassword :exec
 UPDATE users SET password = $2 WHERE id = $1
 `
@@ -861,6 +926,20 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.Password)
+	return err
+}
+
+const updateUserVerification = `-- name: UpdateUserVerification :exec
+UPDATE users SET verified_at = $2 WHERE id = $1
+`
+
+type UpdateUserVerificationParams struct {
+	ID         int64
+	VerifiedAt sql.NullTime
+}
+
+func (q *Queries) UpdateUserVerification(ctx context.Context, arg UpdateUserVerificationParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserVerification, arg.ID, arg.VerifiedAt)
 	return err
 }
 
