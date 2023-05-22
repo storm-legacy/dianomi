@@ -33,6 +33,7 @@ export const VideoPlayer = () => {
         setVideoName(res.data.name);
         setDataVideo(res.data.videos);
         setVideoThumbnail(res.data.thumbnail_url);
+        console.log(videoThumbnail);
       })
       .catch((err) => {
         console.log(err);

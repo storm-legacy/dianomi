@@ -1,6 +1,15 @@
 .container {
   display: flex;
 }
+.custom-link {
+  background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+}
 .Myone{
     float: right;
     margin-right:3vw ;
@@ -42,12 +51,18 @@
   max-height: 90vh;
 }
 .myRow {
-  width: 80vw;
+  width: 90vw;
+  
 }
 main {
   width: 100%;
   padding: 20px;
 }
+.MyList
+{
+  margin-left:5dvw;
+}
+
 .dashbord {
   margin-left: 10vw;
   width: 1000vw;

@@ -16,6 +16,7 @@ const UserDashboardPage = () => {
     const { request } = videoService.takeVideoRecommended();
     request
       .then((res) => {
+        console.log(res);
         const Videodata = res.data.map(
           (Videodata: {
             id: number;
@@ -48,7 +49,11 @@ const UserDashboardPage = () => {
         {divItem.map((item, index) => (
           <Link to={'/VideoPlayer/' + item.id} key={index} className="card cardMY justify-content-center">
             <div className="p-2 myP">
-              <img src={item.thumbnail_url} className="card-img-top myImg" alt="logo kursu" />
+              <img
+                src={'http://localhost:9000/thumbnails/' + item.thumbnail_url}
+                className="card-img-top myImg"
+                alt="logo kursu"
+              />
               <div className="card-body">
                 <div className="card-text ">
                   <p className="lead">{item.name}</p>
