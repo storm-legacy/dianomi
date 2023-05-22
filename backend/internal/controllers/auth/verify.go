@@ -65,7 +65,7 @@ func Verify(c *fiber.Ctx) error {
 	}
 
 	// Verify user
-	if err := queries.VerifyUser(ctx, uuidDb.UserID); err != nil {
+	if err := queries.VerifyUser(ctx, uuidDb.UserID.Int64); err != nil {
 		log.WithField("err", err).Error("Could not verify the user")
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}

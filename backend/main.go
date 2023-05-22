@@ -54,7 +54,7 @@ func main() {
 	user.Get("/:id", usersCtrl.GetUser)
 	user.Get("/", usersCtrl.GetUsers)
 	user.Delete("/:id", usersCtrl.DeleteUser)
-	user.Put("/:id", func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusNotImplemented) })
+	user.Patch("/:id", usersCtrl.PatchUser)
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)

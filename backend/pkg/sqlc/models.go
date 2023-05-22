@@ -173,7 +173,7 @@ type UserVideoMetric struct {
 
 type UsersPackage struct {
 	ID         int64
-	UserID     int64
+	UserID     sql.NullInt64
 	Tier       Role
 	CreatedAt  sql.NullTime
 	ValidFrom  time.Time
@@ -182,7 +182,7 @@ type UsersPackage struct {
 
 type Verification struct {
 	ID         int64
-	UserID     int64
+	UserID     sql.NullInt64
 	TaskType   VerifyEmailType
 	Code       uuid.UUID
 	Used       bool

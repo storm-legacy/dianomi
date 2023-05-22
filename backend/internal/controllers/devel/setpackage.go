@@ -55,13 +55,19 @@ func SetPackage(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
 
-	err = queries.RemoveAllUserPackages(ctx, user.ID)
+	err = queries.RemoveAllUserPackages(ctx, sql.NullInt64{
+		Int64: user.ID,
+		Valid: true,
+	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
 
 	err = queries.GiveUserPackage(ctx, sqlc.GiveUserPackageParams{
-		UserID:     user.ID,
+		UserID: sql.NullInt64{
+			Int64: user.ID,
+			Valid: true,
+		},
 		Tier:       postData.Role,
 		ValidFrom:  time.Now(),
 		ValidUntil: time.Now().AddDate(0, 0, int(postData.ValidFor)),

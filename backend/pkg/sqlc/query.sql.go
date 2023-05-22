@@ -164,7 +164,7 @@ INSERT INTO verification (
 RETURNING id, user_id, task_type, code, used, created_at, valid_until
 `
 
-func (q *Queries) CreateResetCode(ctx context.Context, userID int64) (Verification, error) {
+func (q *Queries) CreateResetCode(ctx context.Context, userID sql.NullInt64) (Verification, error) {
 	row := q.db.QueryRowContext(ctx, createResetCode, userID)
 	var i Verification
 	err := row.Scan(
@@ -210,7 +210,7 @@ INSERT INTO verification (
 RETURNING id, user_id, task_type, code, used, created_at, valid_until
 `
 
-func (q *Queries) CreateVerificationCode(ctx context.Context, userID int64) (Verification, error) {
+func (q *Queries) CreateVerificationCode(ctx context.Context, userID sql.NullInt64) (Verification, error) {
 	row := q.db.QueryRowContext(ctx, createVerificationCode, userID)
 	var i Verification
 	err := row.Scan(
@@ -413,6 +413,76 @@ func (q *Queries) GetCategoryByName(ctx context.Context, name string) (Category,
 	return i, err
 }
 
+const getOverlapingPackages = `-- name: GetOverlapingPackages :many
+SELECT id, user_id, tier, created_at, valid_from, valid_until FROM
+  users_packages
+WHERE
+  $1 BETWEEN valid_from AND valid_until
+  OR
+  $2 BETWEEN valid_until AND valid_from
+  OR ($1 < valid_from AND $2 > valid_until)
+ORDER BY
+  created_at DESC
+LIMIT 5
+`
+
+type GetOverlapingPackagesParams struct {
+	ValidFrom  time.Time
+	ValidUntil time.Time
+}
+
+func (q *Queries) GetOverlapingPackages(ctx context.Context, arg GetOverlapingPackagesParams) ([]UsersPackage, error) {
+	rows, err := q.db.QueryContext(ctx, getOverlapingPackages, arg.ValidFrom, arg.ValidUntil)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []UsersPackage
+	for rows.Next() {
+		var i UsersPackage
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Tier,
+			&i.CreatedAt,
+			&i.ValidFrom,
+			&i.ValidUntil,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPackageByID = `-- name: GetPackageByID :one
+SELECT id, user_id, tier, created_at, valid_from, valid_until FROM
+  users_packages
+WHERE
+  id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetPackageByID(ctx context.Context, id int64) (UsersPackage, error) {
+	row := q.db.QueryRowContext(ctx, getPackageByID, id)
+	var i UsersPackage
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Tier,
+		&i.CreatedAt,
+		&i.ValidFrom,
+		&i.ValidUntil,
+	)
+	return i, err
+}
+
 const getPackagesByUserID = `-- name: GetPackagesByUserID :many
 SELECT id, user_id, tier, created_at, valid_from, valid_until FROM
   users_packages
@@ -425,7 +495,7 @@ ORDER BY
 LIMIT 10
 `
 
-func (q *Queries) GetPackagesByUserID(ctx context.Context, userID int64) ([]UsersPackage, error) {
+func (q *Queries) GetPackagesByUserID(ctx context.Context, userID sql.NullInt64) ([]UsersPackage, error) {
 	rows, err := q.db.QueryContext(ctx, getPackagesByUserID, userID)
 	if err != nil {
 		return nil, err
@@ -853,7 +923,7 @@ INSERT INTO users_packages (
 `
 
 type GiveUserPackageParams struct {
-	UserID     int64
+	UserID     sql.NullInt64
 	Tier       Role
 	ValidFrom  time.Time
 	ValidUntil time.Time
@@ -873,8 +943,17 @@ const removeAllUserPackages = `-- name: RemoveAllUserPackages :exec
 DELETE FROM users_packages WHERE user_id = $1
 `
 
-func (q *Queries) RemoveAllUserPackages(ctx context.Context, userID int64) error {
+func (q *Queries) RemoveAllUserPackages(ctx context.Context, userID sql.NullInt64) error {
 	_, err := q.db.ExecContext(ctx, removeAllUserPackages, userID)
+	return err
+}
+
+const removeUserPackage = `-- name: RemoveUserPackage :exec
+DELETE FROM users_packages WHERE id = $1
+`
+
+func (q *Queries) RemoveUserPackage(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, removeUserPackage, id)
 	return err
 }
 
@@ -898,6 +977,26 @@ type UpdateCategoryParams struct {
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error {
 	_, err := q.db.ExecContext(ctx, updateCategory, arg.Name, arg.ID)
+	return err
+}
+
+const updatePackage = `-- name: UpdatePackage :exec
+UPDATE
+  users_packages
+SET
+  tier = $1,
+  valid_from = $2,
+  valid_until = $3
+`
+
+type UpdatePackageParams struct {
+	Tier       Role
+	ValidFrom  time.Time
+	ValidUntil time.Time
+}
+
+func (q *Queries) UpdatePackage(ctx context.Context, arg UpdatePackageParams) error {
+	_, err := q.db.ExecContext(ctx, updatePackage, arg.Tier, arg.ValidFrom, arg.ValidUntil)
 	return err
 }
 

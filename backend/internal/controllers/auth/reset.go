@@ -63,7 +63,7 @@ func checkResetUUID(code uuid.UUID) error {
 }
 
 // Task sending emails
-func asyncReset(resetData ResetData) {
+func AsyncReset(resetData ResetData) {
 	// * VALIDATE DATA
 	resetData.Email = strings.ToLower(resetData.Email)
 	// validate data
@@ -95,7 +95,11 @@ func asyncReset(resetData ResetData) {
 	}
 
 	// Create reset code
-	code, err := queries.CreateResetCode(ctx, user.ID)
+
+	code, err := queries.CreateResetCode(ctx, sql.NullInt64{
+		Int64: user.ID,
+		Valid: true,
+	})
 	if err != nil {
 		log.WithField("error", err.Error()).Error("Could not create reset code")
 	}
@@ -141,7 +145,7 @@ func GenerateReset(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	go asyncReset(*resetData)
+	go AsyncReset(*resetData)
 
 	log.WithField("email", resetData.Email).Info("User requested password reset!")
 	return c.SendStatus(fiber.StatusOK)
@@ -224,7 +228,7 @@ func PostReset(c *fiber.Ctx) error {
 
 	// Change user password
 	if err := queries.UpdateUserPassword(ctx, sqlc.UpdateUserPasswordParams{
-		ID:       uuidDb.UserID,
+		ID:       uuidDb.UserID.Int64,
 		Password: hashedPassword,
 	}); err != nil {
 		log.WithField("err", err).Error("User password could not be updated")

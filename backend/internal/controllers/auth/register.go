@@ -32,7 +32,10 @@ func generateVerificationCode(userId int64, userEmail string) {
 	appUrl := config.GetString("APP_URL")
 
 	// Create verification code and url
-	code, err := queries.CreateVerificationCode(ctx, userId)
+	code, err := queries.CreateVerificationCode(ctx, sql.NullInt64{
+		Int64: userId,
+		Valid: true,
+	})
 	if err != nil {
 		log.WithField("error", err.Error()).Error("Could not create verification code")
 	}

@@ -13,7 +13,7 @@ CREATE TABLE users (
 CREATE TYPE ROLE AS ENUM ('free', 'premium', 'administrator');
 CREATE TABLE users_packages (
   id BIGSERIAL PRIMARY KEY,
-  user_id BIGINT NOT NULL,
+  user_id BIGINT,
   tier ROLE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   valid_from DATE NOT NULL DEFAULT NOW(),

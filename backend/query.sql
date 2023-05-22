@@ -18,6 +18,25 @@ ORDER BY
   created_at DESC
 LIMIT 10;
 
+-- name: GetOverlapingPackages :many
+SELECT * FROM
+  users_packages
+WHERE
+  $1 BETWEEN valid_from AND valid_until
+  OR
+  $2 BETWEEN valid_until AND valid_from
+  OR ($1 < valid_from AND $2 > valid_until)
+ORDER BY
+  created_at DESC
+LIMIT 5;
+
+-- name: GetPackageByID :one
+SELECT * FROM
+  users_packages
+WHERE
+  id = $1
+LIMIT 1;
+
 -- name: GetUserByEmail :one
 SELECT * FROM users WHERE email = $1 LIMIT 1;
 
@@ -71,6 +90,17 @@ INSERT INTO users_packages (
 ) VALUES (
   $1, $2, $3, $4
 );
+
+-- name: RemoveUserPackage :exec
+DELETE FROM users_packages WHERE id = $1;
+
+-- name: UpdatePackage :exec
+UPDATE
+  users_packages
+SET
+  tier = $1,
+  valid_from = $2,
+  valid_until = $3;
 
 -- name: GetVideosByCategory :many
 SELECT

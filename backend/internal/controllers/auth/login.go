@@ -73,7 +73,10 @@ func Login(c *fiber.Ctx) error {
 
 	// * GET PACKAGES
 	var role string
-	userPackages, err := queries.GetPackagesByUserID(ctx, user.ID)
+	userPackages, err := queries.GetPackagesByUserID(ctx, sql.NullInt64{
+		Int64: user.ID,
+		Valid: true,
+	})
 	if err != nil {
 		log.WithFields(log.Fields{"user": user, "err": err}).Error("Problem while resolving user packages")
 		return c.SendStatus(fiber.StatusInternalServerError)

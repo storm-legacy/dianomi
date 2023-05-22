@@ -15,17 +15,18 @@ import (
 )
 
 type Package struct {
-	ID         uint64    `json:"id"`
+	ID         int64     `json:"id"`
 	UserID     uint64    `json:"user_id"`
 	Tier       string    `json:"tier"`
 	ValidFrom  time.Time `json:"valid_from"`
 	ValidUntil time.Time `json:"valid_until"`
+	Delete     bool      `json:"delete"`
 }
 
 type User struct {
-	ID       uint64    `json:"id"`
-	Email    string    `json:"email"`
-	Verified bool      `json:"verified"`
+	ID       uint64    `json:"id" validate:"required"`
+	Email    string    `json:"email" validate:"required"`
+	Verified bool      `json:"verified" validate:"required"`
 	Packages []Package `json:"packages"`
 }
 
@@ -58,7 +59,10 @@ func GetUser(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	packs, err := qtx.GetPackagesByUserID(ctx, user.ID)
+	packs, err := qtx.GetPackagesByUserID(ctx, sql.NullInt64{
+		Int64: user.ID,
+		Valid: true,
+	})
 	if err != nil {
 		log.WithField("err", err).Error("Could not get user packages from database")
 		return c.SendStatus(fiber.StatusBadRequest)
@@ -66,7 +70,7 @@ func GetUser(c *fiber.Ctx) error {
 	packages := make([]Package, 0)
 	for _, p := range packs {
 		var newPack = Package{
-			ID:         uint64(p.ID),
+			ID:         p.ID,
 			Tier:       string(p.Tier),
 			ValidFrom:  p.ValidFrom,
 			ValidUntil: p.ValidUntil,
@@ -118,7 +122,10 @@ func GetUsers(c *fiber.Ctx) error {
 
 	users := make([]User, 0)
 	for _, user := range res {
-		packs, err := qtx.GetPackagesByUserID(ctx, user.ID)
+		packs, err := qtx.GetPackagesByUserID(ctx, sql.NullInt64{
+			Int64: user.ID,
+			Valid: true,
+		})
 		if err != nil {
 			log.WithField("err", err).Error("Could not get user packages from database")
 			return c.SendStatus(fiber.StatusBadRequest)
@@ -127,8 +134,9 @@ func GetUsers(c *fiber.Ctx) error {
 		packages := make([]Package, 0)
 		for _, p := range packs {
 			var newPack = Package{
-				ID:         uint64(p.ID),
+				ID:         p.ID,
 				Tier:       string(p.Tier),
+				UserID:     uint64(user.ID),
 				ValidFrom:  p.ValidFrom,
 				ValidUntil: p.ValidUntil,
 			}
