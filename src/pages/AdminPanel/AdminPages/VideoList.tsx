@@ -32,6 +32,12 @@ export const VideoList = () => {
         console.log(err);
       });
   }, []);
+  const deleteVideo = (value: number) => {
+    console.log(value);
+    const { request } = videoService.deleteVideo(value);
+    request.then((res) => console.log(res)).catch((err) => console.error(err.message));
+    window.location.reload();
+  };
 
   return (
     <>
@@ -55,7 +61,11 @@ export const VideoList = () => {
               <div className="col-2  border border-primary">{item.category}</div>
               <div className="col-2 border border-primary">
                 {' '}
-                <Link to={'/VideoDelete/' + item.id}> Delete </Link> <Link to={'/VideoEdit/' + item.id}>Edit</Link>
+                <button className="custom-link link-primary" onClick={() => deleteVideo(item.id)}>
+                  {' '}
+                  Delete{' '}
+                </button>{' '}
+                <Link to={'/VideoEdit/' + item.id}>Edit</Link>
               </div>
             </div>
           ))}

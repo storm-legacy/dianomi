@@ -49,7 +49,7 @@ const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId, ver
     request
       .then((res) => {
         console.log(res);
-        window.location.reload();
+        onRequestClose;
       })
       .catch((err) => {
         console.error(err.message);

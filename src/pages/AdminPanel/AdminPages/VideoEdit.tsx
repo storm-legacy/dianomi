@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import videoService, { VideoPatchData } from '../../../services/video.service';
-
 export const VideoEdit = () => {
   interface VideoItemData {
     id: number;
@@ -14,7 +13,7 @@ export const VideoEdit = () => {
     ID: number;
     Name: string;
   }
-  const navigate = useNavigate();
+
   const [CatrgorisId, setCatrgorisId] = useState('');
   const { VideoId } = useParams();
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;

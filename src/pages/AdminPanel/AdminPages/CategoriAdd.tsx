@@ -12,10 +12,10 @@ function CategoriAdd() {
     const { request } = VideoService.sendCategori(data);
     request
       .then((res) => {
-        console.log(res);
+        window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
+        console.log(err.message);
       });
   };
   return (

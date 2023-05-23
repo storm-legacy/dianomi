@@ -3,10 +3,12 @@ import axios from 'axios';
 import { Upload } from '@aws-sdk/lib-storage';
 import { S3Client, S3 } from '@aws-sdk/client-s3';
 import VideoService, { VideoAddData } from '../../../services/video.service';
+import { useNavigate } from 'react-router-dom';
 
 const s3endpoint = 'http://localhost:9000';
 
 export const VideoAdd = () => {
+  const [videoArrLong, SetVideoArrLong] = useState<number>(0);
   const [videoName, setVideoName] = useState('');
   const [file, setFile] = useState<File>();
   const [thumbnailFile, setThumbnailFile] = useState<File>();
@@ -16,12 +18,35 @@ export const VideoAdd = () => {
   const [width, setWidth] = useState(0);
   const [width2, setWidth2] = useState(0);
   const [isDisabled, setIsDisabled] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   interface Category {
     ID: number;
     Name: string;
   }
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
+
+  const ifAdd = () => {
+    const { request } = VideoService.takeVideo();
+    request.then((res) => {
+      console.log('sprawdzam');
+      if (videoArrLong != res.data.length) {
+        console.log('zmieniło sie');
+        navigate('/');
+      } else {
+        console.log(videoArrLong);
+        setTimeout(ifAdd, 25000);
+      }
+    });
+  };
+  useEffect(() => {
+    const { request } = VideoService.takeVideo();
+    request.then((res) => {
+      console.log(res.data.length);
+      SetVideoArrLong(res.data.length);
+    });
+  }, []);
+
   useEffect(() => {
     if (file == null || thumbnailFile == null) {
       setIsDisabled(true);
@@ -157,6 +182,7 @@ export const VideoAdd = () => {
       request
         .then((res) => {
           console.log(res);
+          ifAdd();
         })
         .catch((err) => {
           console.log(err);
