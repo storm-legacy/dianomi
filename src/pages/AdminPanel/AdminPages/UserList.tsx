@@ -33,6 +33,7 @@ function UserList() {
     console.log(value);
     const { request } = adminService.deleteUser(value);
     request.then((res) => console.log(res)).catch((err) => console.error(err.message));
+    window.location.reload();
   };
   useEffect(() => {
     const { request } = adminService.takeUser();
@@ -85,11 +86,14 @@ function UserList() {
               <div className="col-1 border border-primary">{item.verified ? 'Yes' : 'No'}</div>
               <div className="col-1 border border-primary">
                 {' '}
-                <button className="custom-link " onClick={() => DeleteUser(item.id)}>
+                <button className="custom-link link-primary" onClick={() => DeleteUser(item.id)}>
                   {' '}
                   Delete{' '}
                 </button>{' '}
-                <button onClick={() => openModal(item.id, item.verified, item.email)} className="custom-link">
+                <button
+                  onClick={() => openModal(item.id, item.verified, item.email)}
+                  className="custom-link link-primary"
+                >
                   Edit
                 </button>{' '}
                 Verified

@@ -4,6 +4,7 @@ export const AdminPanel = () => {
   return (
     <div className="container text-center">
       <div className="position-absolute top-50 start-50 translate-middle">
+        <h1>Admin Panel</h1>
         <div className="row">
           <Link className="col" style={{ margin: 20 }} to={'/VideoAdd'}>
             {' '}
