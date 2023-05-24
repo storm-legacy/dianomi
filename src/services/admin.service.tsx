@@ -8,11 +8,19 @@ interface VideoAddData {
   category_id: number | null;
   tags: string[];
 }
+interface packages {
+  delete: boolean | null;
+  id: number | undefined;
+  tier: string | undefined;
+  user_id: number | null;
+  valid_from: string;
+  valid_until: string;
+}
 interface UserEditData {
   email: string;
   verified: boolean;
   reset_password: boolean;
-  packages: string[];
+  packages: packages;
 }
 
 class AdminService {
@@ -45,3 +53,4 @@ class AdminService {
 export default new AdminService();
 export type { VideoAddData };
 export type { UserEditData };
+export type { packages };

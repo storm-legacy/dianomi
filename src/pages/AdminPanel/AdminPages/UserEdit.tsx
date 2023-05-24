@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
-import adminService, { UserEditData } from '../../../services/admin.service';
+import adminService, { UserEditData, packages } from '../../../services/admin.service';
 
 Modal.setAppElement('#root');
 
@@ -10,13 +10,19 @@ interface UserEditProps {
   userId: number | null;
   verified: boolean;
   OldEmail: string;
+  packages: packages | undefined;
 }
 
-const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId, verified, OldEmail }) => {
+const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId, verified, OldEmail, packages }) => {
   const [userEmail, setUserEmail] = useState<string>('');
   const [isPasswordReset, setIsPasswordReset] = useState<boolean>(false);
   const [isVerified, setIsVerified] = useState(true);
+  const [deletePack, setDeletePack] = useState<boolean>(false);
+  const [packetId, setPacketId] = useState(packages?.id);
   const [isDisable, setIsDisabled] = useState<boolean>(false);
+  const [tier, setTier] = useState<string | undefined>(packages?.tier);
+  const [validFrom, setValidFrom] = useState<string>(String(packages?.valid_from));
+  const [validUntil, setValidUntil] = useState<string>(String(packages?.valid_until));
   const customStyles = {
     content: {
       top: '50%',
@@ -24,11 +30,12 @@ const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId, ver
       right: 'auto',
       bottom: 'auto',
       marginRight: '-50%',
-      height: '50dvh',
+      height: '95dvh',
       width: '50dvh',
       transform: 'translate(-50%, -50%)',
     },
   };
+
   useEffect(() => {
     if (!/^\S+@\S+\.\S+$/.test(userEmail)) {
       setIsDisabled(true);
@@ -39,11 +46,19 @@ const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId, ver
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
+    const packagesData: packages = {
+      delete: deletePack,
+      id: packetId,
+      tier: tier,
+      user_id: userId,
+      valid_from: validFrom,
+      valid_until: validUntil,
+    };
     const DataUser: UserEditData = {
       email: userEmail,
       verified: isVerified,
       reset_password: isPasswordReset,
-      packages: [],
+      packages: packagesData,
     };
     const { request } = adminService.patchUser(userId, DataUser);
     request
@@ -92,6 +107,47 @@ const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId, ver
             onChange={(e) => setIsPasswordReset(e.target.checked)}
           />
           Password resetset
+        </label>
+        <br />
+        <label>
+          <input className="form-check-input" type="checkbox" name="packet" /> You want change packet
+        </label>
+        <br />
+        <label>
+          <input
+            className="form-check-input"
+            type="checkbox"
+            name="delete"
+            onChange={(event) => setDeletePack(event.target.checked)}
+          />{' '}
+          Delete
+        </label>
+        <br />
+        <label>
+          <p>ID:</p>
+          <input
+            className="form-control"
+            value={packetId}
+            onChange={(event) => setPacketId(parseInt(event.target.value))}
+            type="number"
+            name="id"
+          />
+        </label>
+        <br />
+        <label>
+          <p> Tier:</p>
+          <input className="form-control" type="text" name="tier" value={tier} />
+        </label>
+        <br />
+        <br />
+        <label>
+          <p>Valid From:</p>
+          <input className="form-control" type="data" name="valid_from" />
+        </label>
+        <br />
+        <label>
+          <p>Valid Until:</p>
+          <input className="form-control" type="data" name="valid_until" />
         </label>
         <br />
         <button className="btn btn-primary" disabled={isDisable}>

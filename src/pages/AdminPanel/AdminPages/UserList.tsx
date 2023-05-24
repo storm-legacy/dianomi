@@ -3,26 +3,31 @@ import { Link } from 'react-router-dom';
 import adminService from '../../../services/admin.service';
 import UserEdit from './UserEdit';
 function UserList() {
-  interface PackagesData {
+  interface packages {
+    delete: boolean;
+    id: number;
+    tier: string;
+    user_id: number;
     valid_from: string;
     valid_until: string;
-    tier: string;
   }
   interface UserDataList {
     id: number;
     email: string;
     verified: boolean;
-    packages: PackagesData[];
+    packages: packages[];
   }
   const [userData, setUserData] = useState<UserDataList[]>([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [userIdNow, setUserIdNow] = useState<number | null>();
   const [verified, setVerified] = useState<boolean>();
   const [userEmail, setUserEmail] = useState('');
-  const openModal = (id: number, verified: boolean, email: string) => {
+  const [packagesUser, setPackagesUser] = useState<packages>();
+  const openModal = (id: number, verified: boolean, email: string, packages: packages | undefined) => {
     setUserIdNow(id);
     setVerified(verified);
     setUserEmail(email);
+    setPackagesUser(packages);
     setModalIsOpen(true);
   };
 
@@ -39,8 +44,13 @@ function UserList() {
     const { request } = adminService.takeUser();
     request
       .then((res) => {
-        const data = res.data.map((data: { id: number; email: string; verified: boolean; packages: PackagesData }) => {
-          return { id: data.id, email: data.email, verified: data.verified, packages: data.packages };
+        const data = res.data.map((data: UserDataList) => {
+          const updatedPackages = data.packages.map((pkg: packages) => {
+            const { delete: pkgDelete, id: pkgId, tier, user_id, valid_from, valid_until } = pkg;
+            return { delete: pkgDelete, id: pkgId, tier, user_id, valid_from, valid_until };
+          });
+          console.log(updatedPackages);
+          return { id: data.id, email: data.email, verified: data.verified, packages: updatedPackages };
         });
         setUserData(data);
         console.log(userData);
@@ -91,7 +101,7 @@ function UserList() {
                   Delete{' '}
                 </button>{' '}
                 <button
-                  onClick={() => openModal(item.id, item.verified, item.email)}
+                  onClick={() => openModal(item.id, item.verified, item.email, item.packages[0])}
                   className="custom-link link-primary"
                 >
                   Edit
@@ -106,6 +116,7 @@ function UserList() {
             userId={userIdNow!}
             verified={verified!}
             OldEmail={userEmail}
+            packages={packagesUser}
           />
         </div>
       </div>
