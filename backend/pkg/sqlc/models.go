@@ -198,6 +198,7 @@ type Video struct {
 	Upvotes     int64
 	Downvotes   int64
 	Views       int64
+	IsPremium   bool
 	UpdatedAt   sql.NullTime
 	CreatedAt   sql.NullTime
 	DeletedAt   sql.NullTime

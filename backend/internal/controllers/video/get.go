@@ -27,6 +27,7 @@ type VideoResponse struct {
 	Upvotes      uint64       `json:"upvotes"`
 	Downvotes    uint64       `json:"downvotes"`
 	Views        uint64       `json:"views"`
+	IsPremium    bool         `json:"IsPremium"`
 	ThumbnailUrl string       `json:"thumbnail_url"`
 	Files        []VideoFiles `json:"videos"`
 	Tags         []string     `json:"tags"`
@@ -98,6 +99,7 @@ func GetVideo(c *fiber.Ctx) error {
 		Upvotes:      uint64(vid.Upvotes),
 		Downvotes:    uint64(vid.Downvotes),
 		Views:        uint64(vid.Views),
+		IsPremium:    bool(vid.IsPremium),
 		ThumbnailUrl: thumbnailUrlPrefix + "/" + vid.Thumbnail.String,
 		Tags:         tags,
 		Files:        files,
@@ -161,6 +163,7 @@ func GetAllVideos(c *fiber.Ctx) error {
 			Upvotes:      uint64(vid.Upvotes),
 			Downvotes:    uint64(vid.Downvotes),
 			Views:        uint64(vid.Views),
+			IsPremium:    bool(vid.IsPremium),
 			ThumbnailUrl: thumbnailUrlPrefix + "/" + vid.Thumbnail.String,
 			Tags:         tags,
 			Files:        files,
@@ -238,6 +241,7 @@ func GetRecommendedVideos(c *fiber.Ctx) error {
 			Upvotes:      uint64(vid.Upvotes),
 			Downvotes:    uint64(vid.Downvotes),
 			Views:        uint64(vid.Views),
+			IsPremium:    bool(vid.IsPremium),
 			ThumbnailUrl: vid.Thumbnail.String,
 			Tags:         tags,
 			Files:        files,

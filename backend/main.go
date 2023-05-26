@@ -12,6 +12,7 @@ import (
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
+	testsCtrl "github.com/storm-legacy/dianomi/internal/controllers/test"
 	usersCtrl "github.com/storm-legacy/dianomi/internal/controllers/users"
 	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video"
 	videoCategoryCtrl "github.com/storm-legacy/dianomi/internal/controllers/video/category"
@@ -23,6 +24,9 @@ func main() {
 	app.Use(logger.New())
 	api := app.Group("/api/v1")
 	api.Get("/", mid.AuthMiddleware, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
+
+	// https://localhost/test
+	api.Post("/test", testsCtrl.Test)
 
 	// * DEVELOPMENT ENDPOINTS
 	dev := api.Group("dev")
