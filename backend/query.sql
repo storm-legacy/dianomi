@@ -111,6 +111,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
@@ -129,6 +130,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
@@ -146,6 +148,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
@@ -164,6 +167,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
@@ -181,6 +185,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id

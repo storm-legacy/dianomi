@@ -14,8 +14,6 @@ import (
 )
 
 func Login(c *fiber.Ctx) error {
-	var err error
-
 	// * PARSE DATA
 	var userData *mod.FormLoginUser
 	if err := c.BodyParser(&userData); err != nil {
@@ -25,8 +23,7 @@ func Login(c *fiber.Ctx) error {
 	// * VALIDATE DATA
 	userData.Email = strings.ToLower(userData.Email)
 	// validate data
-	err = mod.Validate.Struct(userData)
-	if err != nil {
+	if err := mod.Validate.Struct(userData); err != nil {
 		log.WithField("err", err).Debug("Could not validate user data")
 		return c.Status(fiber.StatusBadRequest).JSON(mod.Response{
 			Status: "error",

@@ -60,7 +60,7 @@ INSERT INTO video (
   description,
   category_id
 ) VALUES ($1, $2, $3)
-RETURNING id, name, description, category_id, upvotes, downvotes, views, updated_at, created_at, deleted_at
+RETURNING id, name, description, category_id, upvotes, downvotes, views, is_premium, updated_at, created_at, deleted_at
 `
 
 type AddVideoParams struct {
@@ -80,6 +80,7 @@ func (q *Queries) AddVideo(ctx context.Context, arg AddVideoParams) (Video, erro
 		&i.Upvotes,
 		&i.Downvotes,
 		&i.Views,
+		&i.IsPremium,
 		&i.UpdatedAt,
 		&i.CreatedAt,
 		&i.DeletedAt,
@@ -335,6 +336,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
@@ -356,6 +358,7 @@ type GetAllVideosRow struct {
 	Upvotes     int64
 	Downvotes   int64
 	Views       int64
+	IsPremium   bool
 	Thumbnail   sql.NullString
 }
 
@@ -376,6 +379,7 @@ func (q *Queries) GetAllVideos(ctx context.Context, arg GetAllVideosParams) ([]G
 			&i.Upvotes,
 			&i.Downvotes,
 			&i.Views,
+			&i.IsPremium,
 			&i.Thumbnail,
 		); err != nil {
 			return nil, err
@@ -534,6 +538,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
@@ -556,6 +561,7 @@ type GetRandomVideosRow struct {
 	Upvotes     int64
 	Downvotes   int64
 	Views       int64
+	IsPremium   bool
 	Thumbnail   sql.NullString
 }
 
@@ -576,6 +582,7 @@ func (q *Queries) GetRandomVideos(ctx context.Context, arg GetRandomVideosParams
 			&i.Upvotes,
 			&i.Downvotes,
 			&i.Views,
+			&i.IsPremium,
 			&i.Thumbnail,
 		); err != nil {
 			return nil, err
@@ -666,6 +673,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id = c.id
@@ -683,6 +691,7 @@ type GetVideoByIDRow struct {
 	Upvotes     int64
 	Downvotes   int64
 	Views       int64
+	IsPremium   bool
 	Thumbnail   sql.NullString
 }
 
@@ -697,6 +706,7 @@ func (q *Queries) GetVideoByID(ctx context.Context, id int64) (GetVideoByIDRow, 
 		&i.Upvotes,
 		&i.Downvotes,
 		&i.Views,
+		&i.IsPremium,
 		&i.Thumbnail,
 	)
 	return i, err
@@ -784,6 +794,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
@@ -808,6 +819,7 @@ type GetVideosByCategoryRow struct {
 	Upvotes     int64
 	Downvotes   int64
 	Views       int64
+	IsPremium   bool
 	Thumbnail   sql.NullString
 }
 
@@ -828,6 +840,7 @@ func (q *Queries) GetVideosByCategory(ctx context.Context, arg GetVideosByCatego
 			&i.Upvotes,
 			&i.Downvotes,
 			&i.Views,
+			&i.IsPremium,
 			&i.Thumbnail,
 		); err != nil {
 			return nil, err
@@ -852,6 +865,7 @@ SELECT
   v.upvotes upvotes,
   v.downvotes downvotes,
   v.views views,
+  v.is_premium is_premium,
   th.file_name as thumbnail
 FROM
   video v LEFT JOIN categories c ON v.category_id=c.id
@@ -876,6 +890,7 @@ type GetVideosByNameRow struct {
 	Upvotes     int64
 	Downvotes   int64
 	Views       int64
+	IsPremium   bool
 	Thumbnail   sql.NullString
 }
 
@@ -896,6 +911,7 @@ func (q *Queries) GetVideosByName(ctx context.Context, arg GetVideosByNameParams
 			&i.Upvotes,
 			&i.Downvotes,
 			&i.Views,
+			&i.IsPremium,
 			&i.Thumbnail,
 		); err != nil {
 			return nil, err
@@ -1049,7 +1065,7 @@ SET
   description = $3,
   category_id = $4
 WHERE id = $1
-RETURNING id, name, description, category_id, upvotes, downvotes, views, updated_at, created_at, deleted_at
+RETURNING id, name, description, category_id, upvotes, downvotes, views, is_premium, updated_at, created_at, deleted_at
 `
 
 type UpdateVideoParams struct {
@@ -1075,6 +1091,7 @@ func (q *Queries) UpdateVideo(ctx context.Context, arg UpdateVideoParams) (Video
 		&i.Upvotes,
 		&i.Downvotes,
 		&i.Views,
+		&i.IsPremium,
 		&i.UpdatedAt,
 		&i.CreatedAt,
 		&i.DeletedAt,

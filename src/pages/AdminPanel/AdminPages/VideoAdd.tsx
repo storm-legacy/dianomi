@@ -31,9 +31,7 @@ export const VideoAdd = () => {
   const ifAdd = () => {
     const { request } = VideoService.takeVideo();
     request.then((res) => {
-      console.log('sprawdzam');
       if (videoArrLong != res.data.length) {
-        console.log('zmieniło sie');
         navigate('/');
       } else {
         console.log(videoArrLong);
@@ -45,7 +43,6 @@ export const VideoAdd = () => {
   useEffect(() => {
     const { request } = VideoService.takeVideo();
     request.then((res) => {
-      console.log(res.data.length);
       SetVideoArrLong(res.data.length);
     });
   }, []);
@@ -184,7 +181,6 @@ export const VideoAdd = () => {
       const { request } = VideoService.sendVideo(data);
       request
         .then((res) => {
-          console.log(res);
           ifAdd();
         })
         .catch((err) => {

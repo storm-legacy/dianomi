@@ -14,15 +14,15 @@ export const VideoEdit = () => {
     Name: string;
   }
 
-  const [CatrgorisId, setCatrgorisId] = useState('');
   const { VideoId } = useParams();
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;
   const [videoName, setVideoName] = useState('');
-  const [videoFile, setVideoFile] = useState('');
   const [isDisable, setIsDisabled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [videoDiscription, setVideoDiscription] = useState('');
   const [videoTag, setVideoTag] = useState<string>('');
+  const [defaultTagValue, setDefaultTagValue] = useState<string>('');
+  const [CatrgorisId, setCatrgorisId] = useState('');
 
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
   useEffect(() => {
@@ -45,25 +45,34 @@ export const VideoEdit = () => {
 
   useEffect(() => {
     const { request } = videoService.takeVideoId(VideoIdInt);
-    request
-      .then((res) => {
-        setVideoTag(res.data.tags);
-        setVideoName(res.data.name);
-        setVideoDiscription(res.data.description);
-        setSelectedCategory(res.data.category_id);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, ['']);
+    request.then((res) => {
+      setVideoTag(res.data.tags);
+      setVideoName(res.data.name);
+      setVideoDiscription(res.data.description);
+      setSelectedCategory(res.data.category_id);
+      setDefaultTagValue(res.data.tags);
+      console.log(defaultTagValue);
+    });
+  }, []);
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
-    const tagsArray = videoTag
-      .split(',')
-      .map((value: string) => value.trim())
-      .filter((value: string) => value.length >= 3 && value.length <= 12)
-      .map((value: string) => value.toLowerCase());
+    let tagsArray: string[] = [defaultTagValue];
+    console.log(tagsArray);
+    if (defaultTagValue != videoTag) {
+      tagsArray = videoTag
+        .split(',')
+        .map((value: string) => value.trim())
+        .filter((value: string) => value.length >= 3 && value.length <= 12)
+        .map((value: string) => value.toLowerCase());
+    } else {
+      setVideoTag(videoTag + ',');
+      tagsArray = videoTag
+        .split(',')
+        .map((value: string) => value.trim())
+        .filter((value: string) => value.length >= 3 && value.length <= 12)
+        .map((value: string) => value.toLowerCase());
+    }
 
     const videoData: VideoPatchData = {
       name: videoName,
