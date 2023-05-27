@@ -44,27 +44,35 @@ const UserDashboardPage = () => {
   }, []);
 
   return (
-    <div className="container">
-      <div className="dashbord  d-flex align-items-center">
-        {divItem.map((item, index) => (
-          <Link to={'/VideoPlayer/' + item.id} key={index} className="card cardMY justify-content-center">
-            <div className="p-2 myP">
-              <img
-                src={'http://localhost:9000/thumbnails/' + item.thumbnail_url}
-                className="card-img-top myImg"
-                alt="logo kursu"
-              />
-              <div className="card-body">
-                <div className="card-text ">
-                  <p className="lead">{item.name}</p>
-                  <p className="myDes">{item.description}</p>
-                </div>
+    <>
+      <div className="container m-0 p-4">
+        <div className="row row-cols-3">
+          {divItem ? (
+            divItem.map((item, index) => (
+              <div className="col" key={index}>
+                <Link to={'/VideoPlayer/' + item.id} className="card cardMY justify-content-center">
+                  <div className="p-2 myP">
+                    <img
+                      src={'http://localhost:9000/thumbnails/' + item.thumbnail_url}
+                      className="card-img-top myImg"
+                      alt="logo kursu"
+                    />
+                    <div className="card-body">
+                      <div className="card-text">
+                        <p className="lead">{item.name}</p>
+                        <p className="myDes">{`${item.description.substring(0, 124)}...`}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </div>
-            </div>
-          </Link>
-        ))}
+            ))
+          ) : (
+            <span>No videos to show</span>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -1,6 +1,7 @@
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../../services/auth.service';
+import { AuthContext } from '../../context/AuthContext';
 
 interface LoginResponse {
   status: string;
@@ -13,6 +14,8 @@ interface LoginResponse {
 }
 
 const LoginPage = () => {
+  const { setUser } = useContext(AuthContext);
+
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [logError, setLogError] = useState(false);
@@ -23,17 +26,20 @@ const LoginPage = () => {
     const { request, cancel } = authService.login(loginEmail, loginPassword);
     request
       .then(({ data }: { data: LoginResponse }) => {
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('role', data.data.role);
-        localStorage.setItem('email', data.data.email);
-        localStorage.setItem('verified', String(data.data.verified));
+        const user = {
+          email: data.data.email,
+          role: data.data.role,
+          verified: Boolean(data.data.verified),
+          authToken: data.data.token,
+        };
+        setUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
         navigate('/');
       })
       .catch((err) => {
         console.error(err.message);
         setLogError(true);
       });
-
     return () => cancel();
   };
 

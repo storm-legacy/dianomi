@@ -1,11 +1,12 @@
 import axios, { CanceledError } from 'axios';
+import { User } from '../types/user.type';
 
 const createAxiosInstance = () => {
   const http = axios.create({ baseURL: 'https://localhost/api/v1' });
 
   const getAuthorizationHeader = () => {
-    const token = String(localStorage.getItem('token'));
-    return token ? `Bearer ${token}` : '';
+    const user: User = JSON.parse(String(localStorage.getItem('user')));
+    return user ? `Bearer ${user.authToken}` : '';
   };
 
   http.interceptors.request.use(

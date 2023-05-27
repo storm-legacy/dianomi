@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { AuthContext } from './context/AuthContext';
+import { User } from './types/user.type';
+
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import authService from './services/auth.service';
 
-import Protected from './components/Protected';
 import ProtectedAdmin from './components/ProtectedAdmin';
-import ProtectedAuth from './components/ProtectedAuth';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import NotFoundPage from './pages/NotFound/NotFound';
@@ -16,7 +17,6 @@ import SidePanel from './pages/SidePanel/SidePanel';
 import { AdminPanel } from './pages/AdminPanel/AdminPanel';
 import { VideoAdd } from './pages/AdminPanel/AdminPages/VideoAdd';
 import UserList from './pages/AdminPanel/AdminPages/UserList';
-import UserEdit from './pages/AdminPanel/AdminPages/UserEdit';
 import { VideoList } from './pages/AdminPanel/AdminPages/VideoList';
 import { VideoEdit } from './pages/AdminPanel/AdminPages/VideoEdit';
 
@@ -26,10 +26,20 @@ import CategoriAdd from './pages/AdminPanel/AdminPages/CategoriAdd';
 import { PasswordResPage } from './pages/LoginPage/PasswordResPage';
 import { VideoPlayer } from './pages/VideoPlayerPage/VideoPlayer';
 import { ResetPage } from './pages/ResetPage/ResetPage';
+import { Report } from 'notiflix';
 
 function App() {
+  const [user, setUser] = useState<User | null>(JSON.parse(String(localStorage.getItem('user'))));
+  // Information that user is not verified
+
   useEffect(() => {
     const { request, cancel } = authService.connectionCheck();
+
+    if (user?.verified === false) {
+      Report.info('E-mail verification', 'Please verify your email address, before you can proceed.', 'Okay');
+      setUser(null);
+    }
+
     request
       .then(() => {
         console.info('Authorized');
@@ -40,139 +50,87 @@ function App() {
       });
 
     return () => cancel();
-  }, []);
+  }, [user]);
 
   return (
     <>
-      <div className="container">
-        <BrowserRouter>
-          <Routes>
-            <Route
-              path="/login"
-              element={
-                <ProtectedAuth>
-                  <LoginPage />
-                </ProtectedAuth>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <ProtectedAuth>
-                  <RegisterPage />
-                </ProtectedAuth>
-              }
-            />
-            <Route
-              path="/reset-password"
-              element={
-                <ProtectedAuth>
-                  <ResetPage />
-                </ProtectedAuth>
-              }
-            />
-            <Route
-              path="/password/reset"
-              element={
-                <ProtectedAuth>
-                  <PasswordResPage />
-                </ProtectedAuth>
-              }
-            />
-            <Route
-              path="/"
-              element={
-                <Protected>
-                  <SidePanel />
-                  <UserDashboardPage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/UserDashbord"
-              element={
-                <Protected>
-                  <SidePanel />
-                  <UserDashboardPage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/VideoPlayer/:VideoId"
-              element={
-                <Protected>
-                  <SidePanel />
-                  <VideoPlayer />
-                </Protected>
-              }
-            />
-            <Route
-              path="/ProfilePage"
-              element={
-                <Protected>
-                  <SidePanel />
-                  <ProfilePage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/UserList"
-              element={
-                <ProtectedAdmin>
-                  <SidePanel />
-                  <UserList />
-                </ProtectedAdmin>
-              }
-            />
-            <Route
-              path="/VideoList"
-              element={
-                <ProtectedAdmin>
-                  <SidePanel />
-                  <VideoList />
-                </ProtectedAdmin>
-              }
-            />
-            <Route
-              path="/VideoEdit/:VideoId"
-              element={
-                <ProtectedAdmin>
-                  <SidePanel />
-                  <VideoEdit />
-                </ProtectedAdmin>
-              }
-            />{' '}
-            <Route
-              path="/CategoriAdd"
-              element={
-                <ProtectedAdmin>
-                  <SidePanel />
-                  <CategoriAdd />
-                </ProtectedAdmin>
-              }
-            />
-            <Route
-              path="/AdminPanel"
-              element={
-                <ProtectedAdmin>
-                  <SidePanel />
-                  <AdminPanel />
-                </ProtectedAdmin>
-              }
-            />
-            <Route
-              path="/VideoAdd"
-              element={
-                <ProtectedAdmin>
-                  <SidePanel />
-                  <VideoAdd />
-                </ProtectedAdmin>
-              }
-            />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </BrowserRouter>
-      </div>
+      <AuthContext.Provider value={{ user, setUser }}>
+        {user?.authToken && user?.verified ? (
+          <div className="container-fluid d-flex m-0 p-0">
+            <BrowserRouter>
+              <SidePanel />
+              <div className="container-fluid" style={{ maxHeight: '100vh' }}>
+                <Routes>
+                  <Route path="/" element={<UserDashboardPage />} />
+                  <Route path="/UserDashbord" element={<UserDashboardPage />} />
+                  <Route path="/VideoPlayer/:VideoId" element={<VideoPlayer />} />
+                  <Route path="/ProfilePage" element={<ProfilePage />} />
+                  <Route
+                    path="/UserList"
+                    element={
+                      <ProtectedAdmin>
+                        <UserList />
+                      </ProtectedAdmin>
+                    }
+                  />
+                  <Route
+                    path="/VideoList"
+                    element={
+                      <ProtectedAdmin>
+                        <VideoList />
+                      </ProtectedAdmin>
+                    }
+                  />
+                  <Route
+                    path="/VideoEdit/:VideoId"
+                    element={
+                      <ProtectedAdmin>
+                        <VideoEdit />
+                      </ProtectedAdmin>
+                    }
+                  />
+                  <Route
+                    path="/CategoriAdd"
+                    element={
+                      <ProtectedAdmin>
+                        <CategoriAdd />
+                      </ProtectedAdmin>
+                    }
+                  />
+                  <Route
+                    path="/AdminPanel"
+                    element={
+                      <ProtectedAdmin>
+                        <AdminPanel />
+                      </ProtectedAdmin>
+                    }
+                  />
+                  <Route
+                    path="/VideoAdd"
+                    element={
+                      <ProtectedAdmin>
+                        <VideoAdd />
+                      </ProtectedAdmin>
+                    }
+                  />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </div>
+            </BrowserRouter>
+          </div>
+        ) : (
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Navigate replace to="/login" />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/reset-password" element={<ResetPage />} />
+              <Route path="/password/reset" element={<PasswordResPage />} />
+              <Route path="*" element={<Navigate replace to="/login" />} />
+            </Routes>
+          </BrowserRouter>
+        )}
+      </AuthContext.Provider>
     </>
   );
 }

@@ -1,17 +1,17 @@
 import React, { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
+import { User } from '../types/user.type';
 
 const ProtectedAdmin = ({ children }: { children: ReactNode }) => {
   // Check if logged in
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
+  const user: User = JSON.parse(String(localStorage.getItem('user')));
 
-  if (!token || !role) {
+  if (!user.authToken || !user.role) {
     return <Navigate to="/login" replace />;
   }
 
   // Check if administrator
-  if (String(role) !== 'administrator') {
+  if (user.role !== 'administrator') {
     return <Navigate to="/" replace />;
   }
 

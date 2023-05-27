@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { Upload } from '@aws-sdk/lib-storage';
 import { S3Client, S3 } from '@aws-sdk/client-s3';
 import VideoService, { VideoAddData } from '../../../services/video.service';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../../context/AuthContext';
 
 const s3endpoint = 'http://localhost:9000';
 
@@ -25,6 +26,7 @@ export const VideoAdd = () => {
     Name: string;
   }
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
+  const { user } = useContext(AuthContext);
 
   const ifAdd = () => {
     const { request } = VideoService.takeVideo();
@@ -39,6 +41,7 @@ export const VideoAdd = () => {
       }
     });
   };
+
   useEffect(() => {
     const { request } = VideoService.takeVideo();
     request.then((res) => {
@@ -79,7 +82,7 @@ export const VideoAdd = () => {
 
     const data = {
       Action: 'AssumeRoleWithCustomToken',
-      Token: localStorage.getItem('token'),
+      Token: user?.authToken,
       Version: '2011-06-15',
       DurationSeconds: 3600,
       RoleArn: 'arn:minio:iam:::role/idmp-dianomi-server-auth',
@@ -91,7 +94,7 @@ export const VideoAdd = () => {
         url: s3endpoint,
         params: {
           Action: 'AssumeRoleWithCustomToken',
-          Token: String(localStorage.getItem('token')),
+          Token: user?.authToken,
           Version: '2011-06-15',
           DurationSeconds: '3600',
           RoleArn: 'arn:minio:iam:::role/idmp-dianomi-server-auth',

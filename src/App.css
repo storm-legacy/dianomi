@@ -1,5 +1,6 @@
-.container {
-  display: flex;
+#root {
+  width: 100vw;
+  min-height: 100vh;
 }
 .custom-link {
   background: none;
@@ -62,16 +63,8 @@ main {
 {
   margin-left:5dvw;
 }
-
-.dashbord {
-  margin-left: 10vw;
-  width: 1000vw;
-  width: 100%;
-}
 .cardMY {
-  width: 24rem;
   overflow: hidden;
-  margin: 2rem;
 }
 
 .myImg {
@@ -79,16 +72,7 @@ main {
   height: 19vh;
 }
 
-.myP {
-  height: 49vh;
-  float: left;
-}
-.myDes {
-  height: 26vh;
-  overflow: hidden;
-}
 .sidebar {
-  margin-left: -1.5vw;
   background: #0d6efd;
   color: #fff;
   height: 100vh;
