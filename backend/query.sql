@@ -16,7 +16,8 @@ WHERE
   (now()::timestamp with TIME ZONE) BETWEEN valid_from AND valid_until
 ORDER BY
   created_at DESC
-LIMIT 10;
+LIMIT $2
+OFFSET $3;
 
 -- name: GetOverlapingPackages :many
 SELECT * FROM
@@ -35,6 +36,15 @@ SELECT * FROM
   users_packages
 WHERE
   id = $1
+LIMIT 1;
+
+-- name: GetCurrentPackageForUser :one
+SELECT * FROM
+  users_packages
+WHERE
+  user_id = $1
+  AND
+  (now()::timestamp with TIME ZONE) BETWEEN valid_from AND valid_until
 LIMIT 1;
 
 -- name: GetUserByEmail :one
@@ -98,9 +108,12 @@ DELETE FROM users_packages WHERE id = $1;
 UPDATE
   users_packages
 SET
-  tier = $1,
-  valid_from = $2,
-  valid_until = $3;
+  user_id = $2,
+  tier = $3,
+  valid_from = $4,
+  valid_until = $5
+WHERE
+  id = $1;
 
 -- name: GetVideosByCategory :many
 SELECT

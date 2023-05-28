@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import videoService, { VideoPatchData } from '../../../services/video.service';
-export const VideoEdit = () => {
-  interface VideoItemData {
-    id: number;
-    name: string;
-    description: string;
-    category_id: number;
-    tags: string[];
-  }
-  interface Category {
-    ID: number;
-    Name: string;
-  }
 
+interface VideoItemData {
+  id: number;
+  name: string;
+  description: string;
+  category_id: number;
+  tags: string[];
+}
+
+interface Category {
+  ID: number;
+  Name: string;
+}
+
+export const VideoEdit = () => {
   const { VideoId } = useParams();
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;
   const [videoName, setVideoName] = useState('');
@@ -22,9 +24,9 @@ export const VideoEdit = () => {
   const [videoDiscription, setVideoDiscription] = useState('');
   const [videoTag, setVideoTag] = useState<string>('');
   const [defaultTagValue, setDefaultTagValue] = useState<string>('');
-  const [CatrgorisId, setCatrgorisId] = useState('');
 
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
+
   useEffect(() => {
     const { request } = videoService.takeCategori();
     request
@@ -46,18 +48,18 @@ export const VideoEdit = () => {
   useEffect(() => {
     const { request } = videoService.takeVideoId(VideoIdInt);
     request.then((res) => {
-      setVideoTag(res.data.tags);
+      setVideoTag(res.data.tags.toString());
       setVideoName(res.data.name);
       setVideoDiscription(res.data.description);
       setSelectedCategory(res.data.category_id);
-      setDefaultTagValue(res.data.tags);
-      console.log(defaultTagValue);
+      setDefaultTagValue(res.data.tags.toString());
     });
   }, []);
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
     let tagsArray: string[] = [defaultTagValue];
+
     console.log(tagsArray);
     if (defaultTagValue != videoTag) {
       tagsArray = videoTag

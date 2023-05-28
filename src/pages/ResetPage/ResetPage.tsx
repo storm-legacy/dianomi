@@ -90,7 +90,7 @@ export const ResetPage = () => {
 
         <br />
         <button type="submit" className="btn btn-primary">
-          Create
+          Reset password
         </button>
       </form>
       {!isValid && (

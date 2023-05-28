@@ -16,10 +16,9 @@ import (
 )
 
 type PatchUserData struct {
-	Email         string    `json:"email" validate:"required,email"`
-	Verified      bool      `json:"verified" validate:"boolean"`
-	ResetPassword bool      `json:"reset_password" validate:"boolean"`
-	Pack          []Package `json:"packages"`
+	Email         string `json:"email" validate:"required,email"`
+	Verified      bool   `json:"verified" validate:"boolean"`
+	ResetPassword bool   `json:"reset_password" validate:"boolean"`
 }
 
 func PatchUser(c *fiber.Ctx) error {
@@ -111,89 +110,6 @@ func PatchUser(c *fiber.Ctx) error {
 		go authCtrl.AsyncReset(authCtrl.ResetData{
 			Email: user.Email,
 		})
-	}
-
-	// Edit packages
-	for _, p := range data.Pack {
-		// Verify package
-		if p.ValidFrom.Unix() > p.ValidUntil.Unix() {
-			log.WithFields(log.Fields{
-				"validFrom":  p.ValidFrom,
-				"validUntil": p.ValidUntil,
-			}).Warn("Time in one or more packages is incorrect")
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "ValidFrom and ValidUntil values aren't correct",
-			})
-		}
-
-		// Check if package exists
-		packDB, err := qtx.GetPackageByID(ctx, int64(p.ID))
-		if err != sql.ErrNoRows && err != nil {
-			log.WithField("err", err.Error()).Error("Could not get package from database")
-			return c.SendStatus(fiber.StatusInternalServerError)
-		}
-
-		// Add new package
-		if err == sql.ErrNoRows {
-			// Check if package overlaps with another
-			items, err := qtx.GetOverlapingPackages(ctx, sqlc.GetOverlapingPackagesParams{
-				ValidFrom:  p.ValidFrom,
-				ValidUntil: p.ValidUntil,
-			})
-			if err != nil {
-				log.WithField("err", err.Error()).Error("Could not get packages from database")
-				return c.SendStatus(fiber.StatusInternalServerError)
-			}
-
-			if len(items) > 0 {
-				log.New().WithFields(log.Fields{
-					"dbPackages": items,
-					"newPackage": p,
-				}).Warn("New package collides with older one")
-				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-					"message": "Package collides with another one already present",
-				})
-			}
-
-			// Add user package
-			if err := qtx.GiveUserPackage(ctx, sqlc.GiveUserPackageParams{
-				UserID: sql.NullInt64{
-					Int64: user.ID,
-					Valid: true,
-				},
-				Tier:       sqlc.Role(p.Tier),
-				ValidFrom:  p.ValidFrom,
-				ValidUntil: p.ValidUntil,
-			}); err != nil {
-				log.WithField("err", err.Error()).Error("Could not give user package")
-				return c.SendStatus(fiber.StatusInternalServerError)
-			}
-		} else {
-			// Check if package is to be deleted
-			if p.Delete {
-				if err := qtx.RemoveUserPackage(ctx, packDB.ID); err != nil {
-					log.WithField("err", err.Error()).Error("Package could not be removed")
-					return c.SendStatus(fiber.StatusInternalServerError)
-				}
-			}
-		}
-
-		// If delete is checked
-
-		// Update package, because it exist
-		if err := qtx.UpdatePackage(ctx, sqlc.UpdatePackageParams{
-			Tier:       sqlc.Role(p.Tier),
-			ValidFrom:  p.ValidFrom,
-			ValidUntil: p.ValidUntil,
-		}); err != nil {
-			log.WithField("err", err.Error()).Error("Package could not be updated")
-			return c.SendStatus(fiber.StatusInternalServerError)
-		}
-		log.WithFields(log.Fields{
-			"user":    user.ID,
-			"package": p,
-		}).Info("Package was successfuly updated")
-
 	}
 
 	return c.SendStatus(fiber.StatusOK)

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
@@ -14,20 +13,11 @@ import (
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
 )
 
-type Package struct {
-	ID         int64     `json:"id"`
-	UserID     uint64    `json:"user_id"`
-	Tier       string    `json:"tier"`
-	ValidFrom  time.Time `json:"valid_from"`
-	ValidUntil time.Time `json:"valid_until"`
-	Delete     bool      `json:"delete"`
-}
-
 type User struct {
-	ID       uint64    `json:"id" validate:"required"`
-	Email    string    `json:"email" validate:"required"`
-	Verified bool      `json:"verified" validate:"required"`
-	Packages []Package `json:"packages"`
+	ID       uint64 `json:"id" validate:"required"`
+	Email    string `json:"email" validate:"required"`
+	Verified bool   `json:"verified" validate:"required"`
+	Role     string `json:"role"`
 }
 
 func GetUser(c *fiber.Ctx) error {
@@ -59,30 +49,21 @@ func GetUser(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	packs, err := qtx.GetPackagesByUserID(ctx, sql.NullInt64{
-		Int64: user.ID,
-		Valid: true,
-	})
-	if err != nil {
+	pkg, err := qtx.GetCurrentPackageForUser(ctx, sql.NullInt64{Int64: user.ID, Valid: true})
+	if err != nil && err != sql.ErrNoRows {
 		log.WithField("err", err).Error("Could not get user packages from database")
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
-	packages := make([]Package, 0)
-	for _, p := range packs {
-		var newPack = Package{
-			ID:         p.ID,
-			Tier:       string(p.Tier),
-			ValidFrom:  p.ValidFrom,
-			ValidUntil: p.ValidUntil,
-		}
-		packages = append(packages, newPack)
+	role := "free"
+	if err != sql.ErrNoRows {
+		role = string(pkg.Tier)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(User{
 		ID:       uint64(user.ID),
 		Email:    user.Email,
 		Verified: user.VerifiedAt.Valid,
-		Packages: packages,
+		Role:     role,
 	})
 }
 
@@ -122,32 +103,21 @@ func GetUsers(c *fiber.Ctx) error {
 
 	users := make([]User, 0)
 	for _, user := range res {
-		packs, err := qtx.GetPackagesByUserID(ctx, sql.NullInt64{
-			Int64: user.ID,
-			Valid: true,
-		})
-		if err != nil {
+		pkg, err := qtx.GetCurrentPackageForUser(ctx, sql.NullInt64{Int64: user.ID, Valid: true})
+		if err != nil && err != sql.ErrNoRows {
 			log.WithField("err", err).Error("Could not get user packages from database")
 			return c.SendStatus(fiber.StatusBadRequest)
 		}
-
-		packages := make([]Package, 0)
-		for _, p := range packs {
-			var newPack = Package{
-				ID:         p.ID,
-				Tier:       string(p.Tier),
-				UserID:     uint64(user.ID),
-				ValidFrom:  p.ValidFrom,
-				ValidUntil: p.ValidUntil,
-			}
-			packages = append(packages, newPack)
+		role := "free"
+		if err != sql.ErrNoRows {
+			role = string(pkg.Tier)
 		}
 
 		newUser := User{
 			ID:       uint64(user.ID),
 			Email:    user.Email,
 			Verified: user.VerifiedAt.Valid,
-			Packages: packages,
+			Role:     role,
 		}
 		users = append(users, newUser)
 	}

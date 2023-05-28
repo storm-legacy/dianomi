@@ -417,6 +417,30 @@ func (q *Queries) GetCategoryByName(ctx context.Context, name string) (Category,
 	return i, err
 }
 
+const getCurrentPackageForUser = `-- name: GetCurrentPackageForUser :one
+SELECT id, user_id, tier, created_at, valid_from, valid_until FROM
+  users_packages
+WHERE
+  user_id = $1
+  AND
+  (now()::timestamp with TIME ZONE) BETWEEN valid_from AND valid_until
+LIMIT 1
+`
+
+func (q *Queries) GetCurrentPackageForUser(ctx context.Context, userID sql.NullInt64) (UsersPackage, error) {
+	row := q.db.QueryRowContext(ctx, getCurrentPackageForUser, userID)
+	var i UsersPackage
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Tier,
+		&i.CreatedAt,
+		&i.ValidFrom,
+		&i.ValidUntil,
+	)
+	return i, err
+}
+
 const getOverlapingPackages = `-- name: GetOverlapingPackages :many
 SELECT id, user_id, tier, created_at, valid_from, valid_until FROM
   users_packages
@@ -496,11 +520,18 @@ WHERE
   (now()::timestamp with TIME ZONE) BETWEEN valid_from AND valid_until
 ORDER BY
   created_at DESC
-LIMIT 10
+LIMIT $2
+OFFSET $3
 `
 
-func (q *Queries) GetPackagesByUserID(ctx context.Context, userID sql.NullInt64) ([]UsersPackage, error) {
-	rows, err := q.db.QueryContext(ctx, getPackagesByUserID, userID)
+type GetPackagesByUserIDParams struct {
+	UserID sql.NullInt64
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetPackagesByUserID(ctx context.Context, arg GetPackagesByUserIDParams) ([]UsersPackage, error) {
+	rows, err := q.db.QueryContext(ctx, getPackagesByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -1000,19 +1031,30 @@ const updatePackage = `-- name: UpdatePackage :exec
 UPDATE
   users_packages
 SET
-  tier = $1,
-  valid_from = $2,
-  valid_until = $3
+  user_id = $2,
+  tier = $3,
+  valid_from = $4,
+  valid_until = $5
+WHERE
+  id = $1
 `
 
 type UpdatePackageParams struct {
+	ID         int64
+	UserID     sql.NullInt64
 	Tier       Role
 	ValidFrom  time.Time
 	ValidUntil time.Time
 }
 
 func (q *Queries) UpdatePackage(ctx context.Context, arg UpdatePackageParams) error {
-	_, err := q.db.ExecContext(ctx, updatePackage, arg.Tier, arg.ValidFrom, arg.ValidUntil)
+	_, err := q.db.ExecContext(ctx, updatePackage,
+		arg.ID,
+		arg.UserID,
+		arg.Tier,
+		arg.ValidFrom,
+		arg.ValidUntil,
+	)
 	return err
 }
 

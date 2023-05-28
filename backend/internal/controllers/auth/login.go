@@ -70,9 +70,10 @@ func Login(c *fiber.Ctx) error {
 
 	// * GET PACKAGES
 	var role string
-	userPackages, err := queries.GetPackagesByUserID(ctx, sql.NullInt64{
-		Int64: user.ID,
-		Valid: true,
+	userPackages, err := queries.GetPackagesByUserID(ctx, sqlc.GetPackagesByUserIDParams{
+		UserID: sql.NullInt64{Int64: user.ID, Valid: true},
+		Limit:  5,
+		Offset: 0,
 	})
 	if err != nil {
 		log.WithFields(log.Fields{"user": user, "err": err}).Error("Problem while resolving user packages")

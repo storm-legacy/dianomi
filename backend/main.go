@@ -14,6 +14,7 @@ import (
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
 	testsCtrl "github.com/storm-legacy/dianomi/internal/controllers/test"
 	usersCtrl "github.com/storm-legacy/dianomi/internal/controllers/users"
+	packagesCtrl "github.com/storm-legacy/dianomi/internal/controllers/users/packages"
 	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video"
 	videoCategoryCtrl "github.com/storm-legacy/dianomi/internal/controllers/video/category"
 	mid "github.com/storm-legacy/dianomi/internal/middlewares"
@@ -59,6 +60,12 @@ func main() {
 	user.Get("/", usersCtrl.GetUsers)
 	user.Delete("/:id", usersCtrl.DeleteUser)
 	user.Patch("/:id", usersCtrl.PatchUser)
+	// User packages
+	packages := user.Group("packages")
+	packages.Get("/:id", packagesCtrl.GetPackage)
+	packages.Delete("/pack/:id", packagesCtrl.DeletePackage)
+	packages.Patch("/pack/:id", packagesCtrl.PatchPackage)
+	packages.Post("/", packagesCtrl.PostPackage)
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)

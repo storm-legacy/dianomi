@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import videoService from '../../../services/video.service';
+import { Report } from 'notiflix';
+import { Link } from 'react-router-dom';
+
+interface VideoItemData {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  tags: string[];
+}
+
 export const VideoList = () => {
-  interface VideoItemData {
-    id: number;
-    name: string;
-    description: string;
-    category: string;
-    tags: string[];
-  }
   const [videoListItem, setVideoListItem] = useState<VideoItemData[]>([]);
+
   useEffect(() => {
     const { request } = videoService.takeVideo();
     request
@@ -29,9 +33,14 @@ export const VideoList = () => {
         setVideoListItem(Videodata);
       })
       .catch((err) => {
-        console.log(err);
+        Report.failure(
+          'Problem with fetching videos',
+          `Video could not be fetched from the server. Message: ${err.message}`,
+          'Okay',
+        );
       });
   }, []);
+
   const deleteVideo = (value: number) => {
     console.log(value);
     const { request } = videoService.deleteVideo(value);
@@ -41,7 +50,7 @@ export const VideoList = () => {
 
   return (
     <>
-      <div className="text-center MyList">
+      <div className="px-2 text-center">
         <h1>Video List</h1>
         <div className="row myRow myRowCont overflow-auto">
           <div className="row myRow">
