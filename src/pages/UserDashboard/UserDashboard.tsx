@@ -1,6 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import videoService from '../../services/video.service';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import Modal from 'react-modal';
+import { AuthContext } from '../../context/AuthContext';
+import { FiX } from 'react-icons/fi';
+const customStyles = {
+  overlay: {
+    background: 'none',
+  },
+  content: {
+    left: '75%',
+    height: '35dvh',
+    width: '23dvw',
+  },
+};
 
 const UserDashboardPage = () => {
   interface VideoItemData {
@@ -12,7 +26,19 @@ const UserDashboardPage = () => {
     thumbnail_url: string;
   }
   const [divItem, setDivItem] = useState<VideoItemData[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { user } = useContext(AuthContext);
+  function openModal() {
+    setIsOpen(true);
+  }
+  function closeModel() {
+    setIsOpen(false);
+  }
+
   useEffect(() => {
+    if (user?.role == 'free') {
+      openModal();
+    }
     const { request } = videoService.takeVideoRecommended();
     request
       .then((res) => {
@@ -45,8 +71,17 @@ const UserDashboardPage = () => {
 
   return (
     <>
+      <Modal style={customStyles} isOpen={isOpen} onRequestClose={closeModel}>
+        <div className="text-center ">
+          <FiX onClick={() => closeModel()} style={{ float: 'right' }}></FiX>
+          <h3>Hello friend</h3>{' '}
+          <p>You can purchase a premium package giving you access to a larger video library on our website.</p>{' '}
+          <h6>6.99$/month</h6>
+          <button className="btn btn-danger">Buy Now</button>
+        </div>
+      </Modal>
       <div className="container m-0 p-4">
-        <div className="row row-cols-3">
+        <div className="row row-cols-3 ">
           {divItem ? (
             divItem.map((item, index) => (
               <div className="col" key={index}>
