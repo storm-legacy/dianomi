@@ -21,7 +21,7 @@ export const ProfilePage = () => {
               <p className="border border-primary font-weight-bold">{user?.email}</p>
             </div>
             <div className="form-group col-md-5 ">
-              Premium: `
+              Premium:
               {user?.role !== 'free' ? (
                 <p>You have premium</p>
               ) : (
@@ -30,7 +30,6 @@ export const ProfilePage = () => {
                   <br /> Do you want to buy it?
                 </p>
               )}
-              `
             </div>
           </div>
           <div className="text-center mt-3 float-start">
