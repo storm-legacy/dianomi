@@ -74,10 +74,12 @@ const UserDashboardPage = () => {
       <Modal style={customStyles} isOpen={isOpen} onRequestClose={closeModel}>
         <div className="text-center ">
           <FiX onClick={() => closeModel()} style={{ float: 'right' }}></FiX>
-          <h3>Hello friend</h3>{' '}
+          <h3>Hello friend</h3>
           <p>You can purchase a premium package giving you access to a larger video library on our website.</p>{' '}
-          <h6>6.99$/month</h6>
-          <button className="btn btn-danger">Buy Now</button>
+          <h6>4.99PLN/month</h6>
+          <a href="/ProfilePage">
+            <button className="btn btn-danger">Buy Now</button>
+          </a>
         </div>
       </Modal>
       <div className="container m-0 p-4">

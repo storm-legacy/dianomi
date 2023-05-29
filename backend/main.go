@@ -12,6 +12,7 @@ import (
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
+	profileCtrl "github.com/storm-legacy/dianomi/internal/controllers/profile"
 	testsCtrl "github.com/storm-legacy/dianomi/internal/controllers/test"
 	usersCtrl "github.com/storm-legacy/dianomi/internal/controllers/users"
 	packagesCtrl "github.com/storm-legacy/dianomi/internal/controllers/users/packages"
@@ -66,6 +67,11 @@ func main() {
 	packages.Delete("/pack/:id", packagesCtrl.DeletePackage)
 	packages.Patch("/pack/:id", packagesCtrl.PatchPackage)
 	packages.Post("/", packagesCtrl.PostPackage)
+
+	// * Profile
+	profile := api.Group("profile", mid.AuthMiddleware)
+	profile.Get("/package", profileCtrl.GetPackage)
+	profile.Post("/pay", profileCtrl.PostPayment)
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)

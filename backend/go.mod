@@ -57,6 +57,7 @@ require (
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
+	github.com/stripe/stripe-go/v74 v74.20.0
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/u2takey/ffmpeg-go v0.4.1
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
