@@ -3,9 +3,7 @@ import Modal from 'react-modal';
 import adminService, { UserEditData, Package, Tier } from '../../../services/admin.service';
 import { Block, Notify } from 'notiflix';
 import { FaTrash, FaPlus, FaArrowRight } from 'react-icons/fa';
-import authService from '../../../services/auth.service';
 import { CanceledError } from 'axios';
-import { RequestCharged } from '@aws-sdk/client-s3';
 
 interface UserEditProps {
   isOpen: boolean;
@@ -92,16 +90,18 @@ const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId }) =
     pack: Package,
     valid_from: string,
     valid_until: string,
-    newTier: keyof typeof Tier,
+    newTier: string,
     deletePackage = false,
   ) => {
     const validFrom = timeRegex.test(valid_from) ? valid_from : `${valid_from}T00:00:00Z`;
     const validUntil = timeRegex.test(valid_until) ? valid_until : `${valid_until}T00:00:00Z`;
 
+    const tier = newTier == 'administrator' ? Tier.administrator : newTier == 'premium' ? Tier.premium : Tier.free;
+
     if (!deletePackage) {
       const { request } = adminService.patchUserPackage({
         id: pack.id,
-        tier: pack.tier,
+        tier: tier,
         created_at: new Date(),
         user_id: userId,
         valid_from: validFrom,
@@ -118,10 +118,35 @@ const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId }) =
       const { request } = adminService.deleteUserPackage(pack.id);
       request
         .then(() => {
+          setPackages([]);
           Notify.success('Package successfuly removed!');
         })
         .catch((err) => {
           Notify.failure(`Package could not be removed: ${err.message}`);
+        });
+    }
+  };
+
+  const handleAddPackage = () => {
+    const date = new Date();
+
+    if (packages.length == 0) {
+      const pack = {
+        id: -1,
+        user_id: userId,
+        valid_from: date.toISOString(),
+        valid_until: new Date(date.setDate(date.getDate() + 30)).toISOString(),
+        tier: Tier.free,
+        created_at: date,
+      };
+      const { request } = adminService.postUserPackage(pack);
+      request
+        .then(() => {
+          setPackages([pack]);
+          Notify.success(`Package successfully added!`);
+        })
+        .catch((err) => {
+          Notify.failure(`Package could not be added: ${err.message}`);
         });
     }
   };
@@ -202,7 +227,9 @@ const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId }) =
                     <b>Pakiet:</b>
                     <select
                       className="mx-4"
-                      onChange={(e) => handlePackageChange(p, String(p.valid_from), String(p.valid_until), p.tier)}
+                      onChange={(e) =>
+                        handlePackageChange(p, String(p.valid_from), String(p.valid_until), e.target.value)
+                      }
                     >
                       <option value="free">Free</option>
                       <option value="administrator">Administrator</option>
@@ -241,7 +268,7 @@ const UserEdit: React.FC<UserEditProps> = ({ isOpen, onRequestClose, userId }) =
               </div>
             );
           })}
-          <button className="btn btn-primary" type="button">
+          <button className="btn btn-primary" onClick={handleAddPackage} type="button">
             <FaPlus></FaPlus>
           </button>
         </div>

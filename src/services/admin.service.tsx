@@ -9,7 +9,7 @@ interface VideoAddData {
   tags: string[];
 }
 
-enum Tier {
+export enum Tier {
   free = 'free',
   premium = 'premium',
   administrator = 'administrator',
@@ -107,4 +107,4 @@ class AdminService {
 }
 
 export default new AdminService();
-export type { VideoAddData, UserEditData, Package, Tier };
+export type { VideoAddData, UserEditData, Package };

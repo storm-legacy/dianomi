@@ -23,10 +23,12 @@ OFFSET $3;
 SELECT * FROM
   users_packages
 WHERE
-  $1 BETWEEN valid_from AND valid_until
+  ($1 BETWEEN valid_from AND valid_until
   OR
   $2 BETWEEN valid_until AND valid_from
-  OR ($1 < valid_from AND $2 > valid_until)
+  OR ($1 < valid_from AND $2 > valid_until))
+  AND
+  user_id = $3
 ORDER BY
   created_at DESC
 LIMIT 5;

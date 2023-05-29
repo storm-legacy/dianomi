@@ -55,6 +55,7 @@ func PostPackage(c *fiber.Ctx) error {
 	overlaping, err := qtx.GetOverlapingPackages(ctx, sqlc.GetOverlapingPackagesParams{
 		ValidFrom:  data.ValidFrom,
 		ValidUntil: data.ValidUntil,
+		UserID:     sql.NullInt64{Int64: int64(data.UserID), Valid: true},
 	})
 	if err != nil {
 		log.WithField("err", err.Error()).Error("Could not get packages from database")
