@@ -6,25 +6,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
+
 	"github.com/storm-legacy/dianomi/pkg/config"
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
 )
 
-type testData struct {
-	Test   string `json:"test"`
-	Number int32  `json:"Numer"`
+type User struct {
+	ID       uint64 `json:"id" validate:"required"`
+	Email    string `json:"email" validate:"required"`
+	Verified bool   `json:"verified" validate:"required"`
+	Role     string `json:"role"`
 }
 
-func Test(c *fiber.Ctx) error {
-	var dataTest *testData
-	if err := c.BodyParser(&dataTest); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-	if dataTest.Number == 0 {
-		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
-			"error": "error",
-		})
-	}
+func GetUserByEmail(c *fiber.Ctx) error {
+	email := c.Params("email")
+
 	// * START(DB BLOCK)
 	ctx := context.Background()
 	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
@@ -36,13 +32,30 @@ func Test(c *fiber.Ctx) error {
 	defer db.Close()
 	// * END(DB BLOCK)
 
-	user, err := qtx.GetUserByID(ctx, int64(dataTest.Number))
+	user, err := qtx.GetUserByEmail(ctx, email)
 	if err != nil {
 		log.WithField("err", err).Error("Could not get user from database")
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
+	if err == sql.ErrNoRows {
+		log.WithField("email", email).Debug("Specified user doesn't exist")
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"data": user,
+	pkg, err := qtx.GetCurrentPackageForUser(ctx, sql.NullInt64{Int64: user.ID, Valid: true})
+	if err != nil && err != sql.ErrNoRows {
+		log.WithField("err", err).Error("Could not get user packages from database")
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+	role := "free"
+	if err != sql.ErrNoRows {
+		role = string(pkg.Tier)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(User{
+		ID:       uint64(user.ID),
+		Email:    user.Email,
+		Verified: user.VerifiedAt.Valid,
+		Role:     role,
 	})
 }

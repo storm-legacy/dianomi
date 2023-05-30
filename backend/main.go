@@ -28,7 +28,7 @@ func main() {
 	api.Get("/", mid.AuthMiddleware, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
 
 	// https://localhost/test
-	api.Post("/test", testsCtrl.Test)
+	api.Get("/test/:email", testsCtrl.GetUserByEmail)
 
 	// * DEVELOPMENT ENDPOINTS
 	dev := api.Group("dev")
@@ -58,6 +58,7 @@ func main() {
 	// * User group
 	user := api.Group("users", mid.AuthMiddleware, mid.AdminMiddleware)
 	user.Get("/:id", usersCtrl.GetUser)
+
 	user.Get("/", usersCtrl.GetUsers)
 	user.Delete("/:id", usersCtrl.DeleteUser)
 	user.Patch("/:id", usersCtrl.PatchUser)
