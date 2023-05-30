@@ -17,6 +17,18 @@ const customStyles = {
   },
 };
 
+const premiumStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: '10px',
+  right: '10px',
+  padding: '5px 10px',
+  backgroundColor: '#DAA520',
+  color: '#fff',
+  fontSize: '12px',
+  fontWeight: 'bold',
+  zIndex: 999,
+};
+
 const UserDashboardPage = () => {
   interface VideoItemData {
     id: number;
@@ -35,6 +47,11 @@ const UserDashboardPage = () => {
   }
   function closeModel() {
     setIsOpen(false);
+  }
+  function alertPrem() {
+    if (user?.role == 'free') {
+      openModal();
+    }
   }
 
   useEffect(() => {
@@ -91,18 +108,29 @@ const UserDashboardPage = () => {
           {divItem ? (
             divItem.map((item, index) => (
               <div className="col" key={index}>
-                <Link to={'/VideoPlayer/' + item.id} className="card cardMY justify-content-center">
+                <Link
+                  to={
+                    item.IsPremium ? (user?.role != 'free' ? '/VideoPlayer/' + item.id : '') : '/VideoPlayer/' + item.id
+                  }
+                  onClick={() => alertPrem()}
+                  className={`card cardMY justify-content-center ${item.IsPremium ? 'border border-warning' : ''}`}
+                >
                   <div className="p-2 myP">
                     <img
                       src={'http://localhost:9000/thumbnails/' + item.thumbnail_url}
                       className="card-img-top myImg"
                       alt="logo kursu"
                     />
+                    {item.IsPremium && (
+                      <span style={premiumStyle} className="premium-badge">
+                        Premium
+                      </span>
+                    )}
                     <div className="card-body">
                       <div className="card-text">
                         <p className="lead">
                           {item.name}
-                          {item.IsPremium && <TbCrown />}
+                          {item.IsPremium && <TbCrown style={{ color: '#DAA520' }} />}
                         </p>
                         <p className="myDes">{`${item.description.substring(0, 124)}...`}</p>
                       </div>
