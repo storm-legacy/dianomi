@@ -5,6 +5,7 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import Modal from 'react-modal';
 import { AuthContext } from '../../context/AuthContext';
 import { FiX } from 'react-icons/fi';
+import { TbCrown } from 'react-icons/tb';
 const customStyles = {
   overlay: {
     background: 'none',
@@ -24,6 +25,7 @@ const UserDashboardPage = () => {
     category: string;
     tags: string[];
     thumbnail_url: string;
+    IsPremium: boolean;
   }
   const [divItem, setDivItem] = useState<VideoItemData[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -51,6 +53,7 @@ const UserDashboardPage = () => {
             category: string;
             tags: string[];
             thumbnail_url: string;
+            IsPremium: boolean;
           }) => {
             return {
               id: Videodata.id,
@@ -59,6 +62,7 @@ const UserDashboardPage = () => {
               category: Videodata.category,
               tags: Videodata.tags,
               thumbnail_url: Videodata.thumbnail_url,
+              IsPremium: Videodata.IsPremium,
             };
           },
         );
@@ -96,7 +100,10 @@ const UserDashboardPage = () => {
                     />
                     <div className="card-body">
                       <div className="card-text">
-                        <p className="lead">{item.name}</p>
+                        <p className="lead">
+                          {item.name}
+                          {item.IsPremium && <TbCrown />}
+                        </p>
                         <p className="myDes">{`${item.description.substring(0, 124)}...`}</p>
                       </div>
                     </div>
