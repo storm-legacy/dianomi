@@ -1,12 +1,23 @@
 import React from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import developmentService from '../../services/development.service';
+import { User } from '../../types/user.type';
+import { Notify } from 'notiflix';
 
 const PaymentPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const status = searchParams.get('status');
 
-  if (status === 'success')
+  if (status === 'success') {
+    const user: User = JSON.parse(String(localStorage.getItem("user")))
+    const { request } = developmentService.GivePackageSelf(user.email)
+    request.then(() => {
+      Notify.info("You can know access premium materials");
+    }).catch(() => {
+      Notify.failure("Problem occured while giving user the package");
+    })
+
     return (
       <>
         <div className="container d-flex justify-content-center align-items-center h-75">
@@ -22,6 +33,7 @@ const PaymentPage = () => {
         </div>
       </>
     );
+  }
   else
     return (
       <>
