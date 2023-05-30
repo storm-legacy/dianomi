@@ -29,7 +29,7 @@ type Mail struct {
 	Body    []byte
 }
 
-func sendEmail(mail Mail) error {
+func SendEmail(mail Mail) error {
 	// Skip template generation if smtp is disabled
 	smtpEnabled := config.GetBool("APP_SMTP_ENABLED", false)
 	if !smtpEnabled {

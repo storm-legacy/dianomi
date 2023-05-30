@@ -121,7 +121,7 @@ func AsyncReset(resetData ResetData) {
 		return
 	}
 
-	if err := sendEmail(Mail{
+	if err := SendEmail(Mail{
 		To:      []string{resetData.Email},
 		Subject: "DianomiTV - Password reset",
 		Body:    buf.Bytes(),

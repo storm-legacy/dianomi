@@ -105,8 +105,14 @@ export const ProfilePage = () => {
               Look at your watch history
             </button>
             <br />
-            <button type="button" className="btn btn-primary float-start mt-3">
-              lorem ipsum
+            <button
+              type="button"
+              onClick={() => {
+                navigate('/Report');
+              }}
+              className="btn btn-danger float-start mt-3"
+            >
+              Report an Error
             </button>
             <br />
 

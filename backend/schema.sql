@@ -142,3 +142,11 @@ CREATE TABLE user_video_metrics (
       ON DELETE SET NULL
       ON UPDATE CASCADE
 );
+
+CREATE TABLE Error_Reports (
+  id BIGSERIAL PRIMARY KEY,
+  error_title VARCHAR(100) NOT NULL,
+  error_description VARCHAR(255) NOT NULL,
+  reported_by VARCHAR(50) NOT NULL,
+  report_date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);

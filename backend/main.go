@@ -13,6 +13,7 @@ import (
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
 	profileCtrl "github.com/storm-legacy/dianomi/internal/controllers/profile"
+	reportCtrl "github.com/storm-legacy/dianomi/internal/controllers/report"
 	testsCtrl "github.com/storm-legacy/dianomi/internal/controllers/test"
 	usersCtrl "github.com/storm-legacy/dianomi/internal/controllers/users"
 	packagesCtrl "github.com/storm-legacy/dianomi/internal/controllers/users/packages"
@@ -90,6 +91,9 @@ func main() {
 	category.Patch("/:id", mid.AdminMiddleware, videoCategoryCtrl.PatchCategory)
 	category.Post("/", mid.AdminMiddleware, videoCategoryCtrl.PostCategory)
 	category.Delete("/:id", mid.AdminMiddleware, videoCategoryCtrl.DeleteCategory)
+	// * Report group
+	report := api.Group("report", mid.AuthMiddleware)
+	report.Post("/", reportCtrl.PostReport)
 
 	// * Administration
 	// admin := api.Group("admin", mid.AuthMiddleware)

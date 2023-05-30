@@ -24,6 +24,21 @@ func (q *Queries) AddCategory(ctx context.Context, name string) (Category, error
 	return i, err
 }
 
+const addReport = `-- name: AddReport :exec
+INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES ($1, $2, $3) RETURNING id, error_title, error_description, reported_by, report_date
+`
+
+type AddReportParams struct {
+	ErrorTitle       string
+	ErrorDescription string
+	ReportedBy       string
+}
+
+func (q *Queries) AddReport(ctx context.Context, arg AddReportParams) error {
+	_, err := q.db.ExecContext(ctx, addReport, arg.ErrorTitle, arg.ErrorDescription, arg.ReportedBy)
+	return err
+}
+
 const addTag = `-- name: AddTag :one
 INSERT INTO tags (name) VALUES ($1) RETURNING id, name
 `

@@ -54,7 +54,7 @@ func generateVerificationCode(userId int64, userEmail string) {
 		return
 	}
 
-	if err := sendEmail(Mail{
+	if err := SendEmail(Mail{
 		To:      []string{userEmail},
 		Subject: "DianomiTV - Account verification",
 		Body:    buf.Bytes(),

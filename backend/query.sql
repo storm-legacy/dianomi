@@ -298,3 +298,6 @@ INSERT INTO video_tags (video_id, tag_id) VALUES ($1, $2) RETURNING *;
 
 -- name: ClearVideoTags :exec
 DELETE FROM video_tags WHERE video_id = $1;
+
+-- name: AddReport :exec
+INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES ($1, $2, $3) RETURNING *;

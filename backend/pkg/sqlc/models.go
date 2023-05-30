@@ -147,6 +147,14 @@ type Category struct {
 	Name string
 }
 
+type ErrorReport struct {
+	ID               int64
+	ErrorTitle       string
+	ErrorDescription string
+	ReportedBy       string
+	ReportDate       sql.NullTime
+}
+
 type Tag struct {
 	ID   int64
 	Name string
