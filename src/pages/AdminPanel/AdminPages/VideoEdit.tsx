@@ -24,6 +24,7 @@ export const VideoEdit = () => {
   const [videoDiscription, setVideoDiscription] = useState('');
   const [videoTag, setVideoTag] = useState<string>('');
   const [defaultTagValue, setDefaultTagValue] = useState<string>('');
+  const [isPremium, setIsPremium] = useState<boolean>();
 
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
 
@@ -48,11 +49,13 @@ export const VideoEdit = () => {
   useEffect(() => {
     const { request } = videoService.takeVideoId(VideoIdInt);
     request.then((res) => {
+      console.log(res.data);
       setVideoTag(res.data.tags.toString());
       setVideoName(res.data.name);
       setVideoDiscription(res.data.description);
       setSelectedCategory(res.data.category_id);
       setDefaultTagValue(res.data.tags.toString());
+      setIsPremium(res.data.IsPremium);
     });
   }, []);
 
@@ -80,6 +83,7 @@ export const VideoEdit = () => {
       name: videoName,
       description: videoDiscription,
       category_id: selectedCategory,
+      is_premium: isPremium,
       Tags: tagsArray,
     };
     const { request } = videoService.editVideo(VideoIdInt, videoData);
@@ -138,6 +142,16 @@ export const VideoEdit = () => {
               value={videoTag}
               onChange={(event) => setVideoTag(event.target.value)}
             />
+          </label>
+          <p></p>
+          <label>
+            <input
+              className="form-check-input"
+              type="checkbox"
+              checked={isPremium}
+              onChange={(e) => setIsPremium(e.target.checked)}
+            />{' '}
+            Premium material
           </label>
           <p></p>
           <button type="submit" className="btn btn-primary " disabled={isDisable}>

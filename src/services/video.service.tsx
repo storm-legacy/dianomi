@@ -13,6 +13,7 @@ interface VideoPatchData {
   name: string;
   description: string;
   category_id: number | null;
+  is_premium: boolean | undefined;
   Tags: string[];
 }
 interface ThumbnailsData {
