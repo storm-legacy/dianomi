@@ -1123,7 +1123,8 @@ UPDATE video
 SET
   name = $2,
   description = $3,
-  category_id = $4
+  category_id = $4,
+  is_premium = $5
 WHERE id = $1
 RETURNING id, name, description, category_id, upvotes, downvotes, views, is_premium, updated_at, created_at, deleted_at
 `
@@ -1133,6 +1134,7 @@ type UpdateVideoParams struct {
 	Name        string
 	Description string
 	CategoryID  int64
+	IsPremium   bool
 }
 
 func (q *Queries) UpdateVideo(ctx context.Context, arg UpdateVideoParams) (Video, error) {
@@ -1141,6 +1143,7 @@ func (q *Queries) UpdateVideo(ctx context.Context, arg UpdateVideoParams) (Video
 		arg.Name,
 		arg.Description,
 		arg.CategoryID,
+		arg.IsPremium,
 	)
 	var i Video
 	err := row.Scan(

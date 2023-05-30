@@ -240,7 +240,8 @@ UPDATE video
 SET
   name = $2,
   description = $3,
-  category_id = $4
+  category_id = $4,
+  is_premium = $5
 WHERE id = $1
 RETURNING *;
 
