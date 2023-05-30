@@ -58,7 +58,7 @@ func main() {
 	// * User group
 	user := api.Group("users", mid.AuthMiddleware, mid.AdminMiddleware)
 	user.Get("/:id", usersCtrl.GetUser)
-
+	user.Get("/email/:email", usersCtrl.GetUserByEmail)
 	user.Get("/", usersCtrl.GetUsers)
 	user.Delete("/:id", usersCtrl.DeleteUser)
 	user.Patch("/:id", usersCtrl.PatchUser)

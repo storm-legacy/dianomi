@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
 import videoService from '../../services/video.service';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Notify } from 'notiflix';
+import { AuthContext } from '../../context/AuthContext';
 
 interface VideoData {
   duration: number;
@@ -27,9 +28,10 @@ export const VideoPlayer = () => {
   const [videoThumbnail, setVideoThumbnail] = useState('');
   const [selectedOption, setSelectedOption] = useState(0);
   const [recommendedVideos, setRecommendedVideos] = useState<VideoItemData[]>([]);
-
   const { VideoId } = useParams();
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const { request, cancel } = videoService.takeVideoRecommended();
@@ -52,6 +54,9 @@ export const VideoPlayer = () => {
     const { request } = videoService.takeVideoId(VideoIdInt);
     request
       .then((res) => {
+        if (res.data.IsPremium === true && user?.role === 'free') {
+          navigate('/');
+        }
         setVideoName(res.data.name);
         setDataVideo(res.data.videos);
         setVideoThumbnail(res.data.thumbnail_url);
