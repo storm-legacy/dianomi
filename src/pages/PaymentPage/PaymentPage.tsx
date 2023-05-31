@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import developmentService from '../../services/development.service';
 import { User } from '../../types/user.type';
 import { Notify } from 'notiflix';
+import { AuthContext } from '../../context/AuthContext';
 
 const PaymentPage = () => {
   const navigate = useNavigate();
@@ -11,9 +12,12 @@ const PaymentPage = () => {
 
   if (status === 'success') {
     const user: User = JSON.parse(String(localStorage.getItem("user")))
+    const authContext = useContext(AuthContext);
+
     const { request } = developmentService.GivePackageSelf(user.email)
     request.then(() => {
       Notify.info("You can know access premium materials");
+
     }).catch(() => {
       Notify.failure("Problem occured while giving user the package");
     })
@@ -26,9 +30,14 @@ const PaymentPage = () => {
             <div className="p-4">
               <span>You can now move to application and enjoy premium content.</span>
             </div>
-            <Link to="/">
-              <button className="btn btn-danger shadow">Return to application</button>
-            </Link>
+            <button className="btn btn-danger shadow" onClick={
+              () => {
+                user.role = "premium";
+                localStorage.setItem("user", JSON.stringify(user));
+                authContext.setUser(user);
+                navigate("/ProfilePage");
+              }
+            }>Return to application</button>
           </div>
         </div>
       </>
