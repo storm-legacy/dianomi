@@ -1,10 +1,14 @@
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import ProfileService, { emailData } from '../../services/profile.service';
+import { useNavigate } from 'react-router-dom';
+import { Notify, Report } from 'notiflix';
 
 export const ReportPage = () => {
+  const navigate = useNavigate();
   const [title, setTitle] = useState<string>('');
   const [dsescription, setDescription] = useState<string>('');
+  const [disabled, setDisabled] = useState(false);
   const { user } = useContext(AuthContext);
   const handleSubmit = async (event: any) => {
     event.preventDefault();
@@ -15,7 +19,15 @@ export const ReportPage = () => {
       ReportedBy: String(user?.email),
     };
 
+    setDisabled(true);
     const { request } = ProfileService.PostRaport(data);
+    request.then(() => {
+      Report.success("Report sent", "Thank you for your feedback.", "Ok", () => {
+        navigate("/ProfilePage")
+      });
+    }).catch(() => {
+      Report.failure("Sending error", "Report could not be sent, please try again later.", "Ok");
+    })
   };
 
   return (
@@ -39,7 +51,7 @@ export const ReportPage = () => {
             ></textarea>
           </label>
           <p></p>
-          <button type="submit" onClick={handleSubmit} className="btn btn-danger">
+          <button type="submit" disabled={disabled} onClick={handleSubmit} className="btn btn-danger">
             Report an Error
           </button>
         </form>

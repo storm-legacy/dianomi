@@ -22,7 +22,7 @@ class ProfileService {
   PostRaport(data: emailData) {
     const controller = new AbortController();
     const request = http.post('/report/', data, { signal: controller.signal });
-    return { request: () => controller.abort() };
+    return { request, cancel: () => controller.abort() };
   }
 }
 export default new ProfileService();
