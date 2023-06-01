@@ -10,7 +10,13 @@ import { redirect, useNavigate } from 'react-router-dom';
 export const ProfilePage = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-
+  const [isValiRep, setIsValiRep] = useState<string>('');
+  const [isValiOld, setIsValiOld] = useState<string>('');
+  const [isValiNew, setIsValiNew] = useState<string>('');
+  const [isError, setIsError] = useState<boolean>(false);
+  const [Password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [PasswordRepeat, setPasswordRepeat] = useState('');
   const [pack, setPack] = useState<Package>();
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
 
@@ -40,7 +46,10 @@ export const ProfilePage = () => {
       setDaysLeft(differenceInDays);
     }
   };
-
+  const checkPasswordStrength = (password: string) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
+    return regex.test(password) ? 1 : 0;
+  };
   const handleSubscribe = () => {
     const { request } = profileService.PostPayment();
     request
@@ -51,6 +60,34 @@ export const ProfilePage = () => {
       .catch((err) => {
         Notify.failure(`Error occured while trying to subscribe: ${err.message}`);
       });
+  };
+  const handlePassword = async (event: any) => {
+    event.preventDefault();
+    const passwordStrength = checkPasswordStrength(newPassword);
+    if (Password !== '123') {
+      setIsValiOld('is-invalid');
+      setIsError(true);
+    } else {
+      setIsValiOld('is-valid');
+      setIsError(false);
+    }
+    if (passwordStrength === 0) {
+      setIsValiNew('is-invalid');
+      setIsError(true);
+    } else {
+      setIsValiNew('is-valid');
+      setIsError(false);
+    }
+    if (newPassword !== PasswordRepeat || PasswordRepeat === '') {
+      setIsValiRep('is-invalid');
+      setIsError(true);
+    } else {
+      setIsValiRep('is-valid');
+      setIsError(false);
+    }
+    if (!isError) {
+      console.log('log');
+    }
   };
 
   return (
@@ -73,6 +110,9 @@ export const ProfilePage = () => {
                 aria-label="Sizing example input"
                 aria-describedby="inputGroup-sizing-sm"
               />
+              <button className="btn btn-outline-secondary" type="button">
+                Edit
+              </button>
             </div>
             <div className="form-group border p-2">
               {user?.role !== 'free' ? (
@@ -100,7 +140,7 @@ export const ProfilePage = () => {
               )}
             </div>
           </div>
-          <div className="text-center mt-3 float-start">
+          <div className="text-center mt-3 float-start has-validation">
             <button type="button" className="btn btn-primary float-start">
               Look at your watch history
             </button>
@@ -119,6 +159,52 @@ export const ProfilePage = () => {
             <br />
           </div>
         </div>
+        <div className=" col-md-3 text-center "></div>
+        <form className=" col " onSubmit={handlePassword}>
+          <div className=" col-md-3 text-center mt-3">
+            <div className=" col text-center mt-3">
+              Old password
+              <input
+                type="password"
+                className={'form-control ' + isValiOld}
+                placeholder="Old Password"
+                aria-label="OldPassword"
+                aria-describedby="basic-addon1"
+                value={Password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+              <div className="invalid-feedback">Please enter your old password</div>
+            </div>
+            <div className=" col text-center mt-3">
+              New password
+              <input
+                type="password"
+                className={'form-control ' + isValiNew}
+                placeholder="New Password"
+                aria-label="NewPassword"
+                aria-describedby="basic-addon1"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+              />{' '}
+              <div className="invalid-feedback">Your password is too weak </div>
+            </div>
+            <div className=" col text-center mt-3">
+              Repeat password
+              <input
+                type="password"
+                className={'form-control ' + String(isValiRep)}
+                placeholder="Repeat password"
+                aria-label="PasswordRepeat"
+                aria-describedby="basic-addon1"
+                value={PasswordRepeat}
+                onChange={(event) => setPasswordRepeat(event.target.value)}
+              />
+              <div className="invalid-feedback"> The passwords are not identical</div>
+              <br />
+            </div>
+            <button className={isError ? 'btn btn-danger' : 'btn btn-success'}>Reset password</button>
+          </div>
+        </form>
       </div>
     </div>
   );
