@@ -1,16 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FiUser } from 'react-icons/fi';
 import { AuthContext } from '../../context/AuthContext';
-import profileService from '../../services/profile.service';
+import profileService, { emailData } from '../../services/profile.service';
 import { Notify } from 'notiflix';
 import { Package } from '../../services/admin.service';
 import { CanceledError } from 'axios';
 import { redirect, useNavigate } from 'react-router-dom';
+import testService, { userResData } from '../../services/test.service';
 
 export const ProfilePage = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isValiRep, setIsValiRep] = useState<string>('');
+  const [OldPassword, setOldPassword] = useState<string>('');
   const [isValiOld, setIsValiOld] = useState<string>('');
   const [isValiNew, setIsValiNew] = useState<string>('');
   const [isError, setIsError] = useState<boolean>(false);
@@ -62,15 +64,23 @@ export const ProfilePage = () => {
       });
   };
   const handlePassword = async (event: any) => {
+    const data: userResData = {
+      email: user?.email,
+      OldPassword: Password,
+    };
     event.preventDefault();
     const passwordStrength = checkPasswordStrength(newPassword);
-    if (Password !== '123') {
-      setIsValiOld('is-invalid');
-      setIsError(true);
-    } else {
-      setIsValiOld('is-valid');
-      setIsError(false);
-    }
+    const { request } = testService.GetOldPassword(data);
+    request
+      .then((ress) => {
+        setIsValiOld('is-valid');
+        setIsError(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setIsValiOld('is-invalid');
+        setIsError(true);
+      });
     if (passwordStrength === 0) {
       setIsValiNew('is-invalid');
       setIsError(true);

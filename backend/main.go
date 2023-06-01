@@ -8,7 +8,6 @@ import (
 
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
-
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
@@ -29,7 +28,8 @@ func main() {
 	api.Get("/", mid.AuthMiddleware, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
 
 	// https://localhost/test
-	api.Get("/test/:email", testsCtrl.GetUserByEmail)
+	//api.Patch("/test/", testsCtrl.PatchPasswortResetProfil)
+	api.Post("/test/", testsCtrl.GetOldPassword)
 
 	// * DEVELOPMENT ENDPOINTS
 	dev := api.Group("dev")
