@@ -29,6 +29,7 @@ import { ResetPage } from './pages/ResetPage/ResetPage';
 import { Report } from 'notiflix';
 import PaymentPage from './pages/PaymentPage/PaymentPage';
 import { ReportPage } from './pages/ReportPage/Report';
+import { UserHistory } from './pages/ProfilePage/UserHistory';
 
 function App() {
   const [user, setUser] = useState<User | null>(JSON.parse(String(localStorage.getItem('user'))));
@@ -68,6 +69,8 @@ function App() {
                   <Route path="/VideoPlayer/:VideoId" element={<VideoPlayer />} />
                   <Route path="/ProfilePage" element={<ProfilePage />} />
                   <Route path="/Report" element={<ReportPage />} />
+                  <Route path="/History" element={<UserHistory />} />
+
                   <Route path="/payment" element={<PaymentPage />} />
                   <Route
                     path="/UserList"

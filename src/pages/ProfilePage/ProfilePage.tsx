@@ -165,7 +165,7 @@ export const ProfilePage = () => {
             </div>
           </div>
           <div className="text-center mt-3 float-start has-validation">
-            <button type="button" className="btn btn-primary float-start">
+            <button type="button" onClick={() => navigate('/history')} className="btn btn-primary float-start">
               Look at your watch history
             </button>
             <br />
