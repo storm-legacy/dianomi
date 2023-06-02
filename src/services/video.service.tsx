@@ -50,9 +50,9 @@ class VideoService {
     const request = http.get('/video/all', { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
-  takeVideoRecommended() {
+  takeVideoRecommended(offset = 0, limit = 6) {
     const controller = new AbortController();
-    const request = http.get('/video', { signal: controller.signal });
+    const request = http.get(`/video?offset=${offset}&limit=${limit}`, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
   takeVideoId(videoId: number | undefined) {
