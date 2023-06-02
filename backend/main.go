@@ -28,7 +28,7 @@ func main() {
 	api.Get("/", mid.AuthMiddleware, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
 
 	// https://localhost/test
-	//api.Patch("/test/", testsCtrl.PatchPasswortResetProfil)
+	api.Patch("/test/", testsCtrl.NewUserPassword)
 	api.Post("/test/", testsCtrl.GetOldPassword)
 
 	// * DEVELOPMENT ENDPOINTS

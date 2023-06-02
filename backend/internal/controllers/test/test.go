@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
@@ -43,7 +44,7 @@ func GetOldPassword(c *fiber.Ctx) error {
 		log.WithField("user", email.Email).Debug("User doesn't exist")
 		return c.Status(fiber.StatusBadRequest).JSON(mod.Response{
 			Status: "error",
-			Data:   "Incorrect login information",
+			Data:   "Incorrect information",
 		})
 	}
 	if err != nil {
@@ -61,6 +62,7 @@ func GetOldPassword(c *fiber.Ctx) error {
 			Data:   "Incorrect login information",
 		})
 	}
+
 	return c.Status(fiber.StatusOK).JSON(mod.Response{
 		Status: "success",
 		Data: fiber.Map{
@@ -76,35 +78,49 @@ func comparePasswords(password string, hashedPassword string) (bool, error) {
 	}
 	return result, nil
 }
-func PatchPasswortResetProfil(c *fiber.Ctx) error {
+
+func NewUserPassword(c *fiber.Ctx) error {
 
 	var data passwordData
 	if err := c.BodyParser(&data); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	hashedPassword, err := argon2.EncodePassword(&data.OldPassword)
+	// * START(DB BLOCK)
+	ctx := context.Background()
+	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
+	if err != nil {
+		log.WithField("err", err).Error("Could not create database connection")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	queries := sqlc.New(db)
+	defer db.Close()
+	// * END(DB BLOCK)
+
+	user, err := queries.GetUserByEmail(ctx, data.Email)
+	if err == sql.ErrNoRows {
+		log.WithField("user", data.Email).Debug("User doesn't exist")
+		return c.Status(fiber.StatusBadRequest).JSON(mod.Response{
+			Status: "error",
+			Data:   "Incorrect information",
+		})
+	}
+
+	hashedPassword, err := argon2.EncodePassword(&data.NewPassword)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
+	}
+	fmt.Println(data.NewPassword)
+
+	err = queries.UpdateUserPassword(ctx, sqlc.UpdateUserPasswordParams{
+		ID:       user.ID,
+		Password: hashedPassword,
+	})
+	fmt.Println(comparePasswords(data.NewPassword, hashedPassword))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 	}
 
-	result, err := comparePasswords(data.OldPassword, hashedPassword)
-	if err != nil {
-		log.WithField("err", err).Error("Problem decoding password")
-		return c.SendStatus(fiber.StatusInternalServerError)
-	} else if !result {
-		return c.Status(fiber.StatusBadRequest).JSON(mod.Response{
-			Status: "error",
-			Data:   "Incorrect login information",
-		})
-	}
+	return c.SendStatus(fiber.StatusOK)
 
-	return c.Status(fiber.StatusOK).JSON(mod.Response{
-		Status: "success",
-		Data: fiber.Map{
-			"Email":       hashedPassword,
-			"OldPassword": data.OldPassword,
-			"NewPassword": result,
-		},
-	})
 }
