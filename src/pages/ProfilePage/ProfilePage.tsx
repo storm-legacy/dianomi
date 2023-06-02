@@ -1,21 +1,20 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FiUser } from 'react-icons/fi';
 import { AuthContext } from '../../context/AuthContext';
-import profileService, { emailData } from '../../services/profile.service';
+import profileService, { emailData, userResData, oldPass } from '../../services/profile.service';
 import { Notify } from 'notiflix';
 import { Package } from '../../services/admin.service';
 import { CanceledError } from 'axios';
 import { redirect, useNavigate } from 'react-router-dom';
-import testService, { userResData } from '../../services/test.service';
 
 export const ProfilePage = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isValiRep, setIsValiRep] = useState<string>('');
-  const [OldPassword, setOldPassword] = useState<string>('');
+  const [isSame, setIsSame] = useState<boolean>();
   const [isValiOld, setIsValiOld] = useState<string>('');
   const [isValiNew, setIsValiNew] = useState<string>('');
-  const [isError, setIsError] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(true);
   const [Password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [PasswordRepeat, setPasswordRepeat] = useState('');
@@ -64,13 +63,17 @@ export const ProfilePage = () => {
       });
   };
   const handlePassword = async (event: any) => {
-    const data: userResData = {
+    const data: oldPass = {
       email: user?.email,
       OldPassword: Password,
     };
+    const dataUser: userResData = {
+      email: user?.email,
+      NewPassword: newPassword,
+    };
     event.preventDefault();
     const passwordStrength = checkPasswordStrength(newPassword);
-    const { request } = testService.GetOldPassword(data);
+    const { request } = profileService.PostOldPassword(data);
     request
       .then((ress) => {
         setIsValiOld('is-valid');
@@ -97,6 +100,17 @@ export const ProfilePage = () => {
     }
     if (!isError) {
       console.log('log');
+      const { request } = profileService.PostNewPassword(dataUser);
+      request
+        .then((res) => {
+          Notify.success('You change your password');
+          setNewPassword('');
+          setPassword('');
+          setPasswordRepeat('');
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     }
   };
 

@@ -13,7 +13,6 @@ import (
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
 	profileCtrl "github.com/storm-legacy/dianomi/internal/controllers/profile"
 	reportCtrl "github.com/storm-legacy/dianomi/internal/controllers/report"
-	testsCtrl "github.com/storm-legacy/dianomi/internal/controllers/test"
 	usersCtrl "github.com/storm-legacy/dianomi/internal/controllers/users"
 	packagesCtrl "github.com/storm-legacy/dianomi/internal/controllers/users/packages"
 	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video"
@@ -28,8 +27,7 @@ func main() {
 	api.Get("/", mid.AuthMiddleware, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
 
 	// https://localhost/test
-	api.Patch("/test/", testsCtrl.NewUserPassword)
-	api.Post("/test/", testsCtrl.GetOldPassword)
+	//api.Patch("/test/", testsCtrl.NewUserPassword)
 
 	// * DEVELOPMENT ENDPOINTS
 	dev := api.Group("dev")
@@ -74,6 +72,8 @@ func main() {
 	profile := api.Group("profile", mid.AuthMiddleware)
 	profile.Get("/package", profileCtrl.GetPackage)
 	profile.Post("/pay", profileCtrl.PostPayment)
+	profile.Post("/comparison", profileCtrl.ComparisonOldPassword)
+	profile.Post("/new", profileCtrl.NewUserPassword)
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)

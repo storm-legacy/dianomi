@@ -5,6 +5,14 @@ interface emailData {
   ErrorDescription: string;
   ReportedBy: string;
 }
+interface oldPass {
+  email: string | undefined;
+  OldPassword: string;
+}
+interface userResData {
+  email: string | undefined;
+  NewPassword: string;
+}
 
 class ProfileService {
   GetPackage() {
@@ -24,6 +32,18 @@ class ProfileService {
     const request = http.post('/report/', data, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
+  PostOldPassword(data: oldPass) {
+    const controller = new AbortController();
+    const request = http.post('/profile/comparison/', data, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  PostNewPassword(data: userResData) {
+    const controller = new AbortController();
+    const request = http.post('/profile/new/', data, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
 }
 export default new ProfileService();
 export type { emailData };
+export type { oldPass };
+export type { userResData };
