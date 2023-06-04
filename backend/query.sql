@@ -306,8 +306,8 @@ INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES (
 -- name: AddVideoMertics :exec
 INSERT INTO user_video_metrics (user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at) VALUES ($1, $2, $3, $4, now(), now()) RETURNING *;
 
--- name: GetUserVideoMerticsByUserId :one
-SELECT * FROM user_video_metrics WHERE user_id = $1 LIMIT 1;
+-- name: GetUserVideoMerticsByUserId :many
+SELECT * FROM user_video_metrics WHERE user_id = $1;
 
 -- name: GetUserVideoMerticsByVideoId :one
 SELECT * FROM user_video_metrics WHERE video_id = $1 LIMIT 1;
@@ -319,3 +319,6 @@ SELECT * FROM user_video_metrics WHERE user_id = $1 AND video_id=$2 LIMIT 1;
 UPDATE user_video_metrics
 SET time_spent_watching=time_spent_watching + $1, stopped_at = $2, updated_at = now()
 WHERE id=$3;
+
+-- name: GetAllVideoMetric :many
+SELECT id, user_id,video_id,time_spent_watching,stopped_at,created_at,updated_at FROM user_video_metrics LIMIT $1 OFFSET $2;;

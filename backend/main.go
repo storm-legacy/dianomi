@@ -29,6 +29,8 @@ func main() {
 
 	// https://localhost/test
 	api.Post("/test/add", testsCtrl.PostVideoMertics)
+	api.Get("/test/", testsCtrl.GetUserVideoMertics)
+	api.Get("/test/email", testsCtrl.GetUserVideoMerticByEmail)
 
 	// * DEVELOPMENT ENDPOINTS
 	dev := api.Group("dev")

@@ -363,6 +363,46 @@ func (q *Queries) GetAllUsers(ctx context.Context, arg GetAllUsersParams) ([]Use
 	return items, nil
 }
 
+const getAllVideoMetric = `-- name: GetAllVideoMetric :many
+SELECT id, user_id,video_id,time_spent_watching,stopped_at,created_at,updated_at FROM user_video_metrics LIMIT $1 OFFSET $2
+`
+
+type GetAllVideoMetricParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetAllVideoMetric(ctx context.Context, arg GetAllVideoMetricParams) ([]UserVideoMetric, error) {
+	rows, err := q.db.QueryContext(ctx, getAllVideoMetric, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []UserVideoMetric
+	for rows.Next() {
+		var i UserVideoMetric
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.VideoID,
+			&i.TimeSpentWatching,
+			&i.StoppedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllVideos = `-- name: GetAllVideos :many
 SELECT
   v.id id,
@@ -715,23 +755,39 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
-const getUserVideoMerticsByUserId = `-- name: GetUserVideoMerticsByUserId :one
-SELECT id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at FROM user_video_metrics WHERE user_id = $1 LIMIT 1
+const getUserVideoMerticsByUserId = `-- name: GetUserVideoMerticsByUserId :many
+SELECT id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at FROM user_video_metrics WHERE user_id = $1
 `
 
-func (q *Queries) GetUserVideoMerticsByUserId(ctx context.Context, userID int64) (UserVideoMetric, error) {
-	row := q.db.QueryRowContext(ctx, getUserVideoMerticsByUserId, userID)
-	var i UserVideoMetric
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.VideoID,
-		&i.TimeSpentWatching,
-		&i.StoppedAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) GetUserVideoMerticsByUserId(ctx context.Context, userID int64) ([]UserVideoMetric, error) {
+	rows, err := q.db.QueryContext(ctx, getUserVideoMerticsByUserId, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []UserVideoMetric
+	for rows.Next() {
+		var i UserVideoMetric
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.VideoID,
+			&i.TimeSpentWatching,
+			&i.StoppedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUserVideoMerticsByVideoId = `-- name: GetUserVideoMerticsByVideoId :one
