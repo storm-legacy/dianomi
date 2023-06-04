@@ -55,14 +55,10 @@ func PostVideoMertics(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	userMetric, err := qtx.GetUserVideoMerticsByUserId(ctx, user.ID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(mod.Response{
-			Status: "error",
-			Data:   "Incorrect information",
-		})
-	}
-	fmt.Println(userMetric)
+	userMetric, err := qtx.IfUserSeeThisVideo(ctx, sqlc.IfUserSeeThisVideoParams{
+		UserID:  user.ID,
+		VideoID: data.VideoID,
+	})
 
 	if userMetric == (sqlc.UserVideoMetric{}) {
 		if err := qtx.AddVideoMertics(ctx, sqlc.AddVideoMerticsParams{

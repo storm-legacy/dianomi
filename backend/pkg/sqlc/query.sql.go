@@ -1063,6 +1063,30 @@ func (q *Queries) GiveUserPackage(ctx context.Context, arg GiveUserPackageParams
 	return err
 }
 
+const ifUserSeeThisVideo = `-- name: IfUserSeeThisVideo :one
+SELECT id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at FROM user_video_metrics WHERE user_id = $1 AND video_id=$2 LIMIT 1
+`
+
+type IfUserSeeThisVideoParams struct {
+	UserID  int64
+	VideoID int64
+}
+
+func (q *Queries) IfUserSeeThisVideo(ctx context.Context, arg IfUserSeeThisVideoParams) (UserVideoMetric, error) {
+	row := q.db.QueryRowContext(ctx, ifUserSeeThisVideo, arg.UserID, arg.VideoID)
+	var i UserVideoMetric
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.VideoID,
+		&i.TimeSpentWatching,
+		&i.StoppedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const removeAllUserPackages = `-- name: RemoveAllUserPackages :exec
 DELETE FROM users_packages WHERE user_id = $1
 `
