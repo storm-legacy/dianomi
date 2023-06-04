@@ -302,3 +302,17 @@ DELETE FROM video_tags WHERE video_id = $1;
 
 -- name: AddReport :exec
 INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES ($1, $2, $3) RETURNING *;
+
+-- name: AddVideoMertics :exec
+INSERT INTO user_video_metrics (user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at) VALUES ($1, $2, $3, $4, now(), now()) RETURNING *;
+
+-- name: GetUserVideoMerticsByUserId :one
+SELECT * FROM user_video_metrics WHERE user_id = $1 LIMIT 1;
+
+-- name: GetUserVideoMerticsByVideoId :one
+SELECT * FROM user_video_metrics WHERE video_id = $1 LIMIT 1;
+
+-- name: UpdateVideoMetric :exec
+UPDATE user_video_metrics
+SET time_spent_watching=time_spent_watching + $1, stopped_at = $2, updated_at = now()
+WHERE id=$3;

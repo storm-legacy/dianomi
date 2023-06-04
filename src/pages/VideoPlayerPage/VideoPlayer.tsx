@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
 import videoService from '../../services/video.service';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -32,6 +32,8 @@ export const VideoPlayer = () => {
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [playedSeconds, setPlayedSeconds] = useState(0);
+  const [stopSeconds, setStopSeconds] = useState(0);
 
   useEffect(() => {
     const { request, cancel } = videoService.takeVideoRecommended();
@@ -76,6 +78,18 @@ export const VideoPlayer = () => {
     setSelectedOption(value);
   };
 
+  const handleProgress = (state: { playedSeconds: React.SetStateAction<number> }) => {
+    setPlayedSeconds(state.playedSeconds);
+    console.log('Czas oglądania:', playedSeconds);
+  };
+
+  const handleSeek = (time: any) => {
+    setStopSeconds(time);
+    console.log('Moment Przewiniecia:', time);
+  };
+  const handleContextMenu = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+  };
   return (
     <>
       <div className="container-fluid mx-0 py-8">
@@ -112,6 +126,9 @@ export const VideoPlayer = () => {
                   className=""
                   url={dataVideo[selectedOption]?.file_path}
                   controls
+                  onContextMenu={handleContextMenu}
+                  onProgress={handleProgress}
+                  onSeek={handleSeek}
                   config={{
                     file: {
                       attributes: {

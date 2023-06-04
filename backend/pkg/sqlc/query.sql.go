@@ -132,6 +132,27 @@ func (q *Queries) AddVideoFile(ctx context.Context, arg AddVideoFileParams) erro
 	return err
 }
 
+const addVideoMertics = `-- name: AddVideoMertics :exec
+INSERT INTO user_video_metrics (user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at) VALUES ($1, $2, $3, $4, now(), now()) RETURNING id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at
+`
+
+type AddVideoMerticsParams struct {
+	UserID            int64
+	VideoID           int64
+	TimeSpentWatching int32
+	StoppedAt         int32
+}
+
+func (q *Queries) AddVideoMertics(ctx context.Context, arg AddVideoMerticsParams) error {
+	_, err := q.db.ExecContext(ctx, addVideoMertics,
+		arg.UserID,
+		arg.VideoID,
+		arg.TimeSpentWatching,
+		arg.StoppedAt,
+	)
+	return err
+}
+
 const addVideoTag = `-- name: AddVideoTag :exec
 INSERT INTO video_tags (video_id, tag_id) VALUES ($1, $2) RETURNING id, video_id, tag_id
 `
@@ -694,6 +715,44 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
+const getUserVideoMerticsByUserId = `-- name: GetUserVideoMerticsByUserId :one
+SELECT id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at FROM user_video_metrics WHERE user_id = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserVideoMerticsByUserId(ctx context.Context, userID int64) (UserVideoMetric, error) {
+	row := q.db.QueryRowContext(ctx, getUserVideoMerticsByUserId, userID)
+	var i UserVideoMetric
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.VideoID,
+		&i.TimeSpentWatching,
+		&i.StoppedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserVideoMerticsByVideoId = `-- name: GetUserVideoMerticsByVideoId :one
+SELECT id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at FROM user_video_metrics WHERE video_id = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserVideoMerticsByVideoId(ctx context.Context, videoID int64) (UserVideoMetric, error) {
+	row := q.db.QueryRowContext(ctx, getUserVideoMerticsByVideoId, videoID)
+	var i UserVideoMetric
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.VideoID,
+		&i.TimeSpentWatching,
+		&i.StoppedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getVerificationCode = `-- name: GetVerificationCode :one
 SELECT id, user_id, task_type, code, used, created_at, valid_until FROM verification WHERE code = $1 LIMIT 1
 `
@@ -1160,6 +1219,23 @@ func (q *Queries) UpdateVideo(ctx context.Context, arg UpdateVideoParams) (Video
 		&i.DeletedAt,
 	)
 	return i, err
+}
+
+const updateVideoMetric = `-- name: UpdateVideoMetric :exec
+UPDATE user_video_metrics
+SET time_spent_watching=time_spent_watching + $1, stopped_at = $2, updated_at = now()
+WHERE id=$3
+`
+
+type UpdateVideoMetricParams struct {
+	TimeSpentWatching int32
+	StoppedAt         int32
+	ID                int64
+}
+
+func (q *Queries) UpdateVideoMetric(ctx context.Context, arg UpdateVideoMetricParams) error {
+	_, err := q.db.ExecContext(ctx, updateVideoMetric, arg.TimeSpentWatching, arg.StoppedAt, arg.ID)
+	return err
 }
 
 const verifyUser = `-- name: VerifyUser :exec
