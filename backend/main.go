@@ -11,9 +11,9 @@ import (
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
+	videoMetricCtrl "github.com/storm-legacy/dianomi/internal/controllers/metric"
 	profileCtrl "github.com/storm-legacy/dianomi/internal/controllers/profile"
 	reportCtrl "github.com/storm-legacy/dianomi/internal/controllers/report"
-	testsCtrl "github.com/storm-legacy/dianomi/internal/controllers/test"
 	usersCtrl "github.com/storm-legacy/dianomi/internal/controllers/users"
 	packagesCtrl "github.com/storm-legacy/dianomi/internal/controllers/users/packages"
 	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video"
@@ -28,9 +28,9 @@ func main() {
 	api.Get("/", mid.AuthMiddleware, func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
 
 	// https://localhost/test
-	api.Post("/test/add", testsCtrl.PostVideoMertics)
-	api.Get("/test/", testsCtrl.GetUserVideoMertics)
-	api.Get("/test/email", testsCtrl.GetUserVideoMerticByEmail)
+	// api.Post("/test/add", testsCtrl.PostVideoMertics)
+	// api.Get("/test/", testsCtrl.GetUserVideoMertics)
+	// api.Get("/test/email", testsCtrl.GetUserVideoMerticByEmail)
 
 	// * DEVELOPMENT ENDPOINTS
 	dev := api.Group("dev")
@@ -77,6 +77,11 @@ func main() {
 	profile.Post("/pay", profileCtrl.PostPayment)
 	profile.Post("/comparison", profileCtrl.ComparisonOldPassword)
 	profile.Post("/new", profileCtrl.NewUserPassword)
+
+	metrics := api.Group("metrics", mid.AuthMiddleware)
+	metrics.Post("/user/", videoMetricCtrl.GetUserVideoMerticByEmail)
+	metrics.Get("/all", videoMetricCtrl.GetUserVideoMertics)
+	metrics.Post("/", videoMetricCtrl.PostVideoMertics)
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)

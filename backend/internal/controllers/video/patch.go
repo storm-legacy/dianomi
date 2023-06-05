@@ -18,7 +18,7 @@ type VideoPatchData struct {
 	Name        string   `json:"name" validate:"required"`
 	Description string   `json:"description" validate:"required"`
 	CategoryId  int64    `json:"category_id" validate:"required"`
-	Premium     bool     `json:"is_premium" validate:"required,boolean"`
+	Premium     bool     `json:"is_premium"`
 	Tags        []string `json:"tags" validate:"required,tags"`
 }
 
@@ -28,7 +28,6 @@ func PathVideo(c *fiber.Ctx) error {
 	if err := c.BodyParser(&data); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
-
 	// Get video ID
 	idString := c.Params("id")
 	id, err := strconv.ParseInt(string(idString), 10, 64)

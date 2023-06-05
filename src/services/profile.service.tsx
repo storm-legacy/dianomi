@@ -13,7 +13,9 @@ interface userResData {
   email: string | undefined;
   NewPassword: string;
 }
-
+interface Email {
+  email: string | undefined;
+}
 class ProfileService {
   GetPackage() {
     const controller = new AbortController();
@@ -42,8 +44,14 @@ class ProfileService {
     const request = http.post('/profile/new/', data, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
+  GetUserVideoMetric(email: Email) {
+    const controller = new AbortController();
+    const request = http.post('/metrics/user/', email, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
 }
 export default new ProfileService();
 export type { emailData };
 export type { oldPass };
 export type { userResData };
+export type { Email };

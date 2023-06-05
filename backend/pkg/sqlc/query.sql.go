@@ -364,7 +364,7 @@ func (q *Queries) GetAllUsers(ctx context.Context, arg GetAllUsersParams) ([]Use
 }
 
 const getAllVideoMetric = `-- name: GetAllVideoMetric :many
-SELECT id, user_id,video_id,time_spent_watching,stopped_at,created_at,updated_at FROM user_video_metrics LIMIT $1 OFFSET $2
+SELECT id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at FROM user_video_metrics LIMIT $1 OFFSET $2
 `
 
 type GetAllVideoMetricParams struct {
@@ -756,18 +756,36 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 }
 
 const getUserVideoMerticsByUserId = `-- name: GetUserVideoMerticsByUserId :many
-SELECT id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at FROM user_video_metrics WHERE user_id = $1
+SELECT user_video_metrics.id, user_video_metrics.user_id, user_video_metrics.video_id, user_video_metrics.time_spent_watching, user_video_metrics.stopped_at, user_video_metrics.created_at, user_video_metrics.updated_at, video.id, video.name, video.description, video.is_premium, video_thumbnails.file_name
+FROM user_video_metrics
+JOIN video ON user_video_metrics.video_id = video.id JOIN video_thumbnails ON video_thumbnails.video_id = video.id
+WHERE user_video_metrics.user_id = $1
 `
 
-func (q *Queries) GetUserVideoMerticsByUserId(ctx context.Context, userID int64) ([]UserVideoMetric, error) {
+type GetUserVideoMerticsByUserIdRow struct {
+	ID                int64
+	UserID            int64
+	VideoID           int64
+	TimeSpentWatching int32
+	StoppedAt         int32
+	CreatedAt         sql.NullTime
+	UpdatedAt         sql.NullTime
+	ID_2              int64
+	Name              string
+	Description       string
+	IsPremium         bool
+	FileName          string
+}
+
+func (q *Queries) GetUserVideoMerticsByUserId(ctx context.Context, userID int64) ([]GetUserVideoMerticsByUserIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getUserVideoMerticsByUserId, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UserVideoMetric
+	var items []GetUserVideoMerticsByUserIdRow
 	for rows.Next() {
-		var i UserVideoMetric
+		var i GetUserVideoMerticsByUserIdRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -776,6 +794,11 @@ func (q *Queries) GetUserVideoMerticsByUserId(ctx context.Context, userID int64)
 			&i.StoppedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ID_2,
+			&i.Name,
+			&i.Description,
+			&i.IsPremium,
+			&i.FileName,
 		); err != nil {
 			return nil, err
 		}
@@ -1263,7 +1286,7 @@ SET
   name = $2,
   description = $3,
   category_id = $4,
-  is_premium = $5
+  is_premium = COALESCE($5, false)
 WHERE id = $1
 RETURNING id, name, description, category_id, upvotes, downvotes, views, is_premium, updated_at, created_at, deleted_at
 `

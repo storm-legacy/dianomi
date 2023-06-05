@@ -24,7 +24,7 @@ export const VideoEdit = () => {
   const [videoDiscription, setVideoDiscription] = useState('');
   const [videoTag, setVideoTag] = useState<string>('');
   const [defaultTagValue, setDefaultTagValue] = useState<string>('');
-  const [isPremium, setIsPremium] = useState<boolean>();
+  const [isPremium, setIsPremium] = useState<boolean>(false);
 
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
 
@@ -94,6 +94,7 @@ export const VideoEdit = () => {
       })
       .catch((err) => {
         console.error(err.message);
+        console.log(isPremium);
       });
   };
   return (

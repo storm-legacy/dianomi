@@ -241,7 +241,7 @@ SET
   name = $2,
   description = $3,
   category_id = $4,
-  is_premium = $5
+  is_premium = COALESCE($5, false)
 WHERE id = $1
 RETURNING *;
 
@@ -307,8 +307,10 @@ INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES (
 INSERT INTO user_video_metrics (user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at) VALUES ($1, $2, $3, $4, now(), now()) RETURNING *;
 
 -- name: GetUserVideoMerticsByUserId :many
-SELECT * FROM user_video_metrics WHERE user_id = $1;
-
+SELECT user_video_metrics.*, video.id, video.name, video.description, video.is_premium, video_thumbnails.file_name
+FROM user_video_metrics
+JOIN video ON user_video_metrics.video_id = video.id JOIN video_thumbnails ON video_thumbnails.video_id = video.id
+WHERE user_video_metrics.user_id = $1;
 -- name: GetUserVideoMerticsByVideoId :one
 SELECT * FROM user_video_metrics WHERE video_id = $1 LIMIT 1;
 
@@ -321,4 +323,4 @@ SET time_spent_watching=time_spent_watching + $1, stopped_at = $2, updated_at = 
 WHERE id=$3;
 
 -- name: GetAllVideoMetric :many
-SELECT id, user_id,video_id,time_spent_watching,stopped_at,created_at,updated_at FROM user_video_metrics LIMIT $1 OFFSET $2;;
+SELECT * FROM user_video_metrics LIMIT $1 OFFSET $2;;
