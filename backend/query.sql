@@ -303,23 +303,5 @@ DELETE FROM video_tags WHERE video_id = $1;
 -- name: AddReport :exec
 INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES ($1, $2, $3) RETURNING *;
 
--- name: SearchVideoByName :many
-SELECT
-  v.id id,
-  v.name name,
-  v.description description,
-  c.name category,
-  v.upvotes upvotes,
-  v.downvotes downvotes,
-  v.views views,
-  v.is_premium is_premium,
-  th.file_name as thumbnail
-FROM
-  video v LEFT JOIN categories c ON v.category_id = c.id
-  LEFT JOIN video_thumbnails th ON th.video_id = v.id
-WHERE
-  v.name LIKE $1
-ORDER BY
-  $2 $3
-LIMIT $4
-OFFSET $5;
+-- name: GetVideoIDByName :many
+SELECT id FROM video WHERE LOWER(name) LIKE LOWER($1);

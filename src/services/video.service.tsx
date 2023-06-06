@@ -50,6 +50,12 @@ class VideoService {
     const request = http.get('/video/all', { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
+  takeSearchVideo(search: string) {
+    const encoded = encodeURI(search);
+    const controller = new AbortController();
+    const request = http.get(`/video/search?phrase=${encoded}`, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
   takeVideoRecommended(offset = 0, limit = 6) {
     const controller = new AbortController();
     const request = http.get(`/video?offset=${offset}&limit=${limit}`, { signal: controller.signal });

@@ -44,8 +44,7 @@ export const VideoList = () => {
   const deleteVideo = (value: number) => {
     console.log(value);
     const { request } = videoService.deleteVideo(value);
-    request.then((res) => console.log(res)).catch((err) => console.error(err.message));
-    window.location.reload();
+    request.then((res) => window.location.reload()).catch((err) => console.error(err.message));
   };
 
   return (

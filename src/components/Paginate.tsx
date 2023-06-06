@@ -9,7 +9,7 @@ interface props {
 const Paginate = ({ postsPerPage, totalPosts, paginate }: props) => {
   const pageNumbers: number[] = [];
 
-  for (let i = 1; i <= Math.round(totalPosts / postsPerPage); ++i) pageNumbers.push(i);
+  for (let i = 1; i <= Math.ceil(totalPosts / postsPerPage); ++i) pageNumbers.push(i);
 
   return (
     <div className="pagination-container">

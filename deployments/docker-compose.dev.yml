@@ -127,17 +127,3 @@ services:
       - ../backend/schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
     env_file:
       - ../backend/.env
-  # pgadmin:
-  #   image: dpage/pgadmin4:6
-  #   restart: *RESTART_POLICY
-  #   hostname: pgadmin
-  #   networks:
-  #     db-net: {}
-  #   ports:
-  #     - 127.0.0.1:8081:80/tcp
-  #   volumes:
-  #     - pgadmin:/var/lib/pgadmin:rw
-  #   env_file:
-  #     - ../backend/.env
-  #   environment:
-  #     GUNICORN_ACCESS_LOGFILE: '/dev/null'

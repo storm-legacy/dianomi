@@ -52,6 +52,8 @@ const UserDashboardPage = () => {
   const indexOfFirstVideo = indexOfLastVideo - videosPerPage;
   const currentVideos = videos.slice(indexOfFirstVideo, indexOfLastVideo);
 
+  let searchString = "";
+
   const openModal = () => {
     setIsOpen(true);
   };
@@ -73,7 +75,6 @@ const UserDashboardPage = () => {
     const { request } = videoService.takeVideoRecommended(0);
     request
       .then((res) => {
-        console.log(res);
         const videoData = res.data.map(
           (Videodata: {
             id: number;
@@ -102,6 +103,74 @@ const UserDashboardPage = () => {
       });
   }, []);
 
+  const handleSearch = (e: any) => {
+    e.preventDefault();
+    if (!searchString) {
+      const { request } = videoService.takeVideoRecommended(0);
+      request
+        .then((res) => {
+          const videoData = res.data.map(
+            (Videodata: {
+              id: number;
+              name: string;
+              description: string;
+              category: string;
+              tags: string[];
+              thumbnail_url: string;
+              IsPremium: boolean;
+            }) => {
+              return {
+                id: Videodata.id,
+                name: Videodata.name,
+                description: Videodata.description,
+                category: Videodata.category,
+                tags: Videodata.tags,
+                thumbnail_url: Videodata.thumbnail_url,
+                IsPremium: Videodata.IsPremium,
+              };
+            },
+          );
+          setVideos(videoData);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+
+    } else {
+
+      const { request } = videoService.takeSearchVideo(searchString);
+      request
+        .then((res) => {
+          const videoData = res.data.map(
+            (Videodata: {
+              id: number;
+              name: string;
+              description: string;
+              category: string;
+              tags: string[];
+              thumbnail_url: string;
+              IsPremium: boolean;
+            }) => {
+              return {
+                id: Videodata.id,
+                name: Videodata.name,
+                description: Videodata.description,
+                category: Videodata.category,
+                tags: Videodata.tags,
+                thumbnail_url: Videodata.thumbnail_url,
+                IsPremium: Videodata.IsPremium,
+              };
+            },
+          );
+          setVideos(videoData);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+
+  }
+
   return (
     <>
       <Modal style={customStyles} isOpen={isOpen} onRequestClose={closeModel}>
@@ -118,8 +187,8 @@ const UserDashboardPage = () => {
       <div className="container-fluid p-0 d-flex justify-content-between align-items-center flex-column h-100">
         <div className="container p-4 mx-0">
           <div className="d-flex flex-wrap">
-            <form className="col-12">
-              <input type="search" className="form-control ps-8" placeholder="Search..." aria-label="Search" />
+            <form className="col-12" onSubmit={handleSearch}>
+              <input type="search" onChange={(e) => { searchString = e?.target.value }} className="form-control ps-8" placeholder="Search..." aria-label="Search" />
             </form>
           </div>
         </div>

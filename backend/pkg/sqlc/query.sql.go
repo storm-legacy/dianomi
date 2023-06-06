@@ -801,6 +801,33 @@ func (q *Queries) GetVideoFiles(ctx context.Context, videoID int64) ([]GetVideoF
 	return items, nil
 }
 
+const getVideoIDByName = `-- name: GetVideoIDByName :many
+SELECT id FROM video WHERE LOWER(name) LIKE LOWER($1)
+`
+
+func (q *Queries) GetVideoIDByName(ctx context.Context, lower string) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, getVideoIDByName, lower)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVideoTags = `-- name: GetVideoTags :many
 SELECT
   name
