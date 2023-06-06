@@ -16,6 +16,13 @@ interface userResData {
 interface Email {
   email: string | undefined;
 }
+interface metricData {
+  email: string | undefined;
+  video_id: number | undefined;
+  time_spent_watching: number | undefined;
+  stopped_at: number | undefined;
+}
+
 class ProfileService {
   GetPackage() {
     const controller = new AbortController();
@@ -44,9 +51,14 @@ class ProfileService {
     const request = http.post('/profile/new/', data, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
-  GetUserVideoMetric(email: Email) {
+  GetUserVideoMetric(data: Email) {
     const controller = new AbortController();
-    const request = http.post('/metrics/user/', email, { signal: controller.signal });
+    const request = http.post('/metrics/user/', data, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  PostVideoMertics(data: metricData) {
+    const controller = new AbortController();
+    const request = http.post('/metrics/', data, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
 }
@@ -55,3 +67,4 @@ export type { emailData };
 export type { oldPass };
 export type { userResData };
 export type { Email };
+export type { metricData };

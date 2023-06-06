@@ -4,6 +4,7 @@ import videoService from '../../services/video.service';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Notify } from 'notiflix';
 import { AuthContext } from '../../context/AuthContext';
+import profileService from '../../services/profile.service';
 
 interface VideoData {
   duration: number;
@@ -32,8 +33,8 @@ export const VideoPlayer = () => {
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [playedSeconds, setPlayedSeconds] = useState(0);
-  const [stopSeconds, setStopSeconds] = useState(0);
+  const [playedSeconds, setPlayedSeconds] = useState<number>(0);
+  const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
     const { request, cancel } = videoService.takeVideoRecommended();
@@ -79,14 +80,38 @@ export const VideoPlayer = () => {
   };
 
   const handleProgress = (state: { playedSeconds: React.SetStateAction<number> }) => {
-    setPlayedSeconds(state.playedSeconds);
-    console.log('Czas oglądania:', playedSeconds);
+    const playedSecondsString = state.playedSeconds.toString(); // Konwersja na string
+
+    setPlayedSeconds(parseInt(playedSecondsString));
+    console.log(playedSeconds);
+    setIsRunning(true);
   };
 
-  const handleSeek = (time: any) => {
-    setStopSeconds(time);
-    console.log('Moment Przewiniecia:', time);
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isRunning) {
+      interval = setInterval(() => {
+        const Data = {
+          email: user?.email,
+          video_id: VideoIdInt,
+          time_spent_watching: playedSeconds,
+          stopped_at: playedSeconds,
+        };
+        const { request } = profileService.PostVideoMertics(Data);
+      }, 2500);
+    }
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isRunning]);
+
+  const handlePause = () => {
+    console.log('pause');
+    setIsRunning(false);
   };
+
   const handleContextMenu = (e: { preventDefault: () => void }) => {
     e.preventDefault();
   };
@@ -126,9 +151,9 @@ export const VideoPlayer = () => {
                   className=""
                   url={dataVideo[selectedOption]?.file_path}
                   controls
+                  onPause={handlePause}
                   onContextMenu={handleContextMenu}
                   onProgress={handleProgress}
-                  onSeek={handleSeek}
                   config={{
                     file: {
                       attributes: {
