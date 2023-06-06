@@ -85,6 +85,7 @@ func main() {
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)
+	video.Get("/search", mid.AuthMiddleware, videoCtrl.VideoSearch)
 	video.Post("/", mid.AdminMiddleware, videoCtrl.PostVideo)
 	video.Get("/all", mid.AdminMiddleware, videoCtrl.GetAllVideos)
 	video.Get("/:id", videoCtrl.GetVideo)

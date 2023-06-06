@@ -303,6 +303,8 @@ DELETE FROM video_tags WHERE video_id = $1;
 -- name: AddReport :exec
 INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES ($1, $2, $3) RETURNING *;
 
+-- name: GetVideoIDByName :many
+SELECT id FROM video WHERE LOWER(name) LIKE LOWER($1);
 -- name: AddVideoMertics :exec
 INSERT INTO user_video_metrics (user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at) VALUES ($1, $2, $3, $4, now(), now()) RETURNING *;
 

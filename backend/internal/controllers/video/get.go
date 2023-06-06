@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/storm-legacy/dianomi/pkg/config"
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
+	"golang.org/x/exp/slices"
 )
 
 type VideoFiles struct {
@@ -31,6 +33,94 @@ type VideoResponse struct {
 	ThumbnailUrl string       `json:"thumbnail_url"`
 	Files        []VideoFiles `json:"videos"`
 	Tags         []string     `json:"tags"`
+}
+
+func VideoSearch(c *fiber.Ctx) error {
+	searchString := c.Query("phrase")
+	search := strings.Fields(searchString)
+
+	// * CHECK AGANIST DATABASE
+	// * START(DB BLOCK)
+	ctx := context.Background()
+	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
+	if err != nil {
+		log.WithField("err", err).Error("Could not create database connection")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	qtx := sqlc.New(db)
+	defer db.Close()
+	// * END(DB BLOCK)
+
+	// Look for video with phrase
+	var results []int64
+	for _, key := range search {
+		items, err := qtx.GetVideoIDByName(ctx, fmt.Sprintf("%%%s%%", key))
+		if err != nil {
+			log.WithField("err", err).Error("Could not get data from database")
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		// Add missing items
+		for _, item := range items {
+			if !slices.Contains(results, item) {
+				results = append(results, item)
+			}
+		}
+	}
+
+	// Get specified videos
+	videos := make([]VideoResponse, 0)
+	for _, id := range results {
+		// Check if exists
+		vid, err := qtx.GetVideoByID(ctx, id)
+		if err != sql.ErrNoRows && err != nil {
+			log.WithField("err", err.Error()).Error("Could not get video from database")
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		if err == sql.ErrNoRows {
+			log.WithField("category_id", id).Debug("Video with specified id doesn't exist")
+			return c.SendStatus(fiber.StatusNotFound)
+		}
+		tags, err := qtx.GetVideoTags(ctx, vid.ID)
+		if err != nil {
+			log.WithField("err", err).Error("Could not get tags from database")
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		dbFiles, err := qtx.GetVideoFiles(ctx, vid.ID)
+		if err != nil {
+			log.WithField("err", err).Error("Could not get tags from database")
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		files := make([]VideoFiles, 0)
+		fileUrlPrefix := config.GetString("APP_VIDEOS_URL", "https://localhost/videos")
+
+		for _, file := range dbFiles {
+			var newFile = VideoFiles{
+				Resolution: string(file.Resolution),
+				Duration:   uint64(file.Duration),
+				FilePath:   fileUrlPrefix + "/" + file.FilePath,
+			}
+			files = append(files, newFile)
+		}
+
+		videos = append(videos, VideoResponse{
+			ID:           uint64(vid.ID),
+			Name:         vid.Name,
+			Description:  vid.Description,
+			Category:     vid.Category.String,
+			CategoryID:   uint64(vid.ID),
+			Upvotes:      uint64(vid.Upvotes),
+			Downvotes:    uint64(vid.Downvotes),
+			Views:        uint64(vid.Views),
+			IsPremium:    bool(vid.IsPremium),
+			ThumbnailUrl: vid.Thumbnail.String,
+			Tags:         tags,
+			Files:        files,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(videos)
 }
 
 func GetVideo(c *fiber.Ctx) error {

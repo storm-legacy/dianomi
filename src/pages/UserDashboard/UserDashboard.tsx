@@ -6,6 +6,7 @@ import Modal from 'react-modal';
 import { AuthContext } from '../../context/AuthContext';
 import { FiX } from 'react-icons/fi';
 import { TbCrown } from 'react-icons/tb';
+import Paginate from '../../components/Paginate';
 const customStyles = {
   overlay: {
     background: 'none',
@@ -29,40 +30,52 @@ const premiumStyle: React.CSSProperties = {
   zIndex: 999,
 };
 
+interface VideoItemData {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  tags: string[];
+  thumbnail_url: string;
+  IsPremium: boolean;
+}
+
 const UserDashboardPage = () => {
-  interface VideoItemData {
-    id: number;
-    name: string;
-    description: string;
-    category: string;
-    tags: string[];
-    thumbnail_url: string;
-    IsPremium: boolean;
-  }
-  const [divItem, setDivItem] = useState<VideoItemData[]>([]);
+  const [videos, setVideos] = useState<VideoItemData[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { user } = useContext(AuthContext);
-  function openModal() {
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [videosPerPage] = useState(6);
+
+  const indexOfLastVideo = currentPage * videosPerPage;
+  const indexOfFirstVideo = indexOfLastVideo - videosPerPage;
+  const currentVideos = videos.slice(indexOfFirstVideo, indexOfLastVideo);
+
+  let searchString = "";
+
+  const openModal = () => {
     setIsOpen(true);
-  }
-  function closeModel() {
+  };
+
+  const closeModel = () => {
     setIsOpen(false);
-  }
-  function alertPrem() {
+  };
+
+  const alertPrem = () => {
     if (user?.role == 'free') {
       openModal();
     }
-  }
+  };
 
   useEffect(() => {
     if (user?.role == 'free') {
       openModal();
     }
-    const { request } = videoService.takeVideoRecommended();
+    const { request } = videoService.takeVideoRecommended(0);
     request
       .then((res) => {
-        console.log(res);
-        const Videodata = res.data.map(
+        const videoData = res.data.map(
           (Videodata: {
             id: number;
             name: string;
@@ -83,12 +96,80 @@ const UserDashboardPage = () => {
             };
           },
         );
-        setDivItem(Videodata);
+        setVideos(videoData);
       })
       .catch((err) => {
         console.error(err);
       });
   }, []);
+
+  const handleSearch = (e: any) => {
+    e.preventDefault();
+    if (!searchString) {
+      const { request } = videoService.takeVideoRecommended(0);
+      request
+        .then((res) => {
+          const videoData = res.data.map(
+            (Videodata: {
+              id: number;
+              name: string;
+              description: string;
+              category: string;
+              tags: string[];
+              thumbnail_url: string;
+              IsPremium: boolean;
+            }) => {
+              return {
+                id: Videodata.id,
+                name: Videodata.name,
+                description: Videodata.description,
+                category: Videodata.category,
+                tags: Videodata.tags,
+                thumbnail_url: Videodata.thumbnail_url,
+                IsPremium: Videodata.IsPremium,
+              };
+            },
+          );
+          setVideos(videoData);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+
+    } else {
+
+      const { request } = videoService.takeSearchVideo(searchString);
+      request
+        .then((res) => {
+          const videoData = res.data.map(
+            (Videodata: {
+              id: number;
+              name: string;
+              description: string;
+              category: string;
+              tags: string[];
+              thumbnail_url: string;
+              IsPremium: boolean;
+            }) => {
+              return {
+                id: Videodata.id,
+                name: Videodata.name,
+                description: Videodata.description,
+                category: Videodata.category,
+                tags: Videodata.tags,
+                thumbnail_url: Videodata.thumbnail_url,
+                IsPremium: Videodata.IsPremium,
+              };
+            },
+          );
+          setVideos(videoData);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+
+  }
 
   return (
     <>
@@ -103,11 +184,18 @@ const UserDashboardPage = () => {
           </a>
         </div>
       </Modal>
-      <div className="container m-0 p-4">
-        <div className="row row-cols-3 ">
-          {divItem ? (
-            divItem.map((item, index) => (
-              <div className="col" key={index}>
+      <div className="container-fluid p-0 d-flex justify-content-between align-items-center flex-column h-100">
+        <div className="container p-4 mx-0">
+          <div className="d-flex flex-wrap">
+            <form className="col-12" onSubmit={handleSearch}>
+              <input type="search" onChange={(e) => { searchString = e?.target.value }} className="form-control ps-8" placeholder="Search..." aria-label="Search" />
+            </form>
+          </div>
+        </div>
+        <div className="row row-cols-3 col-8">
+          {currentVideos ? (
+            currentVideos.map((item, index) => (
+              <div className="col my-2" key={index}>
                 <Link
                   to={
                     item.IsPremium ? (user?.role != 'free' ? '/VideoPlayer/' + item.id : '') : '/VideoPlayer/' + item.id
@@ -142,6 +230,9 @@ const UserDashboardPage = () => {
           ) : (
             <span>No videos to show</span>
           )}
+        </div>
+        <div className="d-flex justify-content-center p-4">
+          <Paginate postsPerPage={6} totalPosts={videos.length} paginate={setCurrentPage} />
         </div>
       </div>
     </>
