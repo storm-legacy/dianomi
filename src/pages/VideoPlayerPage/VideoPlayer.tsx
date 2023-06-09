@@ -98,7 +98,7 @@ export const VideoPlayer = () => {
         const Data = {
           email: user?.email,
           video_id: VideoIdInt,
-          time_spent_watching: playedSeconds,
+          time_spent_watching: 2,
           stopped_at: playedSeconds,
         };
         const { request } = profileService.PostVideoMertics(Data);
@@ -124,7 +124,7 @@ export const VideoPlayer = () => {
         <div className="container py-4">
           <h5>Polecane materiały:</h5>
           <div className="row" style={{ maxHeight: '90vh' }}>
-            <div className="col-4 overflow-y-visible">
+            <div className="col-2 overflow-y-visible">
               {recommendedVideos.map((item, index) => {
                 return (
                   <a href={`/VideoPlayer/${item.id}`} key={index}>
@@ -139,7 +139,7 @@ export const VideoPlayer = () => {
               })}
             </div>
 
-            <div className="col-8 d-flex flex-column align-items-start border">
+            <div className="col-8 d-flex flex-column align-items-start">
               <div className="col-12 p-2 d-flex justify-content-start">
                 <div className="col-2">
                   <select className="form-select" value={selectedOption} onChange={handleSelectChange}>
@@ -184,6 +184,7 @@ export const VideoPlayer = () => {
                 <span>{videoDescription}</span>
               </div>
             </div>
+            <VideoComment />
           </div>
         </div>
       </div>
