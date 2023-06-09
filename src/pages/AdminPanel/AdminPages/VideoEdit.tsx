@@ -106,6 +106,7 @@ export const VideoEdit = () => {
           <label>
             <p>Title</p>
             <input
+              maxLength={100}
               className="form-control"
               type="text"
               value={videoName}
@@ -116,6 +117,7 @@ export const VideoEdit = () => {
             <p>Description</p>
             <textarea
               className="form-control"
+              maxLength={500}
               style={{ height: '15dvh' }}
               id="exampleFormControlTextarea1"
               value={videoDiscription}

@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Notify } from 'notiflix';
 import { AuthContext } from '../../context/AuthContext';
 import profileService from '../../services/profile.service';
+import { VideoComment } from './CommentPage/VideoComment';
 
 interface VideoData {
   duration: number;
@@ -26,6 +27,7 @@ export const VideoPlayer = () => {
   const [dataVideo, setDataVideo] = useState<VideoData[]>([]);
   const [videoTags, setVideoTags] = useState<string[]>([]);
   const [videoName, setVideoName] = useState('');
+  const [videoDescription, setVideoDescription] = useState('');
   const [videoThumbnail, setVideoThumbnail] = useState('');
   const [selectedOption, setSelectedOption] = useState(0);
   const [recommendedVideos, setRecommendedVideos] = useState<VideoItemData[]>([]);
@@ -64,6 +66,7 @@ export const VideoPlayer = () => {
         setDataVideo(res.data.videos);
         setVideoThumbnail(res.data.thumbnail_url);
         setVideoTags(res.data.tags);
+        setVideoDescription(res.data.description);
       })
       .catch((err) => {
         console.log(err);
@@ -117,7 +120,7 @@ export const VideoPlayer = () => {
   };
   return (
     <>
-      <div className="container-fluid mx-0 py-8">
+      <div className="container-fluid mx-0 py-8 border">
         <div className="container py-4">
           <h5>Polecane materiały:</h5>
           <div className="row" style={{ maxHeight: '90vh' }}>
@@ -135,7 +138,8 @@ export const VideoPlayer = () => {
                 );
               })}
             </div>
-            <div className="col-8 d-flex flex-column align-items-start">
+
+            <div className="col-8 d-flex flex-column align-items-start border">
               <div className="col-12 p-2 d-flex justify-content-start">
                 <div className="col-2">
                   <select className="form-select" value={selectedOption} onChange={handleSelectChange}>
@@ -164,23 +168,20 @@ export const VideoPlayer = () => {
                 />
               </div>
               <div className="col-12">
-                <h3 className="p-2">Lorem ipsum dolorem mi</h3>
+                <h3 className="p-2">{videoName}</h3>
               </div>
               <div className="col-12 px-2 d-flex flex-row justify-content-start">
                 <strong>Tags: </strong>
                 {videoTags.map((item, index) => {
                   return (
                     <p className="px-2" key={index}>
-                      <i>test</i>
+                      <i>{item}</i>
                     </p>
                   );
                 })}
               </div>
               <div className="p-2 col-8">
-                <span>
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus ad inventore dicta minima! Enim
-                  laboriosam ipsum sit explicabo ad labore eos, at facere quia ipsa fugiat qui distinctio eaque autem!
-                </span>
+                <span>{videoDescription}</span>
               </div>
             </div>
           </div>

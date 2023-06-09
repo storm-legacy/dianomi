@@ -25,6 +25,8 @@ import { CanceledError } from 'axios';
 import CategoriAdd from './pages/AdminPanel/AdminPages/CategoriAdd';
 import { PasswordResPage } from './pages/LoginPage/PasswordResPage';
 import { VideoPlayer } from './pages/VideoPlayerPage/VideoPlayer';
+import { VideoComment } from './pages/VideoPlayerPage/CommentPage/VideoComment';
+
 import { ResetPage } from './pages/ResetPage/ResetPage';
 import { Report } from 'notiflix';
 import PaymentPage from './pages/PaymentPage/PaymentPage';
@@ -66,11 +68,18 @@ function App() {
                 <Routes>
                   <Route path="/" element={<UserDashboardPage />} />
                   <Route path="/UserDashbord" element={<UserDashboardPage />} />
-                  <Route path="/VideoPlayer/:VideoId" element={<VideoPlayer />} />
+                  <Route
+                    path="/VideoPlayer/:VideoId"
+                    element={
+                      <>
+                        <VideoPlayer />
+                        <VideoComment />
+                      </>
+                    }
+                  />
                   <Route path="/ProfilePage" element={<ProfilePage />} />
                   <Route path="/Report" element={<ReportPage />} />
                   <Route path="/History" element={<UserHistory />} />
-
                   <Route path="/payment" element={<PaymentPage />} />
                   <Route
                     path="/UserList"

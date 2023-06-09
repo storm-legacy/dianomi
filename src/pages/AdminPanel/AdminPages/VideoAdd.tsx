@@ -200,6 +200,7 @@ export const VideoAdd = () => {
             <p>Title</p>
             <input
               className="form-control"
+              maxLength={100}
               type="text"
               value={videoName}
               onChange={(event) => setVideoName(event.target.value)}
@@ -209,6 +210,7 @@ export const VideoAdd = () => {
             <p>Description</p>
             <textarea
               className="form-control"
+              maxLength={500}
               value={videoDescription}
               onChange={(event) => setVideoDescription(event.target.value)}
             />
