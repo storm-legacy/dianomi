@@ -6,6 +6,7 @@ import { Notify } from 'notiflix';
 import { AuthContext } from '../../context/AuthContext';
 import profileService from '../../services/profile.service';
 import { VideoComment } from './CommentPage/VideoComment';
+import Rating from './CommentPage/RatingExample';
 
 interface VideoData {
   duration: number;
@@ -166,6 +167,7 @@ export const VideoPlayer = () => {
                     },
                   }}
                 />
+                <Rating />
               </div>
               <div className="col-12">
                 <h3 className="p-2">{videoName}</h3>

@@ -134,9 +134,6 @@ export const ProfilePage = () => {
                 aria-label="Sizing example input"
                 aria-describedby="inputGroup-sizing-sm"
               />
-              <button className="btn btn-outline-secondary" type="button">
-                Edit
-              </button>
             </div>
             <div className="form-group border p-2">
               {user?.role !== 'free' ? (
