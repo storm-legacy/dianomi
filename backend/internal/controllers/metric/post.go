@@ -68,11 +68,11 @@ func PostVideoMertics(c *fiber.Ctx) error {
 			StoppedAt:         int32(data.StoppedAt),
 		}); err != nil {
 			log.WithField("err", err.Error()).Error("Video couldn't be added to history")
-			return c.SendStatus(fiber.StatusAccepted)
+			return c.SendStatus(fiber.StatusInternalServerError)
 
 		}
 
-		return c.SendStatus(fiber.StatusAccepted)
+		return c.SendStatus(fiber.StatusCreated)
 	} else {
 		if err := qtx.UpdateVideoMetric(ctx, sqlc.UpdateVideoMetricParams{
 			TimeSpentWatching: int32(data.TimeSpentWatching),
@@ -80,10 +80,10 @@ func PostVideoMertics(c *fiber.Ctx) error {
 			ID:                userMetric.ID,
 		}); err != nil {
 			log.WithField("err", err.Error()).Error("Video couldn't be added to history")
-			return c.SendStatus(fiber.StatusAccepted)
+			return c.SendStatus(fiber.StatusInternalServerError)
 
 		}
-		return c.SendStatus(fiber.StatusAccepted)
+		return c.SendStatus(fiber.StatusCreated)
 
 	}
 

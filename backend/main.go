@@ -10,10 +10,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	ctrl "github.com/storm-legacy/dianomi/internal/controllers"
 	authCtrl "github.com/storm-legacy/dianomi/internal/controllers/auth"
+	commentsCtrl "github.com/storm-legacy/dianomi/internal/controllers/comments"
 	develCtrl "github.com/storm-legacy/dianomi/internal/controllers/devel"
 	videoMetricCtrl "github.com/storm-legacy/dianomi/internal/controllers/metric"
 	profileCtrl "github.com/storm-legacy/dianomi/internal/controllers/profile"
 	reportCtrl "github.com/storm-legacy/dianomi/internal/controllers/report"
+	testsCtrl "github.com/storm-legacy/dianomi/internal/controllers/test"
 	usersCtrl "github.com/storm-legacy/dianomi/internal/controllers/users"
 	packagesCtrl "github.com/storm-legacy/dianomi/internal/controllers/users/packages"
 	videoCtrl "github.com/storm-legacy/dianomi/internal/controllers/video"
@@ -29,7 +31,8 @@ func main() {
 
 	// https://localhost/test
 	// api.Post("/test/add", testsCtrl.PostVideoMertics)
-	// api.Get("/test/", testsCtrl.GetUserVideoMertics)
+	api.Post("/test/", testsCtrl.PostComments)
+	api.Get("/test/:id", testsCtrl.GetCommentsVideo)
 	// api.Get("/test/email", testsCtrl.GetUserVideoMerticByEmail)
 
 	// * DEVELOPMENT ENDPOINTS
@@ -92,6 +95,11 @@ func main() {
 	video.Get("/", videoCtrl.GetRecommendedVideos)
 	video.Delete("/:id", videoCtrl.DeleteVideo)
 	video.Patch("/:id", videoCtrl.PathVideo)
+	video.Get("/:id", commentsCtrl.GetCommentsVideo)
+	// * Comments group
+	comment := video.Group("comment")
+	comment.Get("/:id", commentsCtrl.GetCommentsVideo)
+	comment.Post("/", commentsCtrl.PostComments)
 
 	// * Category group
 	category := video.Group("category")

@@ -147,6 +147,19 @@ type Category struct {
 	Name string
 }
 
+type Comment struct {
+	ID        int64
+	UserID    int64
+	VideoID   int64
+	Comment   string
+	Upvotes   int64
+	Downvotes int64
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+	DeletedAt sql.NullTime
+	Visable   sql.NullBool
+}
+
 type ErrorReport struct {
 	ID               int64
 	ErrorTitle       string

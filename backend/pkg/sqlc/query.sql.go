@@ -24,6 +24,21 @@ func (q *Queries) AddCategory(ctx context.Context, name string) (Category, error
 	return i, err
 }
 
+const addComments = `-- name: AddComments :exec
+INSERT INTO comments (user_id, video_id, comment) VALUES ($1, $2, $3)
+`
+
+type AddCommentsParams struct {
+	UserID  int64
+	VideoID int64
+	Comment string
+}
+
+func (q *Queries) AddComments(ctx context.Context, arg AddCommentsParams) error {
+	_, err := q.db.ExecContext(ctx, addComments, arg.UserID, arg.VideoID, arg.Comment)
+	return err
+}
+
 const addReport = `-- name: AddReport :exec
 INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES ($1, $2, $3) RETURNING id, error_title, error_description, reported_by, report_date
 `
@@ -321,6 +336,49 @@ func (q *Queries) GetAllCategories(ctx context.Context, arg GetAllCategoriesPara
 	return items, nil
 }
 
+const getAllComments = `-- name: GetAllComments :many
+SELECT id, user_id, video_id, comment, upvotes, downvotes, created_at, updated_at, deleted_at, visable FROM comments LIMIT $1 OFFSET $2
+`
+
+type GetAllCommentsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetAllComments(ctx context.Context, arg GetAllCommentsParams) ([]Comment, error) {
+	rows, err := q.db.QueryContext(ctx, getAllComments, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Comment
+	for rows.Next() {
+		var i Comment
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.VideoID,
+			&i.Comment,
+			&i.Upvotes,
+			&i.Downvotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Visable,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllUsers = `-- name: GetAllUsers :many
 SELECT id, email, password, verified_at, created_at, updated_at
 FROM users
@@ -491,6 +549,50 @@ func (q *Queries) GetCategoryByName(ctx context.Context, name string) (Category,
 	var i Category
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
+}
+
+const getCommentsForVideo = `-- name: GetCommentsForVideo :many
+SELECT users.email, comments.comment, comments.upvotes, comments.downvotes, comments.updated_at
+FROM comments
+INNER JOIN users ON users.id = comments.user_id
+WHERE comments.video_id = $1
+`
+
+type GetCommentsForVideoRow struct {
+	Email     string
+	Comment   string
+	Upvotes   int64
+	Downvotes int64
+	UpdatedAt sql.NullTime
+}
+
+func (q *Queries) GetCommentsForVideo(ctx context.Context, videoID int64) ([]GetCommentsForVideoRow, error) {
+	rows, err := q.db.QueryContext(ctx, getCommentsForVideo, videoID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCommentsForVideoRow
+	for rows.Next() {
+		var i GetCommentsForVideoRow
+		if err := rows.Scan(
+			&i.Email,
+			&i.Comment,
+			&i.Upvotes,
+			&i.Downvotes,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getCurrentPackageForUser = `-- name: GetCurrentPackageForUser :one
@@ -1231,6 +1333,23 @@ type UpdateCategoryParams struct {
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error {
 	_, err := q.db.ExecContext(ctx, updateCategory, arg.Name, arg.ID)
+	return err
+}
+
+const updateComments = `-- name: UpdateComments :exec
+UPDATE comments
+SET comment = $1,
+    updated_at = NOW()
+WHERE id = $2
+`
+
+type UpdateCommentsParams struct {
+	Comment string
+	ID      int64
+}
+
+func (q *Queries) UpdateComments(ctx context.Context, arg UpdateCommentsParams) error {
+	_, err := q.db.ExecContext(ctx, updateComments, arg.Comment, arg.ID)
 	return err
 }
 

@@ -325,4 +325,22 @@ SET time_spent_watching=time_spent_watching + $1, stopped_at = $2, updated_at = 
 WHERE id=$3;
 
 -- name: GetAllVideoMetric :many
-SELECT * FROM user_video_metrics LIMIT $1 OFFSET $2;;
+SELECT * FROM user_video_metrics LIMIT $1 OFFSET $2;
+
+-- name: GetAllComments :many
+SELECT * FROM comments LIMIT $1 OFFSET $2;
+
+-- name: AddComments :exec
+INSERT INTO comments (user_id, video_id, comment) VALUES ($1, $2, $3);
+
+-- name: UpdateComments :exec
+UPDATE comments
+SET comment = $1,
+    updated_at = NOW()
+WHERE id = $2;
+
+-- name: GetCommentsForVideo :many
+SELECT users.email, comments.comment, comments.upvotes, comments.downvotes, comments.updated_at
+FROM comments
+INNER JOIN users ON users.id = comments.user_id
+WHERE comments.video_id = $1;

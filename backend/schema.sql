@@ -150,3 +150,26 @@ CREATE TABLE Error_Reports (
   reported_by VARCHAR(50) NOT NULL,
   report_date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+CREATE TABLE comments (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  video_id BIGINT NOT NULL,
+  comment VARCHAR(250) NOT NULL,
+  upvotes BIGINT NOT NULL DEFAULT 0,
+  downvotes BIGINT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  visable BOOLEAN DEFAULT true,
+  CONSTRAINT fk_comments_user 
+    FOREIGN KEY (user_id)
+    REFERENCES users(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE,
+  CONSTRAINT fk_comments_video
+    FOREIGN KEY (video_id)
+    REFERENCES video(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE
+);
