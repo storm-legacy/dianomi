@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import videoService, { CommentData } from '../../../services/video.service';
 import { AuthContext } from '../../../context/AuthContext';
@@ -7,12 +7,25 @@ export const VideoComment = () => {
   const { VideoId } = useParams();
   const VideoIdInt = VideoId ? parseInt(VideoId, 10) : undefined;
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState([{ email: '', comment: '', updated_at: '' }]);
+  const [comments, setComments] = useState([{ id: '', email: '', comment: '', updated_at: '' }]);
   const { user } = useContext(AuthContext);
+  const [reset, setReset] = useState(false);
 
   const handleCommentChange = (event: any) => {
     setComment(event.target.value);
   };
+
+  useEffect(() => {
+    setReset(false);
+    const { request } = videoService.takeCommentVideoId(VideoIdInt);
+    request
+      .then((res) => {
+        setComments(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, [reset]);
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
@@ -21,29 +34,18 @@ export const VideoComment = () => {
       video_id: VideoIdInt,
       comment: comment,
     };
-    if (comment != null) {
-      const { request } = videoService.sendComment(data);
-      request
-        .then((res) => {
-          setComment('');
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
-  };
 
-  useEffect(() => {
-    const { request } = videoService.takeCommentVideoId(VideoIdInt);
+    setReset(true);
+    const { request } = videoService.sendComment(data);
     request
       .then((res) => {
-        setComments(res.data);
-        console.log(comments);
+        setComment('');
       })
       .catch((err) => {
         console.error(err);
       });
-  }, [handleSubmit]);
+  };
+
   return (
     <div className="col-3 position-fixed top-0 end-0 mt-5 me-5 ">
       <div className="panel panel-default">

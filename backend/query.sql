@@ -324,11 +324,21 @@ UPDATE user_video_metrics
 SET time_spent_watching=time_spent_watching + $1, stopped_at = $2, updated_at = now()
 WHERE id=$3;
 
+-- name: UpdateVoteUpVideo :exec
+UPDATE video
+SET upvotes = upvotes + 1,
+    downvotes = GREATEST(downvotes - 1, 0)
+WHERE id = $1;
+
+-- name: UpdateVoteDownVideo :exec
+UPDATE video
+SET downvotes = downvotes + 1,
+    upvotes = GREATEST(upvotes - 1, 0)
+WHERE id = $1;
+
 -- name: GetAllVideoMetric :many
 SELECT * FROM user_video_metrics LIMIT $1 OFFSET $2;
 
--- name: GetAllComments :many
-SELECT * FROM comments LIMIT $1 OFFSET $2;
 
 -- name: AddComments :exec
 INSERT INTO comments (user_id, video_id, comment) VALUES ($1, $2, $3);
@@ -340,7 +350,25 @@ SET comment = $1,
 WHERE id = $2;
 
 -- name: GetCommentsForVideo :many
-SELECT users.email, comments.comment, comments.upvotes, comments.downvotes, comments.updated_at
-FROM comments
-INNER JOIN users ON users.id = comments.user_id
-WHERE comments.video_id = $1;
+SELECT
+  u.email, c.id, c.comment, c.upvotes, c.downvotes, c.updated_at
+FROM
+  comments c
+  INNER JOIN users u ON u.id = c.user_id
+WHERE
+  c.video_id = $1;
+
+-- name: GetCommentsAll :many
+SELECT
+  u.email, v.name, c.id, c.comment, c.upvotes, c.downvotes, c.updated_at
+FROM
+  comments c
+  INNER JOIN users u ON u.id = c.user_id
+  INNER JOIN video v ON v.id = c.video_id
+LIMIT $1 OFFSET $2;
+
+-- name: GetCommentById :one
+SELECT * FROM comments WHERE id=$1 LIMIT 1;
+
+-- name: DeleteComment :exec
+DELETE FROM comments  WHERE id = $1;

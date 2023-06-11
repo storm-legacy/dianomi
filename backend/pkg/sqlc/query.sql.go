@@ -286,6 +286,15 @@ func (q *Queries) DeleteCategory(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteComment = `-- name: DeleteComment :exec
+DELETE FROM comments  WHERE id = $1
+`
+
+func (q *Queries) DeleteComment(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteComment, id)
+	return err
+}
+
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1
 `
@@ -323,49 +332,6 @@ func (q *Queries) GetAllCategories(ctx context.Context, arg GetAllCategoriesPara
 	for rows.Next() {
 		var i Category
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getAllComments = `-- name: GetAllComments :many
-SELECT id, user_id, video_id, comment, upvotes, downvotes, created_at, updated_at, deleted_at, visable FROM comments LIMIT $1 OFFSET $2
-`
-
-type GetAllCommentsParams struct {
-	Limit  int32
-	Offset int32
-}
-
-func (q *Queries) GetAllComments(ctx context.Context, arg GetAllCommentsParams) ([]Comment, error) {
-	rows, err := q.db.QueryContext(ctx, getAllComments, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Comment
-	for rows.Next() {
-		var i Comment
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.VideoID,
-			&i.Comment,
-			&i.Upvotes,
-			&i.Downvotes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-			&i.Visable,
-		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -551,15 +517,97 @@ func (q *Queries) GetCategoryByName(ctx context.Context, name string) (Category,
 	return i, err
 }
 
+const getCommentById = `-- name: GetCommentById :one
+SELECT id, user_id, video_id, comment, upvotes, downvotes, created_at, updated_at, deleted_at, visable FROM comments WHERE id=$1 LIMIT 1
+`
+
+func (q *Queries) GetCommentById(ctx context.Context, id int64) (Comment, error) {
+	row := q.db.QueryRowContext(ctx, getCommentById, id)
+	var i Comment
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.VideoID,
+		&i.Comment,
+		&i.Upvotes,
+		&i.Downvotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Visable,
+	)
+	return i, err
+}
+
+const getCommentsAll = `-- name: GetCommentsAll :many
+SELECT
+  u.email, v.name, c.id, c.comment, c.upvotes, c.downvotes, c.updated_at
+FROM
+  comments c
+  INNER JOIN users u ON u.id = c.user_id
+  INNER JOIN video v ON v.id = c.video_id
+LIMIT $1 OFFSET $2
+`
+
+type GetCommentsAllParams struct {
+	Limit  int32
+	Offset int32
+}
+
+type GetCommentsAllRow struct {
+	Email     string
+	Name      string
+	ID        int64
+	Comment   string
+	Upvotes   int64
+	Downvotes int64
+	UpdatedAt sql.NullTime
+}
+
+func (q *Queries) GetCommentsAll(ctx context.Context, arg GetCommentsAllParams) ([]GetCommentsAllRow, error) {
+	rows, err := q.db.QueryContext(ctx, getCommentsAll, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCommentsAllRow
+	for rows.Next() {
+		var i GetCommentsAllRow
+		if err := rows.Scan(
+			&i.Email,
+			&i.Name,
+			&i.ID,
+			&i.Comment,
+			&i.Upvotes,
+			&i.Downvotes,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCommentsForVideo = `-- name: GetCommentsForVideo :many
-SELECT users.email, comments.comment, comments.upvotes, comments.downvotes, comments.updated_at
-FROM comments
-INNER JOIN users ON users.id = comments.user_id
-WHERE comments.video_id = $1
+SELECT
+  u.email, c.id, c.comment, c.upvotes, c.downvotes, c.updated_at
+FROM
+  comments c
+  INNER JOIN users u ON u.id = c.user_id
+WHERE
+  c.video_id = $1
 `
 
 type GetCommentsForVideoRow struct {
 	Email     string
+	ID        int64
 	Comment   string
 	Upvotes   int64
 	Downvotes int64
@@ -577,6 +625,7 @@ func (q *Queries) GetCommentsForVideo(ctx context.Context, videoID int64) ([]Get
 		var i GetCommentsForVideoRow
 		if err := rows.Scan(
 			&i.Email,
+			&i.ID,
 			&i.Comment,
 			&i.Upvotes,
 			&i.Downvotes,
@@ -1484,6 +1533,30 @@ type UpdateVideoMetricParams struct {
 
 func (q *Queries) UpdateVideoMetric(ctx context.Context, arg UpdateVideoMetricParams) error {
 	_, err := q.db.ExecContext(ctx, updateVideoMetric, arg.TimeSpentWatching, arg.StoppedAt, arg.ID)
+	return err
+}
+
+const updateVoteDownVideo = `-- name: UpdateVoteDownVideo :exec
+UPDATE video
+SET downvotes = downvotes + 1,
+    upvotes = GREATEST(upvotes - 1, 0)
+WHERE id = $1
+`
+
+func (q *Queries) UpdateVoteDownVideo(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, updateVoteDownVideo, id)
+	return err
+}
+
+const updateVoteUpVideo = `-- name: UpdateVoteUpVideo :exec
+UPDATE video
+SET upvotes = upvotes + 1,
+    downvotes = GREATEST(downvotes - 1, 0)
+WHERE id = $1
+`
+
+func (q *Queries) UpdateVoteUpVideo(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, updateVoteUpVideo, id)
 	return err
 }
 

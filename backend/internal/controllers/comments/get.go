@@ -13,7 +13,9 @@ import (
 )
 
 type GetCommentsForVideoData struct {
+	ID        int32     `json:"id" validate:"required"`
 	Email     string    `json:"email" validate:"required"`
+	VideoName string    `json:"name" validate:"required"`
 	Comment   string    `json:"comment" validate:"required" `
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -49,6 +51,43 @@ func GetCommentsVideo(c *fiber.Ctx) error {
 	commentsData := make([]GetCommentsForVideoData, 0)
 	for _, met := range res {
 		comment := GetCommentsForVideoData{
+			ID:        int32(met.ID),
+			Email:     met.Email,
+			Comment:   met.Comment,
+			UpdatedAt: met.UpdatedAt.Time,
+		}
+		commentsData = append(commentsData, comment)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(commentsData)
+
+}
+
+func GetCommentsAll(c *fiber.Ctx) error {
+
+	// * START(DB BLOCK)
+	ctx := context.Background()
+	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
+	if err != nil {
+		log.WithField("err", err).Error("Could not create database connection")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	qtx := sqlc.New(db)
+	defer db.Close()
+	// * END(DB BLOCK)
+
+	res, err := qtx.GetCommentsAll(ctx, sqlc.GetCommentsAllParams{Limit: 25,
+		Offset: 0})
+	if err != sql.ErrNoRows && err != nil {
+		log.WithField("err", err.Error()).Error("Could not get comments from database")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	commentsData := make([]GetCommentsForVideoData, 0)
+	for _, met := range res {
+		comment := GetCommentsForVideoData{
+			ID:        int32(met.ID),
+			VideoName: met.Name,
 			Email:     met.Email,
 			Comment:   met.Comment,
 			UpdatedAt: met.UpdatedAt.Time,

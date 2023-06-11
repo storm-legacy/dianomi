@@ -91,6 +91,26 @@ class VideoService {
     const request = http.get('/video/comment/' + videoId, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
+  takeAllComment() {
+    const controller = new AbortController();
+    const request = http.get('/video/comment/all', { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  sendUpVote(videoId: number | undefined) {
+    const controller = new AbortController();
+    const request = http.post('/video/up/' + videoId, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  sendDownVote(videoId: number | undefined) {
+    const controller = new AbortController();
+    const request = http.post('/video/down/' + videoId, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  deleteComment(videoId: number | undefined) {
+    const controller = new AbortController();
+    const request = http.delete('/video/comment/' + videoId, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
 }
 
 export default new VideoService();

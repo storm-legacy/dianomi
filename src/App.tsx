@@ -32,6 +32,7 @@ import { Report } from 'notiflix';
 import PaymentPage from './pages/PaymentPage/PaymentPage';
 import { ReportPage } from './pages/ReportPage/Report';
 import { UserHistory } from './pages/ProfilePage/UserHistory';
+import { CommentsList } from './pages/AdminPanel/AdminPages/CommentsList';
 
 function App() {
   const [user, setUser] = useState<User | null>(JSON.parse(String(localStorage.getItem('user'))));
@@ -126,6 +127,14 @@ function App() {
                     element={
                       <ProtectedAdmin>
                         <VideoAdd />
+                      </ProtectedAdmin>
+                    }
+                  />
+                  <Route
+                    path="/Comments"
+                    element={
+                      <ProtectedAdmin>
+                        <CommentsList />
                       </ProtectedAdmin>
                     }
                   />

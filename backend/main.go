@@ -95,10 +95,14 @@ func main() {
 	video.Get("/", videoCtrl.GetRecommendedVideos)
 	video.Delete("/:id", videoCtrl.DeleteVideo)
 	video.Patch("/:id", videoCtrl.PathVideo)
-	video.Get("/:id", commentsCtrl.GetCommentsVideo)
+	video.Post("/up/:id", videoCtrl.PostVoteUp)
+	video.Post("/down/:id", videoCtrl.PostVoteDown)
+
 	// * Comments group
 	comment := video.Group("comment")
+	comment.Get("/all", commentsCtrl.GetCommentsAll)
 	comment.Get("/:id", commentsCtrl.GetCommentsVideo)
+	comment.Delete("/:id", commentsCtrl.DeleteComment)
 	comment.Post("/", commentsCtrl.PostComments)
 
 	// * Category group
