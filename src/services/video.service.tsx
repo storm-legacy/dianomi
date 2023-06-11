@@ -22,6 +22,11 @@ interface ThumbnailsData {
 interface CategoriesName {
   name: string;
 }
+interface CommentData {
+  email: string | undefined;
+  video_id: number | undefined;
+  comment: string;
+}
 
 class VideoService {
   sendVideo(videoAdd: VideoAddData) {
@@ -76,9 +81,20 @@ class VideoService {
     const request = http.post('/admin/video', sendThumbnails, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
+  sendComment(data: CommentData) {
+    const controller = new AbortController();
+    const request = http.post('/video/comment/', data, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  takeCommentVideoId(videoId: number | undefined) {
+    const controller = new AbortController();
+    const request = http.get('/video/comment/' + videoId, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
 }
 
 export default new VideoService();
 export type { VideoAddData };
 export type { VideoPatchData };
 export type { CategoriesName };
+export type { CommentData };

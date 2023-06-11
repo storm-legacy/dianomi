@@ -36,33 +36,42 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
-body::-webkit-scrollbar {
+*::-webkit-scrollbar {
   width: 1em;
+  border-radius: 5px;
 }
 
-body::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  border-radius: 5px;
 }
 
-body::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
   border-radius: 20px;
-  background-image: linear-gradient(180deg, #0D6EFD 0%, #0D6EFD 70%, #fff 100%);
+  background-image: linear-gradient(180deg, #0D6EFD 0%, #0D6EFD 10%, #fff 90%, #fff 100%);
   outline: 1px solid slategrey;
 }
 
-textarea::-webkit-scrollbar {
-  width: 1em;
+*::-webkit-scrollbar-thumb:before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 10px;
+  left: 0;
+  top: -10px;
+  background-image: linear-gradient(180deg, #0D6EFD 0%, #0D6EFD 30%, transparent 100%);
 }
 
-textarea::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+*::-webkit-scrollbar-thumb:after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 10px;
+  left: 0;
+  bottom: -10px;
+  background-image: linear-gradient(180deg, transparent 0%, #0D6EFD 70%, #0D6EFD 100%);
 }
 
-textarea::-webkit-scrollbar-thumb {
-  border-radius: 20px;
-  background-image: linear-gradient(180deg, #0D6EFD 0%, #0D6EFD 70%, #fff 100%);
-  outline: 1px solid slategrey;
-}
 
 button {
   border-radius: 8px;

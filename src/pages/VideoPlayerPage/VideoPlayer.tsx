@@ -121,7 +121,7 @@ export const VideoPlayer = () => {
   };
   return (
     <>
-      <div className="container-fluid mx-0 py-8 border">
+      <div className="container-fluid mx-0 py-8">
         <div className="container py-4">
           <h5>Polecane materiały:</h5>
           <div className="row" style={{ maxHeight: '90vh' }}>
@@ -186,7 +186,6 @@ export const VideoPlayer = () => {
                 <span>{videoDescription}</span>
               </div>
             </div>
-            <VideoComment />
           </div>
         </div>
       </div>
