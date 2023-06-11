@@ -45,7 +45,7 @@ export const VideoComment = () => {
       });
   }, [handleSubmit]);
   return (
-    <div className="col-4 position-fixed top-0 end-0 mt-5 me-5 ">
+    <div className="col-3 position-fixed top-0 end-0 mt-5 me-5 ">
       <div className="panel panel-default">
         <div className="panel-heading">Dodaj komentarz</div>
         <div className="panel-body">
