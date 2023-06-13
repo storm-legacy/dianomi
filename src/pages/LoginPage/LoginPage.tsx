@@ -10,6 +10,7 @@ interface LoginResponse {
     role: string;
     token: string;
     verified: boolean;
+    banned: boolean;
   };
 }
 
@@ -31,6 +32,7 @@ const LoginPage = () => {
           role: data.data.role,
           verified: Boolean(data.data.verified),
           authToken: data.data.token,
+          banned: data.data.banned
         };
         setUser(user);
         localStorage.setItem('user', JSON.stringify(user));

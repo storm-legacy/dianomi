@@ -104,6 +104,24 @@ class AdminService {
     );
     return { request, cancel: () => controller.abort() };
   }
+
+  postBanUser(id: number) {
+    const controller = new AbortController();
+    const request = http.post(
+      `/users/ban/${id}`,
+      { signal: controller.signal },
+    );
+    return { request, cancel: () => controller.abort() };
+  }
+
+  postUnbanUser(id: number) {
+    const controller = new AbortController();
+    const request = http.post(
+      `/users/unban/${id}`,
+      { signal: controller.signal },
+    );
+    return { request, cancel: () => controller.abort() };
+  }
 }
 
 export default new AdminService();

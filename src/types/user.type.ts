@@ -3,4 +3,5 @@ export interface User {
   role: string;
   verified: boolean;
   authToken?: string;
+  banned: boolean;
 }

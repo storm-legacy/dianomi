@@ -46,6 +46,11 @@ function App() {
       setUser(null);
     }
 
+    if (user?.banned === true) {
+      Report.warning('Account suspended', 'Your account was blocked. Please contact support in case it was a mistake.', 'I understand');
+      setUser(null);
+    }
+
     request
       .then(() => {
         console.info('Authorized');

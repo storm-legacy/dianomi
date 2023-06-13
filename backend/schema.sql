@@ -135,12 +135,12 @@ CREATE TABLE user_video_metrics (
   CONSTRAINT fk_metrics_user
     FOREIGN KEY (user_id)
     REFERENCES users(id)
-      ON DELETE SET NULL
+      ON DELETE CASCADE
       ON UPDATE CASCADE,
   CONSTRAINT fk_metrics_video
     FOREIGN KEY (video_id)
     REFERENCES video(id)
-      ON DELETE SET NULL
+      ON DELETE CASCADE
       ON UPDATE CASCADE
 );
 
