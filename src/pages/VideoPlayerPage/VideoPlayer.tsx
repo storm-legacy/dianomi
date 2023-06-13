@@ -122,8 +122,8 @@ export const VideoPlayer = () => {
   return (
     <>
       <div className="container-fluid mx-0 py-8">
-        <div className="container py-4">
-          <h5>Polecane materiały:</h5>
+        <div className="container py-4 overflow-hidden">
+          <h5>Recommended materials:</h5>
           <div className="row" style={{ maxHeight: '90vh' }}>
             <div className="col-2 overflow-y-visible">
               {recommendedVideos.map((item, index) => {

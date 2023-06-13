@@ -54,29 +54,31 @@ export const VideoComment = () => {
       'What is the reason?',
       'Message is inappropriate',
       'Confirm',
-      "Cancel",
+      'Cancel',
       (reportMessage) => {
         if (reportMessage.length < 8) {
-          Notify.warning("Report message was too short.")
+          Notify.warning('Report message was too short.');
           return;
         }
-        const { request } = videoService.reportComment(commentId, reportMessage)
-        request.then(() => {
-          Notify.success("Comment successfully reported!");
-        }).catch(() => {
-          Notify.failure("Error occured while trying to report comment");
-        })
+        const { request } = videoService.reportComment(commentId, reportMessage);
+        request
+          .then(() => {
+            Notify.success('Comment successfully reported!');
+          })
+          .catch(() => {
+            Notify.failure('Error occured while trying to report comment');
+          });
       },
       () => {
-        Notify.warning("Report was canceled.");
-      }
+        Notify.warning('Report was canceled.');
+      },
     );
-  }
+  };
 
   return (
     <div className="col-3 position-fixed top-0 end-0 mt-5 me-5 ">
       <div className="panel panel-default">
-        <div className="panel-heading">Dodaj komentarz</div>
+        <div className="panel-heading">Add comment</div>
         <div className="panel-body">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -90,7 +92,7 @@ export const VideoComment = () => {
               />
             </div>
             <button type="submit" className="btn btn-primary mb-3">
-              Dodaj komentarz
+              Add
             </button>
           </form>
         </div>
@@ -99,7 +101,10 @@ export const VideoComment = () => {
         {comments.map((item, index) => (
           <div className="comment card mb-3 me-3" key={index}>
             <div className="comment-header card-header position-relative">
-              <button className="btn btn-danger position-absolute top-50 start-100 translate-middle" onClick={() => handleReport(Number(item.id))}>
+              <button
+                className="btn btn-danger position-absolute top-50 start-100 translate-middle"
+                onClick={() => handleReport(Number(item.id))}
+              >
                 <FaFlag />
               </button>
               <h4 className="comment-author card-title">{item.email}</h4>

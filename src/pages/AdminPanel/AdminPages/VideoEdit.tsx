@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import videoService, { VideoPatchData } from '../../../services/video.service';
+import { useNavigate } from 'react-router-dom';
 
 interface VideoItemData {
   id: number;
@@ -25,7 +26,7 @@ export const VideoEdit = () => {
   const [videoTag, setVideoTag] = useState<string>('');
   const [defaultTagValue, setDefaultTagValue] = useState<string>('');
   const [isPremium, setIsPremium] = useState<boolean>(false);
-
+  const navigate = useNavigate();
   const [categoriesArr, setCategoriesArr] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -91,6 +92,7 @@ export const VideoEdit = () => {
       .then((ress) => {
         console.log(ress);
         setIsDisabled(true);
+        navigate('/VideoList');
       })
       .catch((err) => {
         console.error(err.message);

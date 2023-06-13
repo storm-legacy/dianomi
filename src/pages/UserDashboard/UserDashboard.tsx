@@ -52,7 +52,7 @@ const UserDashboardPage = () => {
   const indexOfFirstVideo = indexOfLastVideo - videosPerPage;
   const currentVideos = videos.slice(indexOfFirstVideo, indexOfLastVideo);
 
-  let searchString = "";
+  let searchString = '';
 
   const openModal = () => {
     setIsOpen(true);
@@ -135,9 +135,7 @@ const UserDashboardPage = () => {
         .catch((err) => {
           console.error(err);
         });
-
     } else {
-
       const { request } = videoService.takeSearchVideo(searchString);
       request
         .then((res) => {
@@ -168,8 +166,7 @@ const UserDashboardPage = () => {
           console.error(err);
         });
     }
-
-  }
+  };
 
   return (
     <>
@@ -188,7 +185,15 @@ const UserDashboardPage = () => {
         <div className="container p-4 mx-0">
           <div className="d-flex flex-wrap">
             <form className="col-12" onSubmit={handleSearch}>
-              <input type="search" onChange={(e) => { searchString = e?.target.value }} className="form-control ps-8" placeholder="Search..." aria-label="Search" />
+              <input
+                type="search"
+                onChange={(e) => {
+                  searchString = e?.target.value;
+                }}
+                className="form-control ps-8"
+                placeholder="Search..."
+                aria-label="Search"
+              />
             </form>
           </div>
         </div>
@@ -203,7 +208,7 @@ const UserDashboardPage = () => {
                   onClick={() => alertPrem()}
                   className={`card cardMY justify-content-center ${item.IsPremium ? 'border border-warning' : ''}`}
                 >
-                  <div className="p-2 myP">
+                  <div className="p-1 myP">
                     <img
                       src={'http://localhost:9000/thumbnails/' + item.thumbnail_url}
                       className="card-img-top myImg"
@@ -220,7 +225,7 @@ const UserDashboardPage = () => {
                           {item.name}
                           {item.IsPremium && <TbCrown style={{ color: '#DAA520' }} />}
                         </p>
-                        <p className="myDes">{`${item.description.substring(0, 124)}...`}</p>
+                        <p className="myDes">{`${item.description.substring(0, 35)}...`}</p>
                       </div>
                     </div>
                   </div>
