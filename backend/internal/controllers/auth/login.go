@@ -89,6 +89,7 @@ func Login(c *fiber.Ctx) error {
 	claims := make(map[string]interface{})
 	claims["role"] = role
 	claims["verified"] = user.VerifiedAt.Valid
+	claims["banned"] = user.BannedAt.Valid
 
 	token, err := jwt.GenerateToken(uint64(user.ID), claims)
 	if err != nil {
@@ -104,6 +105,7 @@ func Login(c *fiber.Ctx) error {
 			"email":    userData.Email,
 			"role":     role,
 			"verified": user.VerifiedAt.Valid,
+			"banned":   user.BannedAt.Valid,
 		},
 	})
 }

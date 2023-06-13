@@ -18,6 +18,7 @@ type User struct {
 	Email    string `json:"email" validate:"required"`
 	Verified bool   `json:"verified" validate:"required"`
 	Role     string `json:"role"`
+	Banned   bool   `json:"banned"`
 }
 
 func GetUser(c *fiber.Ctx) error {
@@ -160,6 +161,7 @@ func GetUsers(c *fiber.Ctx) error {
 			Email:    user.Email,
 			Verified: user.VerifiedAt.Valid,
 			Role:     role,
+			Banned:   user.BannedAt.Valid,
 		}
 		users = append(users, newUser)
 	}

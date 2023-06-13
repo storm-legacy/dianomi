@@ -44,6 +44,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	tokenNbf := time.Unix(int64((*claims)["nbf"].(float64)), 0)
 	tokenJti := (*claims)["jti"].(string)
 	verified := (*claims)["verified"].(bool)
+	banned := (*claims)["banned"].(bool)
 
 	// Is user verified
 	if !verified {
@@ -52,6 +53,15 @@ func AuthMiddleware(c *fiber.Ctx) error {
 			"sub":      tokenSub,
 		}).Debug("User is not verified")
 		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	// Use is not banned
+	if banned {
+		log.WithFields(log.Fields{
+			"banned": banned,
+			"sub":    tokenSub,
+		}).Debug("User is banned")
+		return c.SendStatus(fiber.StatusForbidden)
 	}
 
 	// Is token valid
@@ -70,6 +80,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	c.Locals("jti", tokenJti)
 	c.Locals("exp", tokenExp)
 	c.Locals("verified", verified)
+	c.Locals("banned", banned)
 
 	return c.Next()
 }

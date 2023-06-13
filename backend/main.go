@@ -67,6 +67,8 @@ func main() {
 	user.Get("/", usersCtrl.GetUsers)
 	user.Delete("/:id", usersCtrl.DeleteUser)
 	user.Patch("/:id", usersCtrl.PatchUser)
+	user.Post("/ban/:id", usersCtrl.PostBanUser)
+	user.Post("/unban/:id", usersCtrl.PostUnbanUser)
 	// User packages
 	packages := user.Group("packages")
 	packages.Get("/:id", packagesCtrl.GetPackage)

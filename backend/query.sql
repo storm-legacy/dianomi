@@ -75,6 +75,12 @@ UPDATE verification SET used = true WHERE id = $1;
 -- name: VerifyUser :exec
 UPDATE users SET verified_at = now() WHERE id = $1;
 
+-- name: BanUser :exec
+UPDATE users SET banned_at = now() WHERE id = $1;
+
+-- name: UnbanUser :exec
+UPDATE users SET banned_at = NULL WHERE id = $1;
+
 -- name: CreateUser :one
 INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *;
 

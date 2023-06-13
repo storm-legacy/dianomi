@@ -199,6 +199,15 @@ func (q *Queries) AddVideoThumbnail(ctx context.Context, arg AddVideoThumbnailPa
 	return err
 }
 
+const banUser = `-- name: BanUser :exec
+UPDATE users SET banned_at = now() WHERE id = $1
+`
+
+func (q *Queries) BanUser(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, banUser, id)
+	return err
+}
+
 const clearVideoTags = `-- name: ClearVideoTags :exec
 DELETE FROM video_tags WHERE video_id = $1
 `
@@ -232,7 +241,7 @@ func (q *Queries) CreateResetCode(ctx context.Context, userID sql.NullInt64) (Ve
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email, password, verified_at, created_at, updated_at
+INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email, password, verified_at, banned_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -248,6 +257,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Email,
 		&i.Password,
 		&i.VerifiedAt,
+		&i.BannedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -346,7 +356,7 @@ func (q *Queries) GetAllCategories(ctx context.Context, arg GetAllCategoriesPara
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, email, password, verified_at, created_at, updated_at
+SELECT id, email, password, verified_at, banned_at, created_at, updated_at
 FROM users
 LIMIT $1
 OFFSET $2
@@ -371,6 +381,7 @@ func (q *Queries) GetAllUsers(ctx context.Context, arg GetAllUsersParams) ([]Use
 			&i.Email,
 			&i.Password,
 			&i.VerifiedAt,
+			&i.BannedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -871,7 +882,7 @@ func (q *Queries) GetTagByName(ctx context.Context, name string) (Tag, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password, verified_at, created_at, updated_at FROM users WHERE email = $1 LIMIT 1
+SELECT id, email, password, verified_at, banned_at, created_at, updated_at FROM users WHERE email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -882,6 +893,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Email,
 		&i.Password,
 		&i.VerifiedAt,
+		&i.BannedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -889,7 +901,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, password, verified_at, created_at, updated_at FROM users WHERE id = $1 LIMIT 1
+SELECT id, email, password, verified_at, banned_at, created_at, updated_at FROM users WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -900,6 +912,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Email,
 		&i.Password,
 		&i.VerifiedAt,
+		&i.BannedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -1368,6 +1381,15 @@ UPDATE verification SET used = true WHERE id = $1
 
 func (q *Queries) SetCodeAsUsed(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, setCodeAsUsed, id)
+	return err
+}
+
+const unbanUser = `-- name: UnbanUser :exec
+UPDATE users SET banned_at = NULL WHERE id = $1
+`
+
+func (q *Queries) UnbanUser(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, unbanUser, id)
 	return err
 }
 

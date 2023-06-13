@@ -1,11 +1,12 @@
--- * 
+-- *
 -- * USER TABLES
--- * 
+-- *
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   verified_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+  banned_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -52,7 +53,7 @@ CREATE TABLE categories (
 
 CREATE TABLE tags (
   id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE 
+  name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE video (
@@ -131,7 +132,7 @@ CREATE TABLE user_video_metrics (
   stopped_at INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_metrics_user 
+  CONSTRAINT fk_metrics_user
     FOREIGN KEY (user_id)
     REFERENCES users(id)
       ON DELETE SET NULL
@@ -162,7 +163,7 @@ CREATE TABLE comments (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   visable BOOLEAN DEFAULT true,
-  CONSTRAINT fk_comments_user 
+  CONSTRAINT fk_comments_user
     FOREIGN KEY (user_id)
     REFERENCES users(id)
       ON DELETE SET NULL

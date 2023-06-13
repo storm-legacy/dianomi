@@ -178,6 +178,7 @@ type User struct {
 	Email      string
 	Password   string
 	VerifiedAt sql.NullTime
+	BannedAt   sql.NullTime
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }
