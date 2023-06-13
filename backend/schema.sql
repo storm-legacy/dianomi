@@ -174,3 +174,23 @@ CREATE TABLE comments (
       ON DELETE SET NULL
       ON UPDATE CASCADE
 );
+
+CREATE TYPE vote AS ENUM('up','down','none');
+CREATE TABLE video_reaction (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  video_id BIGINT NOT NULL,
+  value vote NOT NULL DEFAULT 'none',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  CONSTRAINT fk_video_reaction_user 
+    FOREIGN KEY (user_id)
+    REFERENCES users(id)
+      ON DELETE SET NULL  
+      ON UPDATE CASCADE,
+  CONSTRAINT fk_video_reaction_video
+    FOREIGN KEY (video_id)
+    REFERENCES video(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE
+);

@@ -168,6 +168,22 @@ func (q *Queries) AddVideoMertics(ctx context.Context, arg AddVideoMerticsParams
 	return err
 }
 
+const addVideoReaction = `-- name: AddVideoReaction :exec
+INSERT INTO video_reaction (user_id, video_id, value)
+VALUES ($1, $2, $3)
+`
+
+type AddVideoReactionParams struct {
+	UserID  int64
+	VideoID int64
+	Value   Vote
+}
+
+func (q *Queries) AddVideoReaction(ctx context.Context, arg AddVideoReactionParams) error {
+	_, err := q.db.ExecContext(ctx, addVideoReaction, arg.UserID, arg.VideoID, arg.Value)
+	return err
+}
+
 const addVideoTag = `-- name: AddVideoTag :exec
 INSERT INTO video_tags (video_id, tag_id) VALUES ($1, $2) RETURNING id, video_id, tag_id
 `
@@ -1333,6 +1349,29 @@ func (q *Queries) GiveUserPackage(ctx context.Context, arg GiveUserPackageParams
 	return err
 }
 
+const ifUserReactionThisVideo = `-- name: IfUserReactionThisVideo :one
+SELECT id, user_id, video_id, value, created_at, updated_at FROM video_reaction WHERE user_id = $1 AND video_id=$2 LIMIT 1
+`
+
+type IfUserReactionThisVideoParams struct {
+	UserID  int64
+	VideoID int64
+}
+
+func (q *Queries) IfUserReactionThisVideo(ctx context.Context, arg IfUserReactionThisVideoParams) (VideoReaction, error) {
+	row := q.db.QueryRowContext(ctx, ifUserReactionThisVideo, arg.UserID, arg.VideoID)
+	var i VideoReaction
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.VideoID,
+		&i.Value,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const ifUserSeeThisVideo = `-- name: IfUserSeeThisVideo :one
 SELECT id, user_id, video_id, time_spent_watching, stopped_at, created_at, updated_at FROM user_video_metrics WHERE user_id = $1 AND video_id=$2 LIMIT 1
 `
@@ -1555,6 +1594,23 @@ type UpdateVideoMetricParams struct {
 
 func (q *Queries) UpdateVideoMetric(ctx context.Context, arg UpdateVideoMetricParams) error {
 	_, err := q.db.ExecContext(ctx, updateVideoMetric, arg.TimeSpentWatching, arg.StoppedAt, arg.ID)
+	return err
+}
+
+const updateVideoReaction = `-- name: UpdateVideoReaction :exec
+UPDATE video_reaction
+SET value = $1, updated_at = NOW()
+WHERE user_id =$2 AND video_id=$3
+`
+
+type UpdateVideoReactionParams struct {
+	Value   Vote
+	UserID  int64
+	VideoID int64
+}
+
+func (q *Queries) UpdateVideoReaction(ctx context.Context, arg UpdateVideoReactionParams) error {
+	_, err := q.db.ExecContext(ctx, updateVideoReaction, arg.Value, arg.UserID, arg.VideoID)
 	return err
 }
 

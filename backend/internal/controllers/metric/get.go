@@ -16,6 +16,11 @@ type Email struct {
 	Email string `json:"email" validate:"required"`
 }
 
+type GetVideoReactionData struct {
+	Email   string `json:"email" validate:"required"`
+	VideoID int64  `json:"video_id" validate:"required"`
+}
+
 type UserVideoMetricData struct {
 	ID                int64        `json:"id"`
 	UserID            int64        `json:"user_id"`
@@ -132,5 +137,49 @@ func GetUserVideoMertics(c *fiber.Ctx) error {
 		videoMetrics = append(videoMetrics, videoMetric)
 	}
 	return c.Status(fiber.StatusOK).JSON(videoMetrics)
+
+}
+
+func GetVideoReaction(c *fiber.Ctx) error {
+
+	var data GetVideoReactionData
+	if err := c.BodyParser(&data); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	err := mod.Validate.Struct(data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": fmt.Sprintf("Data validation error (%s)", err.Error()),
+		})
+	}
+	ctx := context.Background()
+	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
+	if err != nil {
+		log.WithField("err", err).Error("Could not create database connection")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	qtx := sqlc.New(db)
+	defer db.Close()
+	// * END(DB BLOCK)
+
+	user, err := qtx.GetUserByEmail(ctx, data.Email)
+	if err == sql.ErrNoRows {
+		log.WithField("user", data.Email).Debug("User doesn't exist")
+		return c.Status(fiber.StatusBadRequest).JSON(mod.Response{
+			Status: "error",
+			Data:   "Incorrect information",
+		})
+	}
+	if err != nil {
+		log.WithField("err", err).Error("SQL query resulted in error")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	reaction, err := qtx.IfUserReactionThisVideo(ctx, sqlc.IfUserReactionThisVideoParams{
+		UserID:  user.ID,
+		VideoID: data.VideoID,
+	})
+	return c.Status(fiber.StatusOK).JSON(reaction)
 
 }

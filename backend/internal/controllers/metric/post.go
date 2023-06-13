@@ -19,6 +19,12 @@ type PostVideoMerticsData struct {
 	StoppedAt         int64  `json:"stopped_at" validate:"required"`
 }
 
+type PostVideoReactionData struct {
+	Email   string    `json:"email" validate:"required"`
+	VideoID int64     `json:"video_id" validate:"required"`
+	Value   sqlc.Vote `json:"value" validate:"required"`
+}
+
 func PostVideoMertics(c *fiber.Ctx) error {
 
 	var data PostVideoMerticsData
@@ -87,4 +93,71 @@ func PostVideoMertics(c *fiber.Ctx) error {
 
 	}
 
+}
+
+func PostVideoReaction(c *fiber.Ctx) error {
+
+	var data PostVideoReactionData
+	if err := c.BodyParser(&data); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	err := mod.Validate.Struct(data)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": fmt.Sprintf("Data validation error (%s)", err.Error()),
+		})
+	}
+	ctx := context.Background()
+	db, err := sql.Open("postgres", config.GetString("PG_CONNECTION_STRING"))
+	if err != nil {
+		log.WithField("err", err).Error("Could not create database connection")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	qtx := sqlc.New(db)
+	defer db.Close()
+	// * END(DB BLOCK)
+
+	user, err := qtx.GetUserByEmail(ctx, data.Email)
+	if err == sql.ErrNoRows {
+		log.WithField("user", data.Email).Debug("User doesn't exist")
+		return c.Status(fiber.StatusBadRequest).JSON(mod.Response{
+			Status: "error",
+			Data:   "Incorrect information",
+		})
+	}
+	if err != nil {
+		log.WithField("err", err).Error("SQL query resulted in error")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	_, err = qtx.IfUserReactionThisVideo(ctx, sqlc.IfUserReactionThisVideoParams{
+		UserID:  user.ID,
+		VideoID: data.VideoID,
+	})
+	if err == sql.ErrNoRows {
+		if err := qtx.AddVideoReaction(ctx, sqlc.AddVideoReactionParams{
+			UserID:  user.ID,
+			VideoID: data.VideoID,
+			Value:   data.Value,
+		}); err != nil {
+			log.WithField("err", err.Error()).Error("Video couldn't be added to history")
+			return c.SendStatus(fiber.StatusInternalServerError)
+
+		}
+
+		return c.SendStatus(fiber.StatusCreated)
+	} else {
+		if err := qtx.UpdateVideoReaction(ctx, sqlc.UpdateVideoReactionParams{
+			UserID:  user.ID,
+			VideoID: data.VideoID,
+			Value:   data.Value,
+		}); err != nil {
+			log.WithField("err", err.Error()).Error("Video couldn't be added to history")
+			return c.SendStatus(fiber.StatusInternalServerError)
+
+		}
+		return c.SendStatus(fiber.StatusCreated)
+
+	}
 }

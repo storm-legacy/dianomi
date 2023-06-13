@@ -22,7 +22,15 @@ interface metricData {
   time_spent_watching: number | undefined;
   stopped_at: number | undefined;
 }
-
+interface getReactionData {
+  email: string | undefined;
+  video_id: number | undefined;
+}
+interface reactionData {
+  email: string | undefined;
+  video_id: number | undefined;
+  value: string | undefined;
+}
 class ProfileService {
   GetPackage() {
     const controller = new AbortController();
@@ -59,6 +67,16 @@ class ProfileService {
   PostVideoMertics(data: metricData) {
     const controller = new AbortController();
     const request = http.post('/metrics/', data, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  GetUserReaction(data: getReactionData) {
+    const controller = new AbortController();
+    const request = http.post('/metrics/reaction', data, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  PostUserReaction(data: reactionData) {
+    const controller = new AbortController();
+    const request = http.post('/metrics/vote', data, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
 }

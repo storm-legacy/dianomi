@@ -87,6 +87,8 @@ func main() {
 	metrics.Post("/user/", videoMetricCtrl.GetUserVideoMerticByEmail)
 	metrics.Get("/all", videoMetricCtrl.GetUserVideoMertics)
 	metrics.Post("/", videoMetricCtrl.PostVideoMertics)
+	metrics.Post("/vote", videoMetricCtrl.PostVideoReaction)
+	metrics.Post("/reaction", videoMetricCtrl.GetVideoReaction)
 
 	// * Video group
 	video := api.Group("video", mid.AuthMiddleware)

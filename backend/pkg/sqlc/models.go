@@ -142,6 +142,49 @@ func (ns NullVerifyEmailType) Value() (driver.Value, error) {
 	return string(ns.VerifyEmailType), nil
 }
 
+type Vote string
+
+const (
+	VoteUp   Vote = "up"
+	VoteDown Vote = "down"
+	VoteNone Vote = "none"
+)
+
+func (e *Vote) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Vote(s)
+	case string:
+		*e = Vote(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Vote: %T", src)
+	}
+	return nil
+}
+
+type NullVote struct {
+	Vote  Vote
+	Valid bool // Valid is true if Vote is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVote) Scan(value interface{}) error {
+	if value == nil {
+		ns.Vote, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Vote.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVote) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Vote), nil
+}
+
 type Category struct {
 	ID   int64
 	Name string
@@ -236,6 +279,15 @@ type VideoFile struct {
 	CreatedAt  sql.NullTime
 	UpdatedAt  sql.NullTime
 	DeletedAt  sql.NullTime
+}
+
+type VideoReaction struct {
+	ID        int64
+	UserID    int64
+	VideoID   int64
+	Value     Vote
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }
 
 type VideoTag struct {

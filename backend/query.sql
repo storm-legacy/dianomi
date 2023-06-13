@@ -378,3 +378,15 @@ SELECT * FROM comments WHERE id=$1 LIMIT 1;
 
 -- name: DeleteComment :exec
 DELETE FROM comments  WHERE id = $1;
+
+-- name: IfUserReactionThisVideo :one
+SELECT * FROM video_reaction WHERE user_id = $1 AND video_id=$2 LIMIT 1;
+
+-- name: AddVideoReaction :exec
+INSERT INTO video_reaction (user_id, video_id, value)
+VALUES ($1, $2, $3);
+
+-- name: UpdateVideoReaction :exec
+UPDATE video_reaction
+SET value = $1, updated_at = NOW()
+WHERE user_id =$2 AND video_id=$3;
