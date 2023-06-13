@@ -39,21 +39,6 @@ func (q *Queries) AddComments(ctx context.Context, arg AddCommentsParams) error 
 	return err
 }
 
-const addReport = `-- name: AddReport :exec
-INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES ($1, $2, $3) RETURNING id, error_title, error_description, reported_by, report_date
-`
-
-type AddReportParams struct {
-	ErrorTitle       string
-	ErrorDescription string
-	ReportedBy       string
-}
-
-func (q *Queries) AddReport(ctx context.Context, arg AddReportParams) error {
-	_, err := q.db.ExecContext(ctx, addReport, arg.ErrorTitle, arg.ErrorDescription, arg.ReportedBy)
-	return err
-}
-
 const addTag = `-- name: AddTag :one
 INSERT INTO tags (name) VALUES ($1) RETURNING id, name
 `
@@ -230,6 +215,15 @@ DELETE FROM video_tags WHERE video_id = $1
 
 func (q *Queries) ClearVideoTags(ctx context.Context, videoID int64) error {
 	_, err := q.db.ExecContext(ctx, clearVideoTags, videoID)
+	return err
+}
+
+const closeReport = `-- name: CloseReport :exec
+UPDATE comments_reports SET closed = true WHERE id = $1
+`
+
+func (q *Queries) CloseReport(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, closeReport, id)
 	return err
 }
 
@@ -886,6 +880,41 @@ func (q *Queries) GetRandomVideos(ctx context.Context, arg GetRandomVideosParams
 	return items, nil
 }
 
+const getReportsForComment = `-- name: GetReportsForComment :many
+SELECT id, reporter_id, comment_id, created_at, updated_at, message, closed FROM comments_reports WHERE id = $1 AND closed <> true LIMIT 10
+`
+
+func (q *Queries) GetReportsForComment(ctx context.Context, id int64) ([]CommentsReport, error) {
+	rows, err := q.db.QueryContext(ctx, getReportsForComment, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CommentsReport
+	for rows.Next() {
+		var i CommentsReport
+		if err := rows.Scan(
+			&i.ID,
+			&i.ReporterID,
+			&i.CommentID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Message,
+			&i.Closed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTagByName = `-- name: GetTagByName :one
 SELECT id, name FROM tags WHERE name = $1 LIMIT 1
 `
@@ -1411,6 +1440,25 @@ DELETE FROM users_packages WHERE id = $1
 
 func (q *Queries) RemoveUserPackage(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, removeUserPackage, id)
+	return err
+}
+
+const reportComment = `-- name: ReportComment :exec
+INSERT INTO comments_reports(
+  reporter_id,
+  comment_id,
+  message
+) VALUES ($1, $2, $3)
+`
+
+type ReportCommentParams struct {
+	ReporterID int64
+	CommentID  int64
+	Message    string
+}
+
+func (q *Queries) ReportComment(ctx context.Context, arg ReportCommentParams) error {
+	_, err := q.db.ExecContext(ctx, reportComment, arg.ReporterID, arg.CommentID, arg.Message)
 	return err
 }
 

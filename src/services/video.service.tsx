@@ -1,3 +1,4 @@
+import { CommentReport } from '../types/comment.type';
 import http from './axios.http';
 
 interface VideoAddData {
@@ -109,6 +110,23 @@ class VideoService {
   deleteComment(videoId: number | undefined) {
     const controller = new AbortController();
     const request = http.delete('/video/comment/' + videoId, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  reportComment(commentId: number, message: string) {
+    const controller = new AbortController();
+    const request = http.post(`/video/comment/report/${commentId}?message=${message}`,
+      {}, { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  getReportsForComment(commentId: number) {
+    const controller = new AbortController();
+    const request = http.get<CommentReport[]>(`/video/comment/report/${commentId}`,
+      { signal: controller.signal });
+    return { request, cancel: () => controller.abort() };
+  }
+  closeCommentReport(commentId: number) {
+    const controller = new AbortController();
+    const request = http.post(`/video/comment/close-report/${commentId}`, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
 }

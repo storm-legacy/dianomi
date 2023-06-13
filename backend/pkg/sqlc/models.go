@@ -203,12 +203,14 @@ type Comment struct {
 	Visable   sql.NullBool
 }
 
-type ErrorReport struct {
-	ID               int64
-	ErrorTitle       string
-	ErrorDescription string
-	ReportedBy       string
-	ReportDate       sql.NullTime
+type CommentsReport struct {
+	ID         int64
+	ReporterID int64
+	CommentID  int64
+	CreatedAt  sql.NullTime
+	UpdatedAt  sql.NullTime
+	Message    string
+	Closed     sql.NullBool
 }
 
 type Tag struct {

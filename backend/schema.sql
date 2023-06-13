@@ -144,14 +144,6 @@ CREATE TABLE user_video_metrics (
       ON UPDATE CASCADE
 );
 
-CREATE TABLE Error_Reports (
-  id BIGSERIAL PRIMARY KEY,
-  error_title VARCHAR(100) NOT NULL,
-  error_description VARCHAR(255) NOT NULL,
-  reported_by VARCHAR(50) NOT NULL,
-  report_date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 CREATE TABLE comments (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
@@ -175,6 +167,26 @@ CREATE TABLE comments (
       ON UPDATE CASCADE
 );
 
+CREATE TABLE comments_reports (
+  id BIGSERIAL PRIMARY KEY,
+  reporter_id BIGINT NOT NULL,
+  comment_id BIGINT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  message VARCHAR(255) NOT NULL,
+  closed BOOLEAN DEFAULT false,
+  CONSTRAINT fk_comments_reports
+    FOREIGN KEY (comment_id)
+    REFERENCES comments(id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+  CONSTRAINT fk_comments_reports_users
+    FOREIGN KEY (reporter_id)
+    REFERENCES users(id)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+);
+
 CREATE TYPE vote AS ENUM('up','down','none');
 CREATE TABLE video_reaction (
   id BIGSERIAL PRIMARY KEY,
@@ -183,10 +195,10 @@ CREATE TABLE video_reaction (
   value vote NOT NULL DEFAULT 'none',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT fk_video_reaction_user 
+  CONSTRAINT fk_video_reaction_user
     FOREIGN KEY (user_id)
     REFERENCES users(id)
-      ON DELETE SET NULL  
+      ON DELETE SET NULL
       ON UPDATE CASCADE,
   CONSTRAINT fk_video_reaction_video
     FOREIGN KEY (video_id)

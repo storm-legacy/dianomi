@@ -108,6 +108,8 @@ func main() {
 	comment.Get("/:id", commentsCtrl.GetCommentsVideo)
 	comment.Delete("/:id", commentsCtrl.DeleteComment)
 	comment.Post("/", commentsCtrl.PostComments)
+	comment.Post("/report/:id", commentsCtrl.PostReportComment)
+	comment.Post("/close-report/:id", commentsCtrl.PostCloseReport)
 
 	// * Category group
 	category := video.Group("category")

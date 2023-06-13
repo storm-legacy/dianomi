@@ -306,9 +306,6 @@ INSERT INTO video_tags (video_id, tag_id) VALUES ($1, $2) RETURNING *;
 -- name: ClearVideoTags :exec
 DELETE FROM video_tags WHERE video_id = $1;
 
--- name: AddReport :exec
-INSERT INTO Error_Reports (error_title, error_description, reported_by) VALUES ($1, $2, $3) RETURNING *;
-
 -- name: GetVideoIDByName :many
 SELECT id FROM video WHERE LOWER(name) LIKE LOWER($1);
 -- name: AddVideoMertics :exec
@@ -348,6 +345,19 @@ SELECT * FROM user_video_metrics LIMIT $1 OFFSET $2;
 
 -- name: AddComments :exec
 INSERT INTO comments (user_id, video_id, comment) VALUES ($1, $2, $3);
+
+-- name: ReportComment :exec
+INSERT INTO comments_reports(
+  reporter_id,
+  comment_id,
+  message
+) VALUES ($1, $2, $3);
+
+-- name: CloseReport :exec
+UPDATE comments_reports SET closed = true WHERE id = $1;
+
+-- name: GetReportsForComment :many
+SELECT * FROM comments_reports WHERE id = $1 AND closed <> true LIMIT 10;
 
 -- name: UpdateComments :exec
 UPDATE comments

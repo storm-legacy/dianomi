@@ -12,12 +12,21 @@ import (
 	"github.com/storm-legacy/dianomi/pkg/sqlc"
 )
 
+// type CommentReports struct {
+// 	ID        int64     `json:"report_id"`
+// 	Reporter  string    `json:"reporter"`
+// 	CreatedAt time.Time `json:"created_at"`
+// 	Message   string    `json:"message"`
+// 	Closed    bool      `json:"closed"`
+// }
+
 type GetCommentsForVideoData struct {
-	ID        int32     `json:"id" validate:"required"`
-	Email     string    `json:"email" validate:"required"`
-	VideoName string    `json:"name" validate:"required"`
-	Comment   string    `json:"comment" validate:"required" `
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int32                 `json:"id" validate:"required"`
+	Email     string                `json:"email" validate:"required"`
+	VideoName string                `json:"name" validate:"required"`
+	Comment   string                `json:"comment" validate:"required" `
+	UpdatedAt time.Time             `json:"updated_at"`
+	Reports   []sqlc.CommentsReport `json:"reports"`
 }
 
 func GetCommentsVideo(c *fiber.Ctx) error {
@@ -85,12 +94,19 @@ func GetCommentsAll(c *fiber.Ctx) error {
 
 	commentsData := make([]GetCommentsForVideoData, 0)
 	for _, met := range res {
+		reports, err := qtx.GetReportsForComment(ctx, met.ID)
+		if err != nil {
+			log.WithField("err", err.Error()).Error("Could not get reports from database")
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
 		comment := GetCommentsForVideoData{
 			ID:        int32(met.ID),
 			VideoName: met.Name,
 			Email:     met.Email,
 			Comment:   met.Comment,
 			UpdatedAt: met.UpdatedAt.Time,
+			Reports:   reports,
 		}
 		commentsData = append(commentsData, comment)
 	}
