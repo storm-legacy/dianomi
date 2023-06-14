@@ -107,9 +107,9 @@ class VideoService {
     const request = http.post('/video/down/' + videoId, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
-  deleteComment(videoId: number | undefined) {
+  deleteComment(commentId: number | undefined) {
     const controller = new AbortController();
-    const request = http.delete('/video/comment/' + videoId, { signal: controller.signal });
+    const request = http.delete(`/video/comment/${commentId}`, { signal: controller.signal });
     return { request, cancel: () => controller.abort() };
   }
   reportComment(commentId: number, message: string) {

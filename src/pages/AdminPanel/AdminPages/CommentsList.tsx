@@ -45,7 +45,13 @@ export const CommentsList = () => {
   }
 
   const DeleteComment = (id: number) => {
-    console.log(id);
+    const { request } = videoService.deleteComment(id);
+    request.then(() => {
+      Notify.success("Comment was successfully removed!");
+      refreshComments();
+    }).catch(() => {
+      Notify.failure("Comment could not be removed!");
+    })
   };
 
   return (
